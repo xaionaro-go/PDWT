@@ -1,5 +1,8 @@
 # Created by https://www.gitignore.io/api/c,c++,cuda,python
 
+### Editor ###
+*.swp
+
 ### C ###
 # Object files
 *.o
@@ -60,11 +63,6 @@
 *.a
 *.lib
 
-# Executables
-*.exe
-*.out
-*.app
-
 
 ### CUDA ###
 *.i
@@ -90,6 +88,7 @@ env/
 build/
 develop-eggs/
 dist/
+doc/
 downloads/
 eggs/
 .eggs/
@@ -135,5 +134,3 @@ docs/_build/
 
 # PyBuilder
 target/
-
-
