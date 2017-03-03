@@ -4,16 +4,22 @@ project(PDCWT)
 set(PROJECT_NAME PDCWT)
 
 #Destination
-if (BINDIR)
-  set(RUNTIME_DEST ${BINDIR})
+if (INSTALLDIR)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${INSTALL_DIR}/bin)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${INSTALL_DIR}/lib)
+  set(DOC_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
 else ()
-  set(RUNTIME_DEST ${CMAKE_CURRENT_BINARY_DIR}/bin)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${INSTALL_DIR}/bin)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${INSTALL_DIR}/bin)
+  set(DOC_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
 endif ()
 
-#cmake refs
+#cmake ref
 set(PRJ_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PRJ_CMAKE_DIR})
 
+#local ref
+set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 #################################
 #  Generic Compilation options  #
@@ -94,7 +100,8 @@ endif ()
 # MPI Part #
 ############
 find_package(MPI)
-if (MPI_FOUND)
+if (MPI_FOUND AND USE_MPI)
+  add_definitions(-DUSE_MPI)
   include_directories(${MPI_INCLUDE_PATH})
   #runtime libs for mpi
   set(mpi_deps ${MPI_CXX_LIBRARIES})
@@ -128,9 +135,8 @@ enable_testing()
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
-if (DOXYGEN_FOUND)
-  set(DOC_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+if (DOXYGEN_FOUNDD AND USE_DOC)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
     ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(
     doc

@@ -35,16 +35,35 @@ All the transforms are computed with the **periodic boundary extension** (the di
 
 ### Dependencies
 
-You need the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit), and of course a NVIDIA GPU.
+If you want to enjoy some developer features of this project, please consider installing the following packages (example for ubuntu):  
+sudo apt-get install doxygen graphviz cppcheck
+
+If you want to enjoy mpi related features, please consider installing the following packages (example for ubuntu):  
+sudo apt-get install libopenmpi-dev boost-dev
+
+If you want to enjoy cuda related features, you need the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit), and of course a NVIDIA GPU.
 
 ### Compilation
 
-The Makefile should build smoothly the example :
+How to build ?
+cd PDWT
+mkdir build; cd build  
+cmake -DINSTALLDIR=/path-to-install-dir -DUSE_MPI=ON -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DTHRUST_BACKEND:STRING=CUDA ..  
+make -j8 install
 
-```bash
-make demo
-```
+## How to test
+In the build directory, do:  
+make test  
 
+## How to generate doxygen documentation
+In the build directory, do:  
+make doc  
+The documentation should be build in the "doc" directory
+
+## How to perform static code analysis with cppcheck
+In the build directory, do:  
+make cppcheck  
+The cppcheck report can be found in the directory cppcheckdir-report
 
 ## Getting started
 

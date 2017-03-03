@@ -14,6 +14,8 @@ TODO LIST
 - Compute norm related to threshold (eg. soft/L1, group-lasso, etc)
 - User-defined target CUDA device
 - Documentation/Howtos
+- Check from the README.md that boost-dev is the right package name
+- Set properly the variable for LIB_DEST/RUNTIME_DEST
 
 -- DONE :
 

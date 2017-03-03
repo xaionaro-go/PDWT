@@ -23,7 +23,7 @@ set(headers
 #  Lib Dependancy  #
 ####################
 
-include_directories( "../../src" )
+include_directories( "${PRJ_ROOT_DIR}/src" )
 
 ################
 #  Executable  #
@@ -37,4 +37,4 @@ target_link_libraries(${OUTPUT_NAME}
 set_property(TARGET ${OUTPUT_NAME}
   PROPERTY OUTPUT_NAME ${OUTPUT_NAME})
 install(TARGETS ${OUTPUT_NAME}
-  RUNTIME DESTINATION ${RUNTIME_DEST})
+  RUNTIME DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
