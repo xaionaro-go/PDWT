@@ -158,4 +158,4 @@ GENERATE_CPPCHECK(SOURCEDIRS src app test
 
 add_subdirectory(src)
 add_subdirectory(test)
-
+add_subdirectory(app)

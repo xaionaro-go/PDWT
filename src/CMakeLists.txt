@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.5)
 #################
 #  Generic Part #
 #################
-
-project(lib)
-set(OUTPUT_NAME lib)
+project(pdwt)
+set(OUTPUT_NAME pdwt)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 ###############
 #  Cuda Part  #
 ###############
@@ -29,9 +29,7 @@ endif ()
 #  Src files  #
 ###############
 set(sources
-  demo.cpp
   filters.cpp
-  io.cpp
   # cuda source files
   ${sources_cuda}
 )
@@ -51,15 +49,12 @@ if (CUDA_FOUND)
 else ()
   add_library(${OUTPUT_NAME} SHARED ${sources} ${headers})
 endif ()
-
 target_link_libraries(${OUTPUT_NAME}
   ${cuda_deps}
   ${mpi_deps}
   ${boost_deps})
-
 set_property(TARGET ${OUTPUT_NAME}
   PROPERTY OUTPUT_NAME ${output_name})
-
 install(TARGETS ${OUTPUT_NAME}
   LIBRARY DESTINATION ${RUNTIME_DEST}
 )
