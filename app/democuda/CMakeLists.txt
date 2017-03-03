@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.5)
 ##################
 #  Generic Part  #
 ##################
-project(demo)
-set(OUTPUT_NAME  demo)
+project(democuda)
+set(OUTPUT_NAME  democuda)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ###############
@@ -29,11 +29,12 @@ include_directories( "${PRJ_ROOT_DIR}/src" )
 #  Executable  #
 ################
 
-add_executable(${OUTPUT_NAME} ${sources})
+cuda_add_executable(${OUTPUT_NAME} ${sources})
 target_link_libraries(${OUTPUT_NAME}
   pdwt
   ${mpi_deps}
-  ${boost_deps})
+  ${boost_deps}
+  ${cuda_deps})
 set_property(TARGET ${OUTPUT_NAME}
   PROPERTY OUTPUT_NAME ${OUTPUT_NAME})
 install(TARGETS ${OUTPUT_NAME}

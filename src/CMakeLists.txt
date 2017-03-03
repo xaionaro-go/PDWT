@@ -16,7 +16,8 @@ if (CUDA_FOUND AND USE_CUDA)
     Cuda/haar.cu
     Cuda/nonseparable.cu
     Cuda/separable.cu
-    Cuda/utils.cuCuda/wt.cu
+    Cuda/utils.cu
+    Cuda/wt.cu
   )
   set(headers_cuda
   )
