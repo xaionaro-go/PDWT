@@ -1,17 +1,6 @@
 #include "separable.h"
 #include "common.h"
 
-#ifdef SEPARATE_COMPILATION
-// Required for separate compilation (see Makefile)
-#ifndef CONSTMEM_FILTERS_S
-#define CONSTMEM_FILTERS_S
-__constant__ DTYPE c_kern_L[MAX_FILTER_WIDTH];
-__constant__ DTYPE c_kern_H[MAX_FILTER_WIDTH];
-__constant__ DTYPE c_kern_IL[MAX_FILTER_WIDTH];
-__constant__ DTYPE c_kern_IH[MAX_FILTER_WIDTH];
-#endif
-#endif
-
 
 /// Compute the low-pass and high-pass filters for separable convolutions.
 /// wname: name of the filter ("haar", "db3", "sym4", ...)
