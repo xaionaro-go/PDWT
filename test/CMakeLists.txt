@@ -10,7 +10,7 @@ set(TEST_BIN_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test)
 #Add handmade macro to cmake path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(pdcwtest)
+include(pdwtest)
 
 #Add various app tests
 add_subdirectory(src)

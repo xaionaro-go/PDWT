@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.5)
 ####################
 
 include_directories( "${PRJ_ROOT_DIR}/src" )
-set(lib_deps pdcwt)
+set(lib_deps pdwt)
 
 ################
 #  Build test  #

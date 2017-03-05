@@ -13,6 +13,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 if (CUDA_FOUND AND USE_CUDA)
   set(sources_cuda
     Cuda/common.cu
+    Cuda/constant.cu
     Cuda/haar.cu
     Cuda/nonseparable.cu
     Cuda/separable.cu
