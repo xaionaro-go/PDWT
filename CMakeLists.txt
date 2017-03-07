@@ -135,7 +135,7 @@ enable_testing()
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
-if (DOXYGEN_FOUNDD AND USE_DOC)
+if (DOXYGEN_FOUND AND USE_DOC)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
     ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(
