@@ -26,7 +26,7 @@ set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #################################
 
 #Compiler must support c++11
-ADD_DEFINITIONS(${CMAKE_CXX_FLAGS} "-std=c++11")
+ADD_DEFINITIONS(${CMAKE_CXX_FLAGS} "-std=c++14")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   if (UNIX)
