@@ -77,86 +77,96 @@ int w_set_filters_inverse(DTYPE* filter1, DTYPE* filter2, uint len) {
 
 // must be run with grid size = (Nc/2, Nr)  where Nr = numrows of input image
 // Pass 1 : Input image ==> horizontal convolution with L, H  + horizontal subsampling  ==> (tmp_a1, tmp_a2)
-__global__ void w_kern_forward_pass1(DTYPE* img, DTYPE* tmp_a1, DTYPE* tmp_a2, int Nr, int Nc, int hlen) {
-    int gidx = threadIdx.x + blockIdx.x*blockDim.x;
-    int gidy = threadIdx.y + blockIdx.y*blockDim.y;
-    int Nc_is_odd = (Nc & 1);
-    int Nc2 = (Nc + Nc_is_odd)/2;
-    if (gidy < Nr && gidx < Nc2) { // horiz subsampling : Input (Nr, Nc) => Output (Nr, Nc/2)
-        int c, hL, hR;
-        if (hlen & 1) { // odd kernel size
-            c = hlen/2;
-            hL = c;
-            hR = c;
-        }
-        else { // even kernel size : center is shifted to the left
-            c = hlen/2 - 1;
-            hL = c;
-            hR = c+1;
-        }
-        DTYPE res_tmp_a1 = 0, res_tmp_a2 = 0;
-        DTYPE img_val;
+__global__ void w_kern_forward_pass1(DTYPE* img, DTYPE* tmp_a1, DTYPE* tmp_a2,
+    int Nr, int Nc, int hlen) {
+  
+  int gidx = threadIdx.x + blockIdx.x*blockDim.x;
+  int gidy = threadIdx.y + blockIdx.y*blockDim.y;
+  int Nc_is_odd = (Nc & 1);
+  int Nc2 = (Nc + Nc_is_odd)/2;
 
-        // Convolution with periodic boundaries extension.
-        for (int jx = 0; jx <= hR+hL; jx++) {
-
-            int idx_x = gidx*2 - c + jx;
-
-            if (idx_x < 0) idx_x += (Nc + Nc_is_odd); // if N is odd, image is virtually extended
-            // no "else if", since idx_x can be > N-1  after being incremented
-            if (idx_x > Nc-1) {
-                if ((idx_x == Nc) && (Nc_is_odd)) idx_x--; // if N is odd, repeat the right-most element
-                else idx_x -= (Nc + Nc_is_odd); // if N is odd, image is virtually extended
-            }
-
-            img_val = img[gidy*Nc + idx_x];
-            res_tmp_a1 += img_val * c_kern_L[hlen-1 - jx];
-            res_tmp_a2 += img_val * c_kern_H[hlen-1 - jx];
-
-        }
-        tmp_a1[gidy* Nc2 + gidx] = res_tmp_a1;
-        tmp_a2[gidy* Nc2 + gidx] = res_tmp_a2;
+  // horiz subsampling : Input (Nr, Nc) => Output (Nr, Nc/2)
+  if (gidy < Nr && gidx < Nc2) {
+    int c, hL, hR;
+    // odd kernel size
+    if (hlen & 1) {
+      c = hlen/2;
+      hL = c;
+      hR = c;
     }
+    else { // even kernel size : center is shifted to the left
+      c = hlen/2 - 1;
+      hL = c;
+      hR = c+1;
+    }
+    DTYPE res_tmp_a1 = 0, res_tmp_a2 = 0;
+    DTYPE img_val;
+
+    // Convolution with periodic boundaries extension.
+    for (int jx = 0; jx <= hR+hL; jx++) {
+      int idx_x = gidx*2 - c + jx;
+      // if N is odd, image is virtually extended
+      if (idx_x < 0) idx_x += (Nc + Nc_is_odd);
+      // no "else if", since idx_x can be > N-1  after being incremented
+      if (idx_x > Nc-1) {
+        // if N is odd, repeat the right-most element
+        if ((idx_x == Nc) && (Nc_is_odd)) idx_x--;
+        // if N is odd, image is virtually extended
+        else idx_x -= (Nc + Nc_is_odd);
+      }
+      img_val = img[gidy*Nc + idx_x];
+      res_tmp_a1 += img_val * c_kern_L[hlen-1 - jx];
+      res_tmp_a2 += img_val * c_kern_H[hlen-1 - jx];
+    }
+    tmp_a1[gidy* Nc2 + gidx] = res_tmp_a1;
+    tmp_a2[gidy* Nc2 + gidx] = res_tmp_a2;
+  }
 }
 
 // must be run with grid size = (Nc/2, Nr/2)  where Nr = numrows of input image. Here Nc is actually halved wrt to Nc_image since there was a horiz subs.
 // Pass 2 : (tmp_a1, tmp_a2) ==>  Vertic convolution on tmp_a1 and tmp_a2 with  L, H  + vertical subsampling ==> (a, h, v, d)
-__global__ void w_kern_forward_pass2(DTYPE* tmp_a1, DTYPE* tmp_a2, DTYPE* c_a, DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, int Nr, int Nc, int hlen) {
-    int gidx = threadIdx.x + blockIdx.x*blockDim.x;
-    int gidy = threadIdx.y + blockIdx.y*blockDim.y;
-    int Nr_is_odd = (Nr & 1);
-    int Nr2 = (Nr + Nr_is_odd)/2;
-    if (gidy < Nr2 && gidx < Nc) { // vertic subsampling : Input (Nr, Nc/2) => Output (Nr/2, Nc/2)
-        int c, hL, hR;
-        if (hlen & 1) { // odd kernel size
-            c = hlen/2;
-            hL = c;
-            hR = c;
+__global__ void w_kern_forward_pass2(DTYPE* tmp_a1, DTYPE* tmp_a2, DTYPE* c_a,
+    DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, int Nr, int Nc, int hlen) {
+
+  int gidx = threadIdx.x + blockIdx.x*blockDim.x;
+  int gidy = threadIdx.y + blockIdx.y*blockDim.y;
+  int Nr_is_odd = (Nr & 1);
+  int Nr2 = (Nr + Nr_is_odd)/2;
+
+    // vertic subsampling : Input (Nr, Nc/2) => Output (Nr/2, Nc/2)
+    if (gidy < Nr2 && gidx < Nc) {
+      int c, hL, hR;
+      // odd kernel size
+      if (hlen & 1) {
+        c = hlen/2;
+        hL = c;
+        hR = c;
+      }
+      else { // even kernel size : center is shifted to the left
+        c = hlen/2 - 1;
+        hL = c;
+        hR = c+1;
+      }
+      DTYPE res_a = 0, res_h = 0, res_v = 0, res_d = 0;
+
+      // Convolution with periodic boundaries extension.
+      for (int jy = 0; jy <= hR+hL; jy++) {
+        int idx_y = gidy*2 - c + jy;
+
+        // if N is odd, image is virtually extended
+        if (idx_y < 0) idx_y += (Nr + Nr_is_odd);
+        // no "else if", since idx_y can be > N-1  after being incremented
+          if (idx_y > Nr-1) {
+            // if N is odd, repeat the right-most element
+            if ((idx_y == Nr) && (Nr_is_odd)) idx_y--;
+            // if N is odd, image is virtually extended
+            else idx_y -= (Nr + Nr_is_odd);
+          }
+          res_a += tmp_a1[idx_y*Nc + gidx] * c_kern_L[hlen-1 - jy];
+          res_h += tmp_a1[idx_y*Nc + gidx] * c_kern_H[hlen-1 - jy];
+          res_v += tmp_a2[idx_y*Nc + gidx] * c_kern_L[hlen-1 - jy];
+          res_d += tmp_a2[idx_y*Nc + gidx] * c_kern_H[hlen-1 - jy];
         }
-        else { // even kernel size : center is shifted to the left
-            c = hlen/2 - 1;
-            hL = c;
-            hR = c+1;
-        }
-        DTYPE res_a = 0, res_h = 0, res_v = 0, res_d = 0;
-
-        // Convolution with periodic boundaries extension.
-        for (int jy = 0; jy <= hR+hL; jy++) {
-            int idx_y = gidy*2 - c + jy;
-
-            if (idx_y < 0) idx_y += (Nr + Nr_is_odd); // if N is odd, image is virtually extended
-            // no "else if", since idx_y can be > N-1  after being incremented
-            if (idx_y > Nr-1) {
-                if ((idx_y == Nr) && (Nr_is_odd)) idx_y--; // if N is odd, repeat the right-most element
-                else idx_y -= (Nr + Nr_is_odd); // if N is odd, image is virtually extended
-            }
-
-            res_a += tmp_a1[idx_y*Nc + gidx] * c_kern_L[hlen-1 - jy];
-            res_h += tmp_a1[idx_y*Nc + gidx] * c_kern_H[hlen-1 - jy];
-            res_v += tmp_a2[idx_y*Nc + gidx] * c_kern_L[hlen-1 - jy];
-            res_d += tmp_a2[idx_y*Nc + gidx] * c_kern_H[hlen-1 - jy];
-        }
-
         c_a[gidy* Nc + gidx] = res_a;
         c_h[gidy* Nc + gidx] = res_h;
         c_v[gidy* Nc + gidx] = res_v;
@@ -165,63 +175,77 @@ __global__ void w_kern_forward_pass2(DTYPE* tmp_a1, DTYPE* tmp_a2, DTYPE* c_a, D
 }
 
 
-int w_forward_separable(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos) {
-    int Nr = winfos.Nr, Nc = winfos.Nc, levels = winfos.nlevels, hlen = winfos.hlen;
-    int Nc2 = Nc, Nr2 = Nr;
-    int Nc2_old = Nc2, Nr2_old = Nr;
+int w_forward_separable(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp,
+    w_info winfos) {
+  int Nr = winfos.Nr, Nc = winfos.Nc, levels = winfos.nlevels, hlen = winfos.hlen;
+  int Nc2 = Nc, Nr2 = Nr;
+  int Nc2_old = Nc2, Nr2_old = Nr;
+  w_div2(&Nc2);
+  w_div2(&Nr2);
+  // d_tmp can have up to 2*Nr*Nc elemets (two input images)
+  // [Nr*Nc would be enough here].
+  // Here d_tmp1 (resp. d_tmp2) is used for the horizontal (resp. vertical)
+  // downsampling.
+  // Given a dimension size N, the subsampled dimension size is N/2 if N is
+  // even, (N+1)/2 otherwise.
+  DTYPE* d_tmp1 = d_tmp;
+  DTYPE* d_tmp2 = d_tmp + Nr*Nc2;
+
+  // First level
+  int tpb = 16; // TODO : tune for max perfs.
+  dim3 n_blocks_1 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr, tpb), 1);
+  dim3 n_blocks_2 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr2, tpb), 1);
+  dim3 n_threads_per_block = dim3(tpb, tpb, 1);
+  w_kern_forward_pass1<<<n_blocks_1, n_threads_per_block>>>(d_image, d_tmp1,
+      d_tmp2, Nr2_old, Nc2_old, hlen);
+  w_kern_forward_pass2<<<n_blocks_2, n_threads_per_block>>>(d_tmp1, d_tmp2,
+      d_coeffs[0], d_coeffs[1], d_coeffs[2], d_coeffs[3], Nr2_old, Nc2, hlen);
+
+  for (int i=1; i < levels; i++) {
+    Nc2_old = Nc2; Nr2_old = Nr2;
     w_div2(&Nc2);
     w_div2(&Nr2);
-    // d_tmp can have up to 2*Nr*Nc elemets (two input images) [Nr*Nc would be enough here].
-    // Here d_tmp1 (resp. d_tmp2) is used for the horizontal (resp. vertical) downsampling.
-    // Given a dimension size N, the subsampled dimension size is N/2 if N is even, (N+1)/2 otherwise.
-    DTYPE* d_tmp1 = d_tmp;
-    DTYPE* d_tmp2 = d_tmp + Nr*Nc2;
-
-    // First level
-    int tpb = 16; // TODO : tune for max perfs.
-    dim3 n_blocks_1 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr, tpb), 1);
-    dim3 n_blocks_2 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr2, tpb), 1);
-    dim3 n_threads_per_block = dim3(tpb, tpb, 1);
-    w_kern_forward_pass1<<<n_blocks_1, n_threads_per_block>>>(d_image, d_tmp1, d_tmp2, Nr2_old, Nc2_old, hlen);
-    w_kern_forward_pass2<<<n_blocks_2, n_threads_per_block>>>(d_tmp1, d_tmp2, d_coeffs[0], d_coeffs[1], d_coeffs[2], d_coeffs[3], Nr2_old, Nc2, hlen);
-
-    for (int i=1; i < levels; i++) {
-        Nc2_old = Nc2; Nr2_old = Nr2;
-        w_div2(&Nc2);
-        w_div2(&Nr2);
-        n_blocks_1 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr2_old, tpb), 1);
-        n_blocks_2 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr2, tpb), 1);
-        w_kern_forward_pass1<<<n_blocks_1, n_threads_per_block>>>(d_coeffs[0], d_tmp1, d_tmp2, Nr2_old, Nc2_old, hlen);
-        w_kern_forward_pass2<<<n_blocks_2, n_threads_per_block>>>(d_tmp1, d_tmp2, d_coeffs[0], d_coeffs[3*i+1], d_coeffs[3*i+2], d_coeffs[3*i+3], Nr2_old, Nc2, hlen);
+    n_blocks_1 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr2_old, tpb), 1);
+    n_blocks_2 = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr2, tpb), 1);
+    w_kern_forward_pass1<<<n_blocks_1, n_threads_per_block>>>(d_coeffs[0],
+        d_tmp1, d_tmp2, Nr2_old, Nc2_old, hlen);
+    w_kern_forward_pass2<<<n_blocks_2, n_threads_per_block>>>(d_tmp1, d_tmp2,
+        d_coeffs[0], d_coeffs[3*i+1], d_coeffs[3*i+2], d_coeffs[3*i+3],
+        Nr2_old, Nc2, hlen);
     }
-    return 0;
+  return 0;
 }
 
 
 
-// (batched) 1D transform. It boils down to the 2D separable transform without the second pass.
-int w_forward_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos) {
-    int Nr = winfos.Nr, Nc = winfos.Nc, levels = winfos.nlevels, hlen = winfos.hlen;
-    DTYPE* d_tmp1 = d_coeffs[0];
-    DTYPE* d_tmp2 = d_tmp;
-    // First level
-    int tpb = 16; // TODO : tune for max perfs.
-    int Nc2 = Nc;
-    int Nc2_old = Nc2;
+// (batched) 1D transform. It boils down to the 2D separable transform without
+// the second pass.
+int w_forward_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp,
+    w_info winfos) {
+  int Nr = winfos.Nr, Nc = winfos.Nc, levels = winfos.nlevels, hlen = winfos.hlen;
+  DTYPE* d_tmp1 = d_coeffs[0];
+  DTYPE* d_tmp2 = d_tmp;
+  // First level
+  int tpb = 16; // TODO : tune for max perfs.
+  int Nc2 = Nc;
+  int Nc2_old = Nc2;
+  w_div2(&Nc2);
+  // TODO: which block strategy for the "y" dimension ?
+  dim3 n_blocks = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr, tpb), 1);
+  dim3 n_threads_per_block = dim3(tpb, tpb, 1);
+  w_kern_forward_pass1<<<n_blocks, n_threads_per_block>>>(d_image, d_coeffs[0],
+      d_coeffs[1], Nr, Nc, hlen);
+  for (int i=1; i < levels; i++) {
+    Nc2_old = Nc2;
     w_div2(&Nc2);
-    // TODO: which block strategy for the "y" dimension ?
-    dim3 n_blocks = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr, tpb), 1);
-    dim3 n_threads_per_block = dim3(tpb, tpb, 1);
-    w_kern_forward_pass1<<<n_blocks, n_threads_per_block>>>(d_image, d_coeffs[0], d_coeffs[1], Nr, Nc, hlen);
-    for (int i=1; i < levels; i++) {
-        Nc2_old = Nc2;
-        w_div2(&Nc2);
-        n_blocks = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr, tpb), 1);
-        w_kern_forward_pass1<<<n_blocks, n_threads_per_block>>>(d_tmp1, d_tmp2, d_coeffs[i+1], Nr, Nc2_old, hlen);
-        w_swap_ptr(&d_tmp1, &d_tmp2);
-    }
-    if ((levels > 1) && ((levels & 1) == 0)) cudaMemcpy(d_coeffs[0], d_tmp, Nr*Nc2*sizeof(DTYPE), cudaMemcpyDeviceToDevice);
-    return 0;
+    n_blocks = dim3(w_iDivUp(Nc2, tpb), w_iDivUp(Nr, tpb), 1);
+    w_kern_forward_pass1<<<n_blocks, n_threads_per_block>>>(d_tmp1, d_tmp2,
+        d_coeffs[i+1], Nr, Nc2_old, hlen);
+    w_swap_ptr(&d_tmp1, &d_tmp2);
+  }
+  if ((levels > 1) && ((levels & 1) == 0))
+    cudaMemcpy(d_coeffs[0], d_tmp, Nr*Nc2*sizeof(DTYPE), cudaMemcpyDeviceToDevice);
+  return 0;
 }
 
 
@@ -231,50 +255,58 @@ int w_forward_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_inf
 /// ----------------------------------------------------------------------------
 
 // must be run with grid size = (Nc, 2*Nr) ; Nr = numrows of input coefficients
-// pass 1 : (a, h, v, d)  ==> Vertical convol with IL, IH  +  vertical oversampling==> (tmp1, tmp2)
-__global__ void w_kern_inverse_pass1(DTYPE* c_a, DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, DTYPE* tmp1, DTYPE* tmp2, int Nr, int Nc, int Nr2, int hlen) {
-    int gidx = threadIdx.x + blockIdx.x*blockDim.x;
-    int gidy = threadIdx.y + blockIdx.y*blockDim.y;
-    if (gidy < Nr2 && gidx < Nc) { // vertic oversampling : Input (Nr, Nc) => Output (Nr*2, Nc)
-        int c, hL, hR;
-        int hlen2 = hlen/2; // Convolutions with even/odd indices of the kernels
-        if (hlen2 & 1) { // odd half-kernel size
-            c = hlen2/2;
-            hL = c;
-            hR = c;
-        }
-        else { // even half-kernel size : center is shifted to the RIGHT for reconstruction.
-            c = hlen2/2 - 0;
-            hL = c;
-            hR = c-1;
-            // virtual id for shift
-            // TODO : more elegant
-            gidy += 1;
-        }
-        int jy1 = c - gidy/2;
-        int jy2 = Nr - 1 - gidy/2 + c;
-        int offset_y = 1-(gidy & 1);
+// pass 1 : (a, h, v, d)  ==> Vertical convol with IL, IH  +  vertical
+// oversampling==> (tmp1, tmp2)
 
-        DTYPE res_a = 0, res_h = 0, res_v = 0, res_d = 0;
-        for (int jy = 0; jy <= hR+hL; jy++) {
-            int idx_y = gidy/2 - c + jy;
-            if (jy < jy1) idx_y += Nr;
-            if (jy > jy2) idx_y -= Nr;
-
-            res_a += c_a[idx_y*Nc + gidx] * c_kern_IL[hlen-1 - (2*jy + offset_y)];
-            res_h += c_h[idx_y*Nc + gidx] * c_kern_IH[hlen-1 - (2*jy + offset_y)];
-            res_v += c_v[idx_y*Nc + gidx] * c_kern_IL[hlen-1 - (2*jy + offset_y)];
-            res_d += c_d[idx_y*Nc + gidx] * c_kern_IH[hlen-1 - (2*jy + offset_y)];
-        }
-        if ((hlen2 & 1) == 1) {
-            tmp1[gidy * Nc + gidx] = res_a + res_h;
-            tmp2[gidy * Nc + gidx] = res_v + res_d;
-        }
-        else {
-            tmp1[(gidy-1) * Nc + gidx] = res_a + res_h;
-            tmp2[(gidy-1) * Nc + gidx] = res_v + res_d;
-         }
+__global__ void w_kern_inverse_pass1(DTYPE* c_a, DTYPE* c_h, DTYPE* c_v,
+    DTYPE* c_d, DTYPE* tmp1, DTYPE* tmp2, int Nr, int Nc, int Nr2, int hlen) {
+  int gidx = threadIdx.x + blockIdx.x*blockDim.x;
+  int gidy = threadIdx.y + blockIdx.y*blockDim.y;
+  
+  // vertic oversampling : Input (Nr, Nc) => Output (Nr*2, Nc)
+  if (gidy < Nr2 && gidx < Nc) {
+    int c, hL, hR;
+    int hlen2 = hlen/2; // Convolutions with even/odd indices of the kernels
+    // odd half-kernel size
+    if (hlen2 & 1) {
+      c = hlen2/2;
+      hL = c;
+      hR = c;
     }
+    // even half-kernel size : center is shifted to the RIGHT for
+    //reconstruction.
+    else {
+      c = hlen2/2 - 0;
+      hL = c;
+      hR = c-1;
+      // virtual id for shift
+      // TODO : more elegant
+      gidy += 1;
+    }
+    int jy1 = c - gidy/2;
+    int jy2 = Nr - 1 - gidy/2 + c;
+    int offset_y = 1-(gidy & 1);
+
+    DTYPE res_a = 0, res_h = 0, res_v = 0, res_d = 0;
+    for (int jy = 0; jy <= hR+hL; jy++) {
+      int idx_y = gidy/2 - c + jy;
+      if (jy < jy1) idx_y += Nr;
+      if (jy > jy2) idx_y -= Nr;
+
+      res_a += c_a[idx_y*Nc + gidx] * c_kern_IL[hlen-1 - (2*jy + offset_y)];
+      res_h += c_h[idx_y*Nc + gidx] * c_kern_IH[hlen-1 - (2*jy + offset_y)];
+      res_v += c_v[idx_y*Nc + gidx] * c_kern_IL[hlen-1 - (2*jy + offset_y)];
+      res_d += c_d[idx_y*Nc + gidx] * c_kern_IH[hlen-1 - (2*jy + offset_y)];
+    }
+    if ((hlen2 & 1) == 1) {
+      tmp1[gidy * Nc + gidx] = res_a + res_h;
+      tmp2[gidy * Nc + gidx] = res_v + res_d;
+    }
+    else {
+      tmp1[(gidy-1) * Nc + gidx] = res_a + res_h;
+      tmp2[(gidy-1) * Nc + gidx] = res_v + res_d;
+    }
+  }
 }
 
 // must be run with grid size = (2*Nr, 2*Nc) ; Nc = numcols of input coeffs. Here the param Nr is actually doubled wrt Nr_coeffs because of the vertical oversampling.

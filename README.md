@@ -39,7 +39,7 @@ If you want to enjoy some developer features of this project, please consider in
 sudo apt-get install doxygen graphviz cppcheck
 
 If you want to enjoy mpi related features, please consider installing the following packages (example for ubuntu):  
-sudo apt-get install libopenmpi-dev boost-dev
+sudo apt-get install libopenmpi-dev libopenmpi-dev
 
 If you want to enjoy cuda related features, you need the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit), and of course a NVIDIA GPU.
 
