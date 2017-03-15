@@ -3,20 +3,22 @@ cmake_minimum_required(VERSION 3.5)
 project(PDCWT)
 set(PROJECT_NAME PDCWT)
 
-#Destination
+#Default build destination
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(DOC_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
+#Explicit make install destination
 if (INSTALLDIR)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${INSTALL_DIR}/bin)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${INSTALL_DIR}/lib)
-  set(DOC_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
+  set(RUNTIME_OUTPUT_DIRECTORY ${INSTALL_DIR}/bin)
+  set(LIBRARY_OUTPUT_DIRECTORY ${INSTALL_DIR}/lib)
 else ()
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-  set(DOC_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
+  set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+  set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 endif ()
 
 #cmake ref
 set(PRJ_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PRJ_CMAKE_DIR})
+list(APPEND CMAKE_MODULE_PATH ${PRJ_CMAKE_DIR})
 
 #local ref
 set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -25,16 +27,16 @@ set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #  Generic Compilation options  #
 #################################
 
-#Compiler must support c++11
-ADD_DEFINITIONS(${CMAKE_CXX_FLAGS} "-std=c++14")
+#Compiler must support c++14
+add_definitions(${CMAKE_CXX_FLAGS} "-std=c++14")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   if (UNIX)
-    ADD_DEFINITIONS (${CMAKE_CXX_FLAGS} "-Wall -O0 -ggdb")
+    add_definitions (${CMAKE_CXX_FLAGS} "-Wall -O0 -ggdb")
   endif ()
 else ()
   if (UNIX)
-    ADD_DEFINITIONS (${CMAKE_CXX_FLAGS} "-O3 -mtune=native -march=native")
+    add_definitions (${CMAKE_CXX_FLAGS} "-O3 -mtune=native -march=native")
   endif ()
 endif ()
 

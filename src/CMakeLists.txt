@@ -46,10 +46,10 @@ set(headers
 ################
 
 if (CUDA_FOUND)
-  cuda_add_library(${OUTPUT_NAME} SHARED ${sources} ${headers})
+  cuda_add_library(${OUTPUT_NAME} SHARED ${sources})
   CUDA_ADD_CUBLAS_TO_TARGET(${OUTPUT_NAME})
 else ()
-  add_library(${OUTPUT_NAME} SHARED ${sources} ${headers})
+  add_library(${OUTPUT_NAME} SHARED ${sources})
 endif ()
 target_link_libraries(${OUTPUT_NAME}
   ${cuda_deps}
@@ -58,5 +58,5 @@ target_link_libraries(${OUTPUT_NAME}
 set_property(TARGET ${OUTPUT_NAME}
   PROPERTY OUTPUT_NAME ${output_name})
 install(TARGETS ${OUTPUT_NAME}
-  LIBRARY DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+  LIBRARY DESTINATION ${LIBRARY_OUTPUT_DIRECTORY}
 )
