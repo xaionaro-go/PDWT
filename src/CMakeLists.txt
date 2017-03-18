@@ -12,13 +12,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ###############
 if (CUDA_FOUND AND USE_CUDA)
   set(sources_cuda
-    Cuda/common.cu
-    Cuda/constant.cu
-    Cuda/haar.cu
-    Cuda/nonseparable.cu
-    Cuda/separable.cu
-    Cuda/utils.cu
-    Cuda/wt.cu
+    #cuda/common.cu
+    cuda/constant.cu
+    #cuda/haar.cu
+    #cuda/nonseparable.cu
+    #cuda/separable.cu
+    #cuda/utils.cu
+    #cuda/wt.cu
   )
   set(headers_cuda
   )
@@ -32,6 +32,7 @@ endif ()
 ###############
 set(sources
   filters.cpp
+  coeffContainer.cpp
   # cuda source files
   ${sources_cuda}
 )

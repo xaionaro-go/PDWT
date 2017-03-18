@@ -8,22 +8,7 @@
 #include "common.h"
 #include "wt.h"
 #include "separable.h"
-#include "nonseparable.h"
 #include "haar.h"
-
-#  define CUDACHECK \
-  { cudaThreadSynchronize(); \
-    cudaError_t last = cudaGetLastError();\
-    if(last!=cudaSuccess) {\
-      printf("ERRORX: %s  %s  %i \n", cudaGetErrorString( last),    __FILE__, __LINE__    );    \
-      exit(1);\
-    }\
-  }
-
-
-// FIXME: temp. workaround
-#define MAX_FILTER_WIDTH 40
-
 
 
 /// ****************************************************************************
