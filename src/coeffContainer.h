@@ -14,8 +14,8 @@
 template<typename T, class SubContainerT>
 class CoeffContainer {
  public:
-  /// Defaulted Constructor
-  CoeffContainer()=default;
+  /// Deleted Constructor
+  CoeffContainer()=delete;
 
   /// Defaulted Destructor
   virtual ~CoeffContainer()=default;
@@ -117,6 +117,22 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
 
  protected:
   static const std::size_t m_dimensions=3;
+};
+
+/** \class CoeffContainerCpx
+ * \brief Implementation of the CoeffContainer interface for storing complex
+ * wavelet transform, for the generic case (arbitrary dimension)
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class SubContainerT>
+class CoeffContainerCpx : public CoeffContainer<T,SubContainerT> {
+ public:
+  /// Deleted Constructor
+  CoeffContainerCpx()=delete;
+
+  /// Defaulted Destructor
+  virtual ~CoeffContainerCpx()=default;
 };
 
 #endif /* COEFFCONTAINER_H */
