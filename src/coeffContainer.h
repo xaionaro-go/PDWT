@@ -30,7 +30,7 @@ class CoeffContainer {
    *
    * \return void 
    */
-  virtual void Initialize(std::list<size_t> shape, size_t level,
+  virtual void Initialize(std::list<std::size_t> shape, std::size_t level,
       T value = 0);
 
 protected:
@@ -38,16 +38,16 @@ protected:
   SubContainerT m_coeff;
   
   /// The initial image shape
-  std::list<size_t> m_shape;
+  std::list<std::size_t> m_shape;
 
   /// Scale depth of the wavelet decomposition
-  size_t m_level;
+  std::size_t m_level;
 
   /// Shape of each level of coefficients
-  std::list<std::list<size_t>> m_scaleShape;
+  std::list<std::list<std::size_t>> m_scaleShape;
 
   /// Size of each level of coefficients
-  std::list<size_t> m_scaleSize;
+  std::list<std::size_t> m_scaleSize;
  };
 
 /** \class CoeffContainer1D
@@ -66,10 +66,10 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainer1D()=default;
 
   /// Return the dimensionality of the container
-  virtual size_t GetNbDimension() const override { return m_dimensions; };
+  virtual std::size_t GetNbDimension() const override { return m_dimensions; };
 
  protected:
-  static const size_t m_NbDimension;
+  static const std::size_t m_dimensions=1;
 };
 
 /** \class CoeffContainer2D
@@ -88,10 +88,10 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainer2D()=default;
 
   /// Return the dimensionality of the container
-  virtual size_t GetNbDimension() const override { return m_dimensions; };
+  virtual std::size_t GetNbDimension() const override { return m_dimensions; };
 
  protected:
-  static const size_t m_dimensions=2;
+  static const std::size_t m_dimensions=2;
 };
 
 /** \class CoeffContainer3D
@@ -110,10 +110,10 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainer3D()=default;
  
   /// Return the dimensionality of the container 
-  virtual size_t  GetNbDimension() const override { return m_dimension; };
+  virtual std::size_t GetNbDimension() const override { return m_dimensions; };
 
  protected:
-  static const size_t m_dimensions=3;
+  static const std::size_t m_dimensions=3;
 };
 
-#endif COEFFCONTAINER_H
+#endif /* COEFFCONTAINER_H */

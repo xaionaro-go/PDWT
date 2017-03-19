@@ -13,7 +13,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(sources
   demo.cpp
-  io.cpp
+#  io.cpp
 )
 
 set(headers

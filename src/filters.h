@@ -22,6 +22,12 @@ TODO TN: a specialiser et supprimer
 #endif*/
 
 
+// STL
+#include <string>
+
+// Local
+#include "vectorization.h"
+
 /** \struct GenericFilter
  * \brief Generic interface that should be implemented by filters. It has been
  * designed to provide various metaprogramming helper in order to setup
@@ -37,7 +43,7 @@ TODO TN: a specialiser et supprimer
 template<typename T, int TAP_SIZE_LEFT, int TAP_SIZE_RIGHT>
 struct GenericFilter {
   /// Defaulted constructor
-  Filter()=default;
+  GenericFilter()=default;
 
   /// Typedef for scalar main type
   using ScalarType=T;
@@ -77,16 +83,30 @@ struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
   static const T Buf[Filter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>::TapSize];
 };
 
-struct wfilter {
-  char wname[16];
-  int hlen;
-  DTYPE* f_l; // Forward lowpass
-  DTYPE* f_h;  // Forward highpass
-  DTYPE* i_l; // Inverse lowpass
-  DTYPE* i_h; // Inverse highpass
+/** \struct wFilter
+ * \brief A group of filters that defines a full forward and backward filtering
+ * process
+ *
+ * \author Pierre Paleo and Thibault Notargiacomo
+ */
+template<class ForwardLowT, class ForwardHighT, class InverseLowT,
+  class InverseHighT>
+struct wFilter {
+  /// A small string that defines the wavelet system name
+  std::string wname;
+  
+  /// Forward lowpass filter
+  ForwardLowT f_l;
+  
+  /// Forward highpasas filter
+  ForwardHighT f_h;    
+  
+  /// Inverse lowpass filter
+  InverseLowT i_l; 
+  
+  /// Inverse highpass filter
+  InverseHighT i_h;
 };
-
-wfilter all_filters[72];
 
 /*
 DB2_L[4];

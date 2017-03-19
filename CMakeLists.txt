@@ -27,8 +27,10 @@ set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #  Generic Compilation options  #
 #################################
 
-#Compiler must support c++14
-add_definitions(${CMAKE_CXX_FLAGS} "-std=c++14")
+#Compiler must support c++11
+if (UNIX)
+  add_definitions(${CMAKE_CXX_FLAGS} "-std=c++11")
+endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   if (UNIX)
