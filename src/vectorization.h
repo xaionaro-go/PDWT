@@ -205,4 +205,4 @@ template<typename T>
 using PackAllocator =
   boost::alignment::aligned_allocator<T,sizeof(PackType<T>)>;
 
-#endif /* VECTORIZATION_H_ */
+#endif /* VECTORIZATION_H */
