@@ -1,9 +1,6 @@
 #ifndef VECTORIZATION_H
 #define VECTORIZATION_H
 
-// STL
-#include <vector>
-
 // Boost
 #include <boost/align/aligned_allocator.hpp>
 

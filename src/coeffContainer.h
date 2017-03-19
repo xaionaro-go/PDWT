@@ -33,7 +33,10 @@ class CoeffContainer {
   virtual void Initialize(std::list<std::size_t> shape, std::size_t level,
       T value = 0);
 
-protected:
+  /// Return the dimensionality of the container
+  virtual std::size_t GetNbDimension() const = 0;
+
+ protected:
   /// The pyramid containing Various stage of the DT
   SubContainerT m_coeff;
   
