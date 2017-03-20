@@ -1,61 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <cuda.h>
-#include <cublas.h>
-#include <cuComplex.h>
-
-//~ #include "utils.h"
-#include "common.h"
+// Local
 #include "wt.h"
+
+// STL
+#include <iostream>
+
+// Local
 #include "separable.h"
-#include "haar.h"
 
-
-/// ****************************************************************************
-/// ******************** Wavelets class ****************************************
-/// ****************************************************************************
-
-
-/// Constructor : copy assignment
-// do not use !
-/*
-Wavelets& Wavelets::operator=(const Wavelets &rhs) {
-  if (this != &rhs) { // protect against invalid self-assignment
-    // allocate new memory and copy the elements
-    size_t sz = rhs.Nr * rhs.Nc * sizeof(DTYPE);
-    DTYPE* new_image, *new_tmp;
-    DTYPE** new_coeffs;
-    cudaMalloc(&new_image, sz);
-    cudaMemcpy(new_image, rhs.d_image, sz, cudaMemcpyDeviceToDevice);
-
-    new_coeffs =  w_create_coeffs_buffer(rhs.Nr, rhs.Nc, rhs.nlevels, rhs.do_swt);
-    if (ndim == 2) w_copy_coeffs_buffer(new_coeffs, rhs.d_coeffs, rhs.Nr, rhs.Nc, rhs.nlevels, rhs.do_swt);
-    else  w_copy_coeffs_buffer_1d(new_coeffs, rhs.d_coeffs, rhs.Nr, rhs.Nc, rhs.nlevels, rhs.do_swt);
-
-    cudaMalloc(&new_tmp, sz);
-    cudaMemcpy(new_tmp, rhs.d_tmp, 2*sz, cudaMemcpyDeviceToDevice); // Two temp. images
-
-    // deallocate old memory
-    cudaFree(d_image);
-    w_free_coeffs_buffer(d_coeffs, nlevels);
-    cudaFree(d_tmp);
-    // assign the new memory to the object
-    d_image = new_image;
-    d_coeffs = new_coeffs;
-    d_tmp = new_tmp;
-    Nr = rhs.Nr;
-    Nc = rhs.Nc;
-    strncpy(wname, rhs.wname, 128);
-    nlevels = rhs.nlevels;
-    do_cycle_spinning = rhs.do_cycle_spinning;
-    current_shift_r = rhs.current_shift_r;
-    current_shift_c = rhs.current_shift_c;
-    do_swt = rhs.do_swt;
-    do_separable = rhs.do_separable;
-  }
-  return *this;
-}
-*/
 
 
 

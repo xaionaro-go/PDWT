@@ -40,45 +40,18 @@ enum class w_state {
 template<typename T>
 class Wavelets {
  public:
-  /// Image (input or result of reconstruction), on device
-  T* m_image;
-  /// Wavelet coefficients, on device
-  std::unique_ptr<CoeffContainerT> m_coeffs;
-  /// Temporary device array (to avoid multiple malloc/free)
-  //T* d_tmp;
-  
-  /// Current shift for the cycle spinning process
-  std::list<int> m_currentShift;
-  
-  /// Wavelet name
-  std::string m_name;
-  /** If cycle spinning is enabled, use image shifting for translation
-   * invariant denoising
-   */
-  bool m_doCycleSpinning;  // Do image shifting for approximate TI denoising
+  /// Defaulted constructor
+  Wavelets()=default;
+  /// Constructor : Wavelets from image
+  Wavelets(T* img, int Nr, int Nc, const char* wname, int levels,
+      int memisonhost=1, bool do_cycle_spinning=false, int do_swt=0,
+      int ndim=2); 
+  /// Copy constructor
+  Wavelets(const Wavelets &W);
+  /// Default destructor
+  virtual ~Wavelets();
 
-  w_info winfos;
-  w_state state;
-
-
-  // Operations
-  // -----------
-  // Default constructor
-  Wavelets();
-  // Constructor : Wavelets from image
-  Wavelets(T* img, int Nr, int Nc, const char* wname, int levels, int memisonhost=1, int do_separable=1, int do_cycle_spinning=0, int do_swt=0, int ndim=2);
-  // Constructor: copy
-  Wavelets(const Wavelets &W);// Pass by non-const reference ONLY if the function will modify the parameter and it is the intent to change the caller's copy of the data
-  // Constructor : Wavelets from coeffs
-  //~ Wavelets(T** d_thecoeffs, int Nr, int Nc, const char* wname, int levels, int do_cycle_spinning);
-  // Destructor
-  ~Wavelets();
-  // Assignment (copy assignment constructor)
-  // do not use !
-  // Wavelets& operator=(const Wavelets &rhs);
-
-  // Methods
-  // -------
+  /// Forward wavelet tranform
   void forward();
   void soft_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
   void hard_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
@@ -97,6 +70,31 @@ class Wavelets {
   int set_filters_inverse(T* filter1, T* filter2, T* filter3 = NULL, T* filter4 = NULL);
 
   int add_wavelet(Wavelets W, T alpha=1.0f);
+public:
+  /// Image (input or result of reconstruction), on device
+  T* m_image;
+  /// Wavelet coefficients, on device
+  std::unique_ptr<CoeffContainerT> m_coeffs;
+  /// Temporary device array (to avoid multiple malloc/free)
+  //T* d_tmp;
+  
+  /// Current shift for the cycle spinning process
+  std::list<int> m_currentShift;
+  
+  /// Wavelet name
+  std::string m_name;
+  /** If cycle spinning is enabled, use image shifting for translation
+   * invariant denoising
+   */
+  bool m_doCycleSpinning;
+
+  /// Informations about the wavelet tranform
+  w_info winfos;
+
+  /// Current state of the wavelet tranform
+  w_state state;
+
+
 };
 
 
