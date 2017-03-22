@@ -53,50 +53,64 @@ class Wavelets {
 
   /// Forward wavelet tranform
   void forward();
-  void soft_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
-  void hard_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
-  void shrink(T beta, int do_thresh_appcoeffs = 1);
-  void proj_linf(T beta, int do_thresh_appcoeffs = 1);
-  void circshift(int sr, int sc, int inplace = 1);
+  /// Backward wavelet transform: transpose of the forward transpose
+  void backward();
+  /// Inverse of the wavelet tranform
   void inverse();
-  T norm2sq();
-  T norm1();
-  int get_image(T* img);
-  void print_informations();
-  int get_coeff(T* coeff, int num);
-  void set_image(T* img, int mem_is_on_device = 0);
-  void set_coeff(T* coeff, int num, int mem_is_on_device = 0);
-  int set_filters_forward(char* filtername, uint len, T* filter1, T* filter2, T* filter3 = NULL, T* filter4 = NULL);
-  int set_filters_inverse(T* filter1, T* filter2, T* filter3 = NULL, T* filter4 = NULL);
+ 
+  /// Soft thresholding: proximity operator for L1 norm
+  //void soft_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
+  /// Hard thresholding: best k-term approximation for wavelets 
+  //void hard_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
+  /// Wavelet shrinkage
+  //void shrink(T beta, int do_thresh_appcoeffs = 1);
+  /// Projection on the \f$ l-\infty \f$ ball
+  //void proj_linf(T beta, int do_thresh_appcoeffs = 1);
+  /// Circular shift
+  //void circshift(int sr, int sc, int inplace = 1);
+  
 
-  int add_wavelet(Wavelets W, T alpha=1.0f);
-public:
+  /// Compute the \f$ l-2 \f$ norm of the vector of coefficients
+  //T norm2sq();
+  /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
+  //T norm1();
+  /// Get image pointer
+  int get_image(T* img);
+  /// Print wavelet transform informations
+  void print_informations();
+  /// Return a pointer to wavelet coefficients
+  int get_coeff(T* coeff, int num);
+  /// Set input image to be transformed in the wavelet domain
+  void set_image(T* img, int mem_is_on_device = 0);
+  /// Set coefficients to be reconstructed into an image
+  void set_coeff(T* coeff, int num, int mem_is_on_device = 0);
+  /// set filter for forward transform
+  //int set_filters_forward(char* filtername, uint len, T* filter1, T* filter2,
+  //    T* filter3 = NULL, T* filter4 = NULL);
+  /// set filters for inverse transform
+  //int set_filters_inverse(T* filter1, T* filter2, T* filter3 = NULL,
+  //    T* filter4 = NULL);
+  /// Add wavelet
+  //int add_wavelet(Wavelets W, T alpha=1.0f);
+
+ public:
   /// Image (input or result of reconstruction), on device
   T* m_image;
   /// Wavelet coefficients, on device
   std::unique_ptr<CoeffContainerT> m_coeffs;
-  /// Temporary device array (to avoid multiple malloc/free)
-  //T* d_tmp;
-  
   /// Current shift for the cycle spinning process
   std::list<int> m_currentShift;
-  
   /// Wavelet name
   std::string m_name;
   /** If cycle spinning is enabled, use image shifting for translation
    * invariant denoising
    */
   bool m_doCycleSpinning;
-
   /// Informations about the wavelet tranform
   w_info winfos;
-
   /// Current state of the wavelet tranform
   w_state state;
-
-
 };
 
 
 #endif
-

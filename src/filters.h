@@ -74,13 +74,14 @@ struct GenericFilter {
  *
  * \author Thibault Notargiacomo
  */
-template<typename T, int TAP_SIZE_LEFT, int TAP_SIZE_RIGHT>
+template<typename T, int TAP_SIZE_LEFT, int TAP_SIZE_RIGHT,
+  typename FilterEnum, FilterEnum FilterVal>
 struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
   /// Defaulted constructor
   Filter()=default;
   
   /// Actual storage for the filter
-  static const T Buf[Filter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>::TapSize];
+  static constexpr T Buf[Filter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>::TapSize];
 };
 
 /** \struct wFilter
@@ -96,16 +97,105 @@ struct wFilter {
   std::string wname;
   
   /// Forward lowpass filter
-  ForwardLowT f_l;
-  
+  using f_l = ForwardLowT;
   /// Forward highpasas filter
-  ForwardHighT f_h;    
-  
+  using f_h = ForwardHighT;    
   /// Inverse lowpass filter
-  InverseLowT i_l; 
-  
+  using i_l = InverseLowT; 
   /// Inverse highpass filter
-  InverseHighT i_h;
+  using i_h = InverseHighT;
+};
+
+/** \struct cwFilter
+ * \brief A group of filters that defines a full forward and backward complex
+ * wavelet filter process
+ *
+ * \author Thibault Notargiacomo
+ */
+template<class ForwardLowStage0RealT,
+         class ForwardLowStage0ImagT,
+         class ForwardHighStage0RealT,
+         class ForwardHighStage0ImagT,
+         class ForwardLowStageNRealT,
+         class ForwardLowStageNImagT,
+         class ForwardHighStageNRealT,
+         class ForwardHighStageNImagT,
+         class InverseLowStage0RealT,
+         class InverseLowStage0ImagT,
+         class InverseHighStage0RealT,
+         class InverseHighStage0ImagT,
+         class InverseLowStageNRealT,
+         class InverseLowStageNImagT,
+         class InverseHighStageNRealT,
+         class InverseHighStageNImagT>
+struct wFilter {
+  /// A small string that defines the wavelet system name
+  std::string wname;
+  
+  /// Forward lowpass filter stage 0 real part
+  using f_l0r = ForwardLowStage0RealT;
+  /// Forward lowpass filter stage 0 imaginary part
+  using f_l0i = ForwardLowStage0ImagT;
+  /// Forward highpass filter stage 0 real part
+  using f_h0r = ForwardHighStage0RealT;
+  /// Forward highpass filter stage 0 imaginary part
+  using f_h0i = ForwardHighStage0ImagT;
+  /// Forward lowpass filter stage n real part
+  using f_lnr = ForwardLowStageNRealT;
+  /// Forward lowpass filter stage n imaginary part
+  using f_lni = ForwardLowStageNImagT;
+  /// Forward highpass filter stage n real part
+  using f_hnr = ForwardHighStageNRealT;
+  /// Forward highpass filter stage n imaginary part
+  using f_hni = ForwardHighStageNImagT;
+  /// Inverse lowpass filter stage 0 real part
+  using i_l0r = InverseLowStage0RealT;
+  /// Inverse lowpass filter stage 0 imaginary part
+  using i_l0i = InverseLowStage0ImagT;
+  /// Inverse highpass filter stage 0 real part
+  using i_h0r = InverseHighStage0RealT;
+  /// Inverse highpass filter stage 0 imaginary part
+  using i_h0i = InverseHighStage0ImagT;
+  /// Inverse lowpass filter stage n real part
+  using i_lnr = InverseLowStageNRealT;
+  /// Inverse lowpass filter stage n imaginary part
+  using i_lni = InverseLowStageNImagT;
+  /// Inverse highpass filter stage n real part
+  using i_hnr = InverseHighStageNRealT;
+  /// Inverse highpass filter stage n imaginary part
+  using i_hni = InverseHighStageNImagT;
+};
+
+enum class filterDB {
+  DB2_L,
+  DB2_H,
+  DB2_I_L,
+  DB2_I_H,
+};
+
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,1,2,filterDB,filterDB::DB2_L> {
+  static constexpr T Buff[4] = { -0.12940952255092145, 0.22414386804185735,
+    0.836516303737469, 0.48296291314469025 };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,1,2,filterDB,filterDB::DB2_H> {
+  static constexpr T Buff[4] = { -0.48296291314469025, 0.836516303737469,
+    -0.22414386804185735, -0.12940952255092145 };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,1,filterDB,filterDB::DB2_I_L> {
+  static constexpr T Buff[4] = { 0.48296291314469025, 0.836516303737469,
+    0.22414386804185735, -0.12940952255092145 };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> {
+  static constexpr T Buff[4] = { -0.12940952255092145, -0.22414386804185735,
+    0.836516303737469, -0.48296291314469025 };
 };
 
 /*
