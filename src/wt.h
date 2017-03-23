@@ -37,7 +37,7 @@ enum class w_state {
  *
  * \author Pierre Paleo
  */
-template<typename T>
+template<typename T, class CoeffContainerT>
 class Wavelets {
  public:
   /// Defaulted constructor

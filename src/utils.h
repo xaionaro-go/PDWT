@@ -1,31 +1,62 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "filters.h"
+// STL
+#include <type_traits>
 
 
+/** \struct w_info
+ * \brief Description of the workload
+ *
+ * \author Pierre Paleo
+ */
 struct w_info {
-    // Number of dimensions. For now only 2D and (batched) 1D are supported
-    int ndims;
-    // Number of rows and columns of the image (for 1D : Nr = 1)
-    int Nr;
-    int Nc;
-    // Wavelet transform related informations
-    int nlevels;            // Number of decomposition levels
-    int do_swt;             // Do Stationary (Undecimated) Wavelet Transform
-    int hlen;               // "Filter" length
+  /// Number of dimensions. For now only 2D and (batched) 1D are supported
+  int ndims;
+  /// Number of rows of the image (for 1D : Nr = 1)
+  int Nr;
+  /// Number of rows of the image (for 1D : Nr = 1)
+  int Nc;
+  /// Number of decomposition levels
+  int nlevels;
+  /// Do Stationary (Undecimated) Wavelet Transform
+  int do_swt;              
+  /// "Filter" length
+  int hlen;
 };
 
-int w_iDivUp(int a, int b);
+template<typename T, typename U>
+constexpr auto w_iDivUp(T a, U b) {
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  static_assert(std::is_integral<U>::value, "Integer required.");
+  return (a % b != 0) ? (a / b + 1) : (a / b);
+}
 
-int w_ipow2(int a);
+template<typename T>
+constexpr auto w_ipow2(T a) {
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  return 1 << a;
+}
 
-int w_ilog2(int i);
+template<typename T>
+constexpr auto w_ilog2(T i) {
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  int l = 0;
+  while (i >>= 1) {
+    ++l;
+  }
+  return l;
+}
 
-void w_div2(int* N);
 
-void w_swap_ptr(DTYPE** a, DTYPE** b);
+/// When the size is odd, allocate one extra element before subsampling
+template<typename T>
+void w_div2(T* N) {
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  if ((*N) & 1)
+    *N = ((*N)+1)/2;
+  else
+    *N = (*N)/2;
+}
 
 #endif
