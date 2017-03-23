@@ -80,8 +80,9 @@ struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
   /// Defaulted constructor
   Filter()=default;
   
-  /// Actual storage for the filter
-  static constexpr T Buf[Filter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>::TapSize];
+  // Actual storage for the filter
+  static constexpr T Buf[GenericFilter<
+    T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>::TapSize]={0};
 };
 
 /** \struct wFilter
@@ -92,7 +93,7 @@ struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
  */
 template<class ForwardLowT, class ForwardHighT, class InverseLowT,
   class InverseHighT>
-struct wFilter {
+struct cwFilter {
   /// A small string that defines the wavelet system name
   std::string wname;
   

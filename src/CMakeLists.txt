@@ -34,6 +34,7 @@ endif ()
 set(sources
   filters.cpp
   coeffContainer.cpp
+  #wt.cpp
   # cuda source files
   ${sources_cuda}
 )
