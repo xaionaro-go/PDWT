@@ -5,25 +5,6 @@
 #include <type_traits>
 
 
-/** \struct w_info
- * \brief Description of the workload
- *
- * \author Pierre Paleo
- */
-struct w_info {
-  /// Number of dimensions. For now only 2D and (batched) 1D are supported
-  int ndims;
-  /// Number of rows of the image (for 1D : Nr = 1)
-  int Nr;
-  /// Number of rows of the image (for 1D : Nr = 1)
-  int Nc;
-  /// Number of decomposition levels
-  int nlevels;
-  /// Do Stationary (Undecimated) Wavelet Transform
-  int do_swt;              
-  /// "Filter" length
-  int hlen;
-};
 
 template<typename T, typename U>
 constexpr auto w_iDivUp(T a, U b) {

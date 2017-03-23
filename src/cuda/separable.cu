@@ -1,4 +1,4 @@
-#include "separable.h"
+#include "separable.cu.h"
 #include "common.h"
 
 

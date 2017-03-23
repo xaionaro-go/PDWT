@@ -1,33 +1,73 @@
 #ifndef SEPARABLE_H
 #define SEPARABLE_H
-#include "utils.h"
 
-int w_compute_filters_separable(const char* wname, int do_swt);
-int w_set_filters_forward(DTYPE* filter1, DTYPE* filter2, uint len);
-int w_set_filters_inverse(DTYPE* filter1, DTYPE* filter2, uint len);
+// STL
 
+// Local
+#include "filters.h"
+#include "wt.h"
 
-__global__ void w_kern_forward_pass1(DTYPE* img, DTYPE* tmp_a1, DTYPE* tmp_a2, int Nr, int Nc, int hlen);
-__global__ void w_kern_forward_pass2(DTYPE* tmp_a1, DTYPE* tmp_a2, DTYPE* c_a, DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, int Nr, int Nc, int hlen);
-int w_forward_separable(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
-int w_forward_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
+/** \class SeparableSubsampledConvolutionEngine
+ * \brief Code for the separable subsample convolution
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class FilterT>
+class SeparableSubsampledConvolutionEngine {
+ public:
+  /// Defaulted constructor
+  SeparableSubsampledConvolutionEngine()=default;
+  /// Default destructor
+  virtual ~Wavelets()=default;
 
-__global__ void w_kern_inverse_pass1(DTYPE* c_a, DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, DTYPE* tmp1, DTYPE* tmp2, int Nr, int Nc, int Nr2, int hlen);
-__global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int Nc2, int hlen);
-int w_inverse_separable(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
-int w_inverse_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
+  /// The main method : perform Subsampled convolution on one row
+  static int PerformSubsampledFilteringR(const T* image,
+    T* out, w_info info) const {
+ /* int gidx = threadIdx.x + blockIdx.x*blockDim.x;
+  int gidy = threadIdx.y + blockIdx.y*blockDim.y;
+  int Nc_is_odd = (Nc & 1);
+  int Nc2 = (Nc + Nc_is_odd)/2;
 
-__global__ void w_kern_forward_swt_pass1(DTYPE* img, DTYPE* tmp_a1, DTYPE* tmp_a2, int Nr, int Nc, int hlen, int level);
-__global__ void w_kern_forward_swt_pass2(DTYPE* tmp_a1, DTYPE* tmp_a2, DTYPE* c_a, DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, int Nr, int Nc, int hlen, int level);
-int w_forward_swt_separable(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
-int w_forward_swt_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
+  // horiz subsampling : Input (Nr, Nc) => Output (Nr, Nc/2)
+  if (gidy < Nr && gidx < Nc2) {
+    int c, hL, hR;
+    // odd kernel size
+    if (hlen & 1) {
+      c = hlen/2;
+      hL = c;
+      hR = c;
+    }
+    else { // even kernel size : center is shifted to the left
+      c = hlen/2 - 1;
+      hL = c;
+      hR = c+1;
+    }
+    DTYPE res_tmp_a1 = 0, res_tmp_a2 = 0;
+    DTYPE img_val;
 
-__global__ void w_kern_inverse_swt_pass1(DTYPE* c_a, DTYPE* c_h, DTYPE* c_v, DTYPE* c_d, DTYPE* tmp1, DTYPE* tmp2, int Nr, int Nc, int hlen, int level);
-__global__ void w_kern_inverse_swt_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int hlen, int level);
-int w_inverse_swt_separable(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
-int w_inverse_swt_separable_1d(DTYPE* d_image, DTYPE** d_coeffs, DTYPE* d_tmp, w_info winfos);
+    // Convolution with periodic boundaries extension.
+    for (int jx = 0; jx <= hR+hL; jx++) {
+      int idx_x = gidx*2 - c + jx;
+      // if N is odd, image is virtually extended
+      if (idx_x < 0) idx_x += (Nc + Nc_is_odd);
+      // no "else if", since idx_x can be > N-1  after being incremented
+      if (idx_x > Nc-1) {
+        // if N is odd, repeat the right-most element
+        if ((idx_x == Nc) && (Nc_is_odd))
+          idx_x--;
+        // if N is odd, image is virtually extended
+        else
+          idx_x -= (Nc + Nc_is_odd);
+      }
+      img_val = img[gidy*Nc + idx_x];
+      res_tmp_a1 += img_val * c_kern_L[hlen-1 - jx];
+      res_tmp_a2 += img_val * c_kern_H[hlen-1 - jx];
+    }
+    tmp_a1[gidy* Nc2 + gidx] = res_tmp_a1;
+    tmp_a2[gidy* Nc2 + gidx] = res_tmp_a2;
+ */
+    return 0;
+  }
+};
 
-
-
-#endif
-
+#endif //SEPARABLE_H

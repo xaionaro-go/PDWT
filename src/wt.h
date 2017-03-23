@@ -7,6 +7,28 @@
 
 // Local
 
+/** \struct w_info
+ * \brief Description of the workload
+ *
+ * \author Pierre Paleo
+ */
+struct w_info {
+  /// Number of dimensions. For now only 2D and (batched) 1D are supported
+  int ndims;
+  /// Number of rows of the image (for 1D : Nr = 1)
+  int Nr;
+  /// Number of columns in the image
+  int Nc;
+  /// Number of slices in the image (3D)
+  int Ns;
+  /// Number of decomposition levels
+  int nlevels;
+  /// Do Stationary (Undecimated) Wavelet Transform
+  int do_swt;              
+  /// "Filter" length, deprecated in the compile time engine
+  int hlen;
+};
+
 /**
  * Possible states of the Wavelet class.
  * It prevents, for example, W.inverse() from being run twice
@@ -37,7 +59,7 @@ enum class w_state {
  *
  * \author Pierre Paleo
  */
-template<typename T, class CoeffContainerT>
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
 class Wavelets {
  public:
   /// Defaulted constructor
