@@ -1,9 +1,10 @@
-#ifndef WT_H
-#define WT_H
+#ifndef WAVELET_H
+#define WAVELET_H
 
 // STL
-#include <string>
 #include <list>
+#include <memory>
+#include <string>
 
 // Local
 
@@ -13,20 +14,12 @@
  * \author Pierre Paleo
  */
 struct w_info {
-  /// Number of dimensions. For now only 2D and (batched) 1D are supported
-  int ndims;
-  /// Number of rows of the image (for 1D : Nr = 1)
-  int Nr;
   /// Number of columns in the image
   int Nc;
+  /// Number of rows of the image (2D)
+  int Nr;
   /// Number of slices in the image (3D)
   int Ns;
-  /// Number of decomposition levels
-  int nlevels;
-  /// Do Stationary (Undecimated) Wavelet Transform
-  int do_swt;              
-  /// "Filter" length, deprecated in the compile time engine
-  int hlen;
 };
 
 /**
@@ -43,7 +36,7 @@ enum class w_state {
   W_INVERSE,
   /// The coefficients have been modified
   W_THRESHOLD,
-  /// Error when creating the Wavelets instance
+  /// Error when creating the Wavelet instance
   W_CREATION_ERROR,
   /// Error when computing the forward transform
   W_FORWARD_ERROR,
@@ -53,32 +46,34 @@ enum class w_state {
   W_THRESHOLD_ERROR
 };
 
-/** \class Wavelets
+/** \class Wavelet
  * \brief The wavelet class manage the lifecycle of the wavelet transform
  * coefficients.
  *
  * \author Pierre Paleo
  */
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
-class Wavelets {
+class Wavelet {
  public:
-  /// Defaulted constructor
-  Wavelets()=default;
-  /// Constructor : Wavelets from image
-  Wavelets(T* img, int Nr, int Nc, const char* wname, int levels,
-      int memisonhost=1, bool do_cycle_spinning=false, int do_swt=0,
-      int ndim=2); 
+  /// Constructor with zero initialization
+  Wavelet();
+  /// Constructor : Wavelet from image
+  Wavelet(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
+    const std::string& wname, int level); 
   /// Copy constructor
-  Wavelets(const Wavelets &W);
+  Wavelet(const Wavelet& w)=delete;
   /// Default destructor
-  virtual ~Wavelets();
+  virtual ~Wavelet()=default;
+  
+  /// Print wavelet transform informations
+  virtual void print_informations();
 
   /// Forward wavelet tranform
-  void forward();
+  virtual int forward();
   /// Backward wavelet transform: transpose of the forward transpose
-  void backward();
+  virtual int backward();
   /// Inverse of the wavelet tranform
-  void inverse();
+  virtual int inverse();
  
   /// Soft thresholding: proximity operator for L1 norm
   //void soft_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
@@ -97,15 +92,13 @@ class Wavelets {
   /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
   //T norm1();
   /// Get image pointer
-  int get_image(T* img);
-  /// Print wavelet transform informations
-  void print_informations();
-  /// Return a pointer to wavelet coefficients
-  int get_coeff(T* coeff, int num);
+  virtual T* get_image(T* img);
+    /// Return a pointer to wavelet coefficients
+  virtual T* get_coeff();
   /// Set input image to be transformed in the wavelet domain
-  void set_image(T* img, int mem_is_on_device = 0);
+  int virtual set_image(T* img);
   /// Set coefficients to be reconstructed into an image
-  void set_coeff(T* coeff, int num, int mem_is_on_device = 0);
+  int virtual set_coeff(T* coeff);
   /// set filter for forward transform
   //int set_filters_forward(char* filtername, uint len, T* filter1, T* filter2,
   //    T* filter3 = NULL, T* filter4 = NULL);
@@ -113,26 +106,28 @@ class Wavelets {
   //int set_filters_inverse(T* filter1, T* filter2, T* filter3 = NULL,
   //    T* filter4 = NULL);
   /// Add wavelet
-  //int add_wavelet(Wavelets W, T alpha=1.0f);
+  //int add_wavelet(Wavelet W, T alpha=1.0f);
 
  public:
   /// Image (input or result of reconstruction), on device
   T* m_image;
   /// Wavelet coefficients, on device
-  std::unique_ptr<CoeffContainerT> m_coeffs;
-  /// Current shift for the cycle spinning process
-  std::list<int> m_currentShift;
-  /// Wavelet name
-  std::string m_name;
+  std::unique_ptr<CoeffContainerT> m_coeff;
   /** If cycle spinning is enabled, use image shifting for translation
    * invariant denoising
    */
   bool m_doCycleSpinning;
+  /// Current shift for the cycle spinning process
+  std::list<int> m_currentShift;
+  /// Wavelet name
+  std::string m_name;
   /// Informations about the wavelet tranform
-  w_info winfos;
+  w_info m_info;
   /// Current state of the wavelet tranform
-  w_state state;
+  w_state m_state;
+  /// Number of level od dyadic decomposition
+  int m_level;
 };
 
 
-#endif
+#endif //WAVELET_H

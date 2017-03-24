@@ -1,25 +1,57 @@
 // Local
-#include "wt.h"
+#include "Wavelet.h"
 
 // STL
 #include <iostream>
 
 // Local
-#include "separable.h"
 
 
-/// Constructor : default
-Wavelets::Wavelets(void) : d_image(NULL), d_coeffs(NULL), do_cycle_spinning(0), d_tmp(NULL), current_shift_r(0), current_shift_c(0), do_separable(1)
-{
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+Wavelet<T,CoeffContainerT,WaveletSchemeT>::Wavelet() :
+    m_image{nullptr}, m_coeff{nullptr}, m_doCycleSpinning{false},
+    m_currentShift{}, m_name{}, m_info{0}, m_state{w_state::W_INIT} {}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+Wavelet<T,CoeffContainerT,WaveletSchemeT>::Wavelet(
+    T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
+    const std::string& wname, int level) :
+    Wavelet() {
+  m_image = img;
+  m_info.Nc = Nc;
+  m_info.Nr = Nr;
+  m_info.Ns = Ns;
+  m_doCycleSpinning = doCycleSpinning;
+  m_name = wname;
+  m_level = level;
 }
 
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+void Wavelet<T,CoeffContainerT,WaveletSchemeT>::print_informations() {
 
-/// Constructor :  Wavelets from image
-Wavelets::Wavelets(
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+int Wavelet<T,CoeffContainerT,WaveletSchemeT>::forward() {
+ return 1;
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+int Wavelet<T,CoeffContainerT,WaveletSchemeT>::backward() {
+  return 1;
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+int Wavelet<T,CoeffContainerT,WaveletSchemeT>::inverse() {
+  return 1;
+}
+
+/*template<typename T, class CoeffContainerT, class WaveletSchemeT>
+Wavelets<T,CoeffContainerT,waveletSchemeT>::Wavelets::Wavelets(
     T* img,
     int Nr,
     int Nc,
-    const char* wname,
+     wname,
     int levels,
     int memisonhost,
     int do_separable,
@@ -531,7 +563,7 @@ int Wavelets::set_filters_inverse(T* filter1, T* filter2, T* filter3, T* filter4
 /// ----------------------------------------------------------------------------
 
 
-/**
+ **
  * \brief In-place addition of wavelets coefficients
  *
  *  For a given instance "Wav" of the class Wavelets, it performs
@@ -542,7 +574,7 @@ int Wavelets::set_filters_inverse(T* filter1, T* filter2, T* filter3, T* filter4
  * \param W : Wavelets class instance
  * \return 0 if no error
  *
- */
+ *
 int Wavelets::add_wavelet(Wavelets W, T alpha) {
 
     // Various checks
@@ -577,16 +609,4 @@ int Wavelets::add_wavelet(Wavelets W, T alpha) {
     else w_add_coeffs(d_coeffs, W.d_coeffs, winfos, alpha);
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
+*/

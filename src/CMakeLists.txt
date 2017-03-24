@@ -33,12 +33,19 @@ endif ()
 set(sources
   filters.cpp
   coeffContainer.cpp
-  #wt.cpp
+  Wavelet.cpp
+  Wavelet1D.cpp
+  Wavelet2D.cpp
+  Wavelet3D.cpp
   # cuda source files
   ${sources_cuda}
 )
 
 set(headers
+  Wavelet.h
+  Wavelet1D.h
+  Wavelet2D.h
+  Wavelet3D.h
   # cuda header files
   ${headers_cuda}
 )

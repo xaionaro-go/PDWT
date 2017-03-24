@@ -5,7 +5,6 @@
 
 // Local
 #include "filters.h"
-#include "wt.h"
 
 /** \class SeparableSubsampledConvolutionEngine
  * \brief Code for the separable subsample convolution
@@ -18,11 +17,11 @@ class SeparableSubsampledConvolutionEngine {
   /// Defaulted constructor
   SeparableSubsampledConvolutionEngine()=default;
   /// Default destructor
-  virtual ~Wavelets()=default;
+  virtual ~SeparableSubsampledConvolutionEngine()=default;
 
   /// The main method : perform Subsampled convolution on one row
   static int PerformSubsampledFilteringR(const T* image,
-    T* out, w_info info) const {
+    T* out, w_info info) {
  /* int gidx = threadIdx.x + blockIdx.x*blockDim.x;
   int gidy = threadIdx.y + blockIdx.y*blockDim.y;
   int Nc_is_odd = (Nc & 1);
