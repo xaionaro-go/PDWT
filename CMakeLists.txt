@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(PDCWT)
-set(PROJECT_NAME PDCWT)
+project(PDWT)
+set(PROJECT_NAME PDWT)
 
 #Default build destination
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -27,19 +27,11 @@ set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #  Generic Compilation options  #
 #################################
 
-#Compiler must support c++11
+#Compiler must support c++14
 if (UNIX)
-  add_definitions(${CMAKE_CXX_FLAGS} "-std=c++11")
-endif ()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  if (UNIX)
-    add_definitions (${CMAKE_CXX_FLAGS} "-Wall -O0 -ggdb")
-  endif ()
-else ()
-  if (UNIX)
-    add_definitions (${CMAKE_CXX_FLAGS} "-O3 -mtune=native -march=native")
-  endif ()
+  add_definitions(${CMAKE_CXX_FLAGS} "-std=c++14")
+  add_definitions(${CMAKE_CXX_FLAGS_DEBUG} "-Wall -O0 -ggdb")
+  add_definitions(${CMAKE_CXX_FLAGS_RELEASE} "-O3 -mtune=native -march=native")
 endif ()
 
 ##############################
