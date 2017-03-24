@@ -1,6 +1,6 @@
 my_project:
   script:
-    - cd apps/my_project
+    - echo "SIGNATURE" > SIGNATURE.TXT
     - mkdir build
     - cd build
     - cmake ..  
