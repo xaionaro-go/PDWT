@@ -1,4 +1,5 @@
 ## Parallel DWT
+[![build status](https://gitlab.com/gnthibault/PDWT/badges/NewArch/build.svg)](https://gitlab.com/gnthibault/PDWT/commits/NewArch)
 
 PDWT is a parallel implementation of the Discrete Wavelet Transform (DWT).
 This implementation in CUDA targets Nvidia GPUs.
