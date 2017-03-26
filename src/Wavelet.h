@@ -93,13 +93,14 @@ class Wavelet {
   /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
   //T norm1();
   /// Get image pointer
-  virtual T* get_image(T* img);
+  virtual T* get_image();
     /// Return a pointer to wavelet coefficients
-  virtual T* get_coeff();
+  virtual CoeffContainerT& get_coeff();
   /// Set input image to be transformed in the wavelet domain
   int virtual set_image(T* img);
   /// Set coefficients to be reconstructed into an image
-  int virtual set_coeff(T* coeff);
+  int virtual set_coeff(CoeffContainerT* coeff);
+
   /// set filter for forward transform
   //int set_filters_forward(char* filtername, uint len, T* filter1, T* filter2,
   //    T* filter3 = NULL, T* filter4 = NULL);

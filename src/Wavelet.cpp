@@ -32,6 +32,29 @@ void Wavelet<T,CoeffContainerT,WaveletSchemeT>::print_informations() {
 }
 
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
+T* Wavelet<T,CoeffContainerT,WaveletSchemeT>:: get_image() {
+  return m_image;
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+CoeffContainerT& Wavelet<T,CoeffContainerT,WaveletSchemeT>::get_coeff() {
+  return *m_coeff;
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+int Wavelet<T,CoeffContainerT,WaveletSchemeT>:: set_image(T* img) {
+  m_image=img;
+  return 1;
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
+int Wavelet<T,CoeffContainerT,WaveletSchemeT>::set_coeff(
+    CoeffContainerT* coeff) {
+  m_coeff.reset(coeff);
+  return 1;
+}
+
+template<typename T, class CoeffContainerT, class WaveletSchemeT>
 int Wavelet<T,CoeffContainerT,WaveletSchemeT>::forward() {
  return 1;
 }
