@@ -2,6 +2,7 @@
 #include "Wavelet1D.h"
 
 // Local
+#include "filters.h"
 #include "separable.h"
 
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
@@ -33,3 +34,6 @@ int Wavelet1D<T,CoeffContainerT,WaveletSchemeT>::inverse() {
   return 1;
 }
 
+// Instanciation
+template<> Wavelet1D<float,PackedContainer1D<float>,Daub2<float>>;
+template<> Wavelet1D<double,PackedContainer1D<double>,Daub2<double>>;

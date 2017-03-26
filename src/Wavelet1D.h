@@ -4,6 +4,14 @@
 // Local
 #include "Wavelet.h"
 
+// Local
+#include "coeffContainer.h"
+#include "vectorization.h"
+
+template<typename T>
+using PackedContainer1D<T> =
+  CoeffContainer1D<T,std::vector<T,PackAllocator<T>>>;
+
 /** \class Wavelet1D
  * \brief Inheritance of Wavelet class for the 1 dimensional case
  *

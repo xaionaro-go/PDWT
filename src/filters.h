@@ -93,7 +93,7 @@ struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
  */
 template<class ForwardLowT, class ForwardHighT, class InverseLowT,
   class InverseHighT>
-struct cwFilter {
+struct wFilter {
   /// A small string that defines the wavelet system name
   std::string wname;
   
@@ -129,7 +129,7 @@ template<class ForwardLowStage0RealT,
          class InverseLowStageNImagT,
          class InverseHighStageNRealT,
          class InverseHighStageNImagT>
-struct wFilter {
+struct cwFilter {
   /// A small string that defines the wavelet system name
   std::string wname;
   
@@ -198,6 +198,14 @@ struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> {
   static constexpr T Buff[4] = { -0.12940952255092145, -0.22414386804185735,
     0.836516303737469, -0.48296291314469025 };
 };
+
+/// The Daubechies2 wavelet system
+template<typename T>
+using Daub2<T> = wFilter<Filter<T,1,2,filterDB,filterDB::DB2_L>,
+    Filter<T,1,2,filterDB,filterDB::DB2_H>,
+    Filter<T,2,1,filterDB,filterDB::DB2_I_L>,
+    Filter<T,2,1,filterDB,filterDB::DB2_I_H>>;
+
 
 /*
 DB2_L[4];

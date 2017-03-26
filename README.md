@@ -13,15 +13,12 @@ For example, the easy interface and thresholding functions make it interesting f
 * 1D and 2D transform and their inverses, multi-levels, arbitrary sizes
 * Support of batched 1D transform
 * Separable and non-separable transforms
-* DWT and SWT, both in separable/nonseparable mode
+* DWT, SWT, and CWT in separable mode
 * 72 available separable wavelets
 * Custom wavelets can be defined
 * Thresholding and norms utilities
 * Random shift utility for translation-invariant denoising
 * Simple interface (see examples)
-* [Python binding available](https://github.com/pierrepaleo/pypwt)
-* Results compatible with Matlab wavelet toolbox / Python pywt
-* Library can be compiled to work on single (float32) or double (float64) precision.
 
 All the transforms are computed with the **periodic boundary extension** (the dimensions are halved at each scale, except for SWT).
 
@@ -49,7 +46,7 @@ If you want to enjoy cuda related features, you need the [NVIDIA CUDA Toolkit](h
 How to build ?
 cd PDWT
 mkdir build; cd build  
-cmake -DINSTALLDIR=/path-to-install-dir -DUSE_MPI=ON -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DTHRUST_BACKEND:STRING=CUDA ..  
+cmake -DINSTALLDIR=/path-to-install-dir -DUSE_MPI=ON -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DTHRUST_BACKEND:STRING=CUDA ..  
 make -j8 install
 
 ## How to test

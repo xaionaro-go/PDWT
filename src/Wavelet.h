@@ -8,6 +8,7 @@
 
 // Local
 
+
 /** \struct w_info
  * \brief Description of the workload
  *

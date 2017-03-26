@@ -158,6 +158,8 @@ GENERATE_CPPCHECK(SOURCEDIRS src app test
 #  Adding various code directories  #
 #####################################
 
+add_subdirectory(app)
+add_subdirectory(binding)
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(app)
+

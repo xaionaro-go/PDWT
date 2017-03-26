@@ -10,7 +10,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ###############
 #  Src files  #
 ###############
-
 set(sources
   demo.cpp
 #  io.cpp
@@ -22,13 +21,11 @@ set(headers
 ####################
 #  Lib Dependancy  #
 ####################
-
-include_directories( "${PRJ_ROOT_DIR}/src" )
+include_directories("${PRJ_ROOT_DIR}/src")
 
 ################
 #  Executable  #
 ################
-
 cuda_add_executable(${OUTPUT_NAME} ${sources})
 target_link_libraries(${OUTPUT_NAME}
   pdwt
