@@ -21,7 +21,7 @@ Wavelet1D<T,CoeffContainerT,WaveletSchemeT>:: Wavelet1D(
 
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
 int Wavelet1D<T,CoeffContainerT,WaveletSchemeT>::forward() {
- return 1;
+  return 1;
 }
 
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
@@ -35,5 +35,5 @@ int Wavelet1D<T,CoeffContainerT,WaveletSchemeT>::inverse() {
 }
 
 // Instanciation
-template<> Wavelet1D<float,PackedContainer1D<float>,Daub2<float>>;
-template<> Wavelet1D<double,PackedContainer1D<double>,Daub2<double>>;
+template class Wavelet1D<float,PackedContainer1D<float>,Daub2<float>>;
+template class Wavelet1D<double,PackedContainer1D<double>,Daub2<double>>;

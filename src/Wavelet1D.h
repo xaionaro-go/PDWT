@@ -4,12 +4,15 @@
 // Local
 #include "Wavelet.h"
 
+// STL
+#include <vector>
+
 // Local
 #include "coeffContainer.h"
 #include "vectorization.h"
 
 template<typename T>
-using PackedContainer1D<T> =
+using PackedContainer1D =
   CoeffContainer1D<T,std::vector<T,PackAllocator<T>>>;
 
 /** \class Wavelet1D

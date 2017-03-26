@@ -201,7 +201,7 @@ struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> {
 
 /// The Daubechies2 wavelet system
 template<typename T>
-using Daub2<T> = wFilter<Filter<T,1,2,filterDB,filterDB::DB2_L>,
+using Daub2 = wFilter<Filter<T,1,2,filterDB,filterDB::DB2_L>,
     Filter<T,1,2,filterDB,filterDB::DB2_H>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_L>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_H>>;
