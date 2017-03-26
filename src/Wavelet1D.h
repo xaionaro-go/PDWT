@@ -9,6 +9,7 @@
 
 // Local
 #include "coeffContainer.h"
+#include "filters.h"
 #include "vectorization.h"
 
 template<typename T>
@@ -39,6 +40,21 @@ class Wavelet1D : Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual int backward();
   /// Inverse of the wavelet tranform
   virtual int inverse();
+};
+
+
+// Aliasing ugly types into more simple ones
+template<typename T>
+using Daub2_1D = Wavelet1D<T,PackedContainer1D<T>,Daub2<T>>;
+
+/** \struct All1DWavelet
+ * \brief Utility struct that allow to instanciate all 1D wavelets at once
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T>
+struct DB1DWt {
+ Daub2_1D<T> daub2_1D;
 };
 
 #endif //WAVELET1D_H
