@@ -31,6 +31,31 @@ All the transforms are computed with the **periodic boundary extension** (the di
 
 ## Installation
 
+# Cloning this repository
+
+The header only pybind11 module is included as a submodule of this repository. This requires some attention when cloning this project. There are two options:
+
+*   The simplest option is:
+
+    ```bash
+    git clone --recursive https://github.com/gnthibault/PDWT.git
+    ```
+
+    This will download the submodule up to the version that is used in this project. To update to the latest commit of the submodule itself:
+
+    ```bash
+    git submodule update --remote
+    ```
+
+*   One could also directly download the submodule from the source:
+
+    ```bash
+    git clone https://github.com/gnthibault/PDWT.git
+    cd ./binding/python/pybind11/
+    git submodule init
+    git submodule update
+    ```
+
 ### Dependencies
 
 If you want to enjoy some developer features of this project, please consider installing the following packages (example for ubuntu):  
