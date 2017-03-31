@@ -1,8 +1,11 @@
 #ifndef COEFFCONTAINER_H
 #define COEFFCONTAINER_H
 
-//STL
+// STL
 #include <list>
+
+// Local
+
 
 /** \class CoeffContainer
  * \brief Generic interface that should be implemented by wavelet coefficient

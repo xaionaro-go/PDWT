@@ -30,7 +30,7 @@ set(headers
 ####################
 include_directories("${PRJ_ROOT_DIR}/src")
 
-##############################
-#  Equivalent of add_lirary  #
-##############################
+###############################
+#  Equivalent of add_library  #
+###############################
 pybind11_add_module(${OUTPUT_NAME} ${sources})

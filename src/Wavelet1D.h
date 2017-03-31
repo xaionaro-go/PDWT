@@ -12,9 +12,6 @@
 #include "filters.h"
 #include "vectorization.h"
 
-template<typename T>
-using PackedContainer1D =
-  CoeffContainer1D<T,std::vector<T,PackAllocator<T>>>;
 
 /** \class Wavelet1D
  * \brief Inheritance of Wavelet class for the 1 dimensional case
@@ -42,6 +39,16 @@ class Wavelet1D : Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual int inverse();
 };
 
+/// Convenient type alias
+template<typename T>
+using PackedContainer1D =
+  CoeffContainer1D<T,std::vector<T,PackAllocator<T>>>;
+template<typename T>
+using PackedContainer2D =
+  CoeffContainer2D<T,std::vector<T,PackAllocator<T>>>;
+template<typename T>
+using PackedContainer3D =
+  CoeffContainer3D<T,std::vector<T,PackAllocator<T>>>;
 
 // Aliasing ugly types into more simple ones
 template<typename T>
