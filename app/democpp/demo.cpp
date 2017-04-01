@@ -14,8 +14,9 @@ int main(int argc, char **argv) {
   std::iota(in.begin(), in.end(),0);
 
   CoeffContainer1D<float,std::vector<float,PackAllocator<float>>> a;
+  //DB1DWt<float> b;
   // Define wavelet tranform
-  //Daub2_1D<float> w(
+  //Daub2_1D<float> w; //(
   //  in.data(),in.size(),1,1,false,"Daub2",3);
   //w.forward();
   //w.backward();
