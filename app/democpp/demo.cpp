@@ -13,10 +13,11 @@ int main(int argc, char **argv) {
   std::vector<float> in(10);
   std::iota(in.begin(), in.end(),0);
 
+  CoeffContainer1D<float,std::vector<float,PackAllocator<float>>> a;
   // Define wavelet tranform
-  Daub2_1D<float> w(
-    in.data(),in.size(),1,1,false,"Daub2",3);
-  w.forward();
-  w.backward();
+  //Daub2_1D<float> w(
+  //  in.data(),in.size(),1,1,false,"Daub2",3);
+  //w.forward();
+  //w.backward();
   return EXIT_SUCCESS;
 }

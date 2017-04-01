@@ -17,8 +17,8 @@
 template<typename T, class SubContainerT>
 class CoeffContainer {
  public:
-  /// Deleted Constructor
-  CoeffContainer()=delete;
+  /// Defaulted Constructor
+  CoeffContainer()=default;
 
   /// Defaulted Destructor
   virtual ~CoeffContainer()=default;
@@ -34,7 +34,7 @@ class CoeffContainer {
    * \return void 
    */
   virtual void Initialize(std::list<std::size_t> shape, std::size_t level,
-      T value = 0);
+    T value = 0) {}
 
   /// Return the dimensionality of the container
   virtual std::size_t GetNbDimension() const = 0;
