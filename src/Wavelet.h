@@ -2,6 +2,7 @@
 #define WAVELET_H
 
 // STL
+#include <iostream>
 #include <list>
 #include <memory>
 #include <string>
@@ -57,24 +58,42 @@ template<typename T, class CoeffContainerT, class WaveletSchemeT>
 class Wavelet {
  public:
   /// Constructor with zero initialization
-  Wavelet();
+  Wavelet() : m_image{nullptr}, m_coeff{nullptr}, m_doCycleSpinning{false},
+    m_currentShift{}, m_name{}, m_info{0}, m_state{w_state::W_INIT} {}
+
   /// Constructor : Wavelet from image
   Wavelet(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
-    const std::string& wname, int level); 
-  /// Copy constructor
-  Wavelet(const Wavelet& w)=delete;
+      const std::string& wname, int level) : Wavelet() {
+    m_image = img;
+    m_info.Nc = Nc;
+    m_info.Nr = Nr;
+    m_info.Ns = Ns;
+    m_doCycleSpinning = doCycleSpinning;
+    m_name = wname;
+    m_level = level;
+  }
+  /// Copy constructor deleted because of unique_ptr
+  Wavelet(const Wavelet& w)=delete; 
   /// Default destructor
   virtual ~Wavelet()=default;
   
   /// Print wavelet transform informations
-  virtual void print_informations();
+  virtual void print_informations() {
+    std::cout<<"Informations"<<std::endl;
+  }
 
   /// Forward wavelet tranform
-  virtual int forward();
+  virtual int forward() {
+    return 1;
+  }
   /// Backward wavelet transform: transpose of the forward transpose
-  virtual int backward();
+  virtual int backward() {
+    return 1;
+  }
   /// Inverse of the wavelet tranform
-  virtual int inverse();
+  virtual int inverse() {
+    return 1;
+  }
  
   /// Soft thresholding: proximity operator for L1 norm
   //void soft_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
@@ -93,14 +112,24 @@ class Wavelet {
   /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
   //T norm1();
   /// Get image pointer
-  virtual T* get_image();
-    /// Return a pointer to wavelet coefficients
-  virtual CoeffContainerT& get_coeff();
+  virtual T* get_image() {
+    return m_image;
+  }
+  /// Return a pointer to wavelet coefficients
+  virtual CoeffContainerT& get_coeff() {
+    return *m_coeff;
+  }
   /// Set input image to be transformed in the wavelet domain
-  int virtual set_image(T* img);
+  int virtual set_image(T* img) {
+    m_image=img;
+    return 0;
+  }
   /// Set coefficients to be reconstructed into an image
-  int virtual set_coeff(CoeffContainerT* coeff);
-
+  int virtual set_coeff(CoeffContainerT* coeff) {
+    m_coeff.reset(coeff);
+    return 1;
+  }
+  
   /// set filter for forward transform
   //int set_filters_forward(char* filtername, uint len, T* filter1, T* filter2,
   //    T* filter3 = NULL, T* filter4 = NULL);

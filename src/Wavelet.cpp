@@ -6,69 +6,6 @@
 
 // Local
 
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-Wavelet<T,CoeffContainerT,WaveletSchemeT>::Wavelet() :
-    m_image{nullptr}, m_coeff{nullptr}, m_doCycleSpinning{false},
-    m_currentShift{}, m_name{}, m_info{0}, m_state{w_state::W_INIT} {}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-Wavelet<T,CoeffContainerT,WaveletSchemeT>::Wavelet(
-    T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
-    const std::string& wname, int level) :
-    Wavelet() {
-  m_image = img;
-  m_info.Nc = Nc;
-  m_info.Nr = Nr;
-  m_info.Ns = Ns;
-  m_doCycleSpinning = doCycleSpinning;
-  m_name = wname;
-  m_level = level;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-void Wavelet<T,CoeffContainerT,WaveletSchemeT>::print_informations() {
-
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-T* Wavelet<T,CoeffContainerT,WaveletSchemeT>:: get_image() {
-  return m_image;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-CoeffContainerT& Wavelet<T,CoeffContainerT,WaveletSchemeT>::get_coeff() {
-  return *m_coeff;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-int Wavelet<T,CoeffContainerT,WaveletSchemeT>:: set_image(T* img) {
-  m_image=img;
-  return 1;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-int Wavelet<T,CoeffContainerT,WaveletSchemeT>::set_coeff(
-    CoeffContainerT* coeff) {
-  m_coeff.reset(coeff);
-  return 1;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-int Wavelet<T,CoeffContainerT,WaveletSchemeT>::forward() {
- return 1;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-int Wavelet<T,CoeffContainerT,WaveletSchemeT>::backward() {
-  return 1;
-}
-
-template<typename T, class CoeffContainerT, class WaveletSchemeT>
-int Wavelet<T,CoeffContainerT,WaveletSchemeT>::inverse() {
-  return 1;
-}
-
 /*template<typename T, class CoeffContainerT, class WaveletSchemeT>
 Wavelets<T,CoeffContainerT,waveletSchemeT>::Wavelets::Wavelets(
     T* img,

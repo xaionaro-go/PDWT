@@ -22,21 +22,29 @@ template<typename T, class CoeffContainerT, class WaveletSchemeT>
 class Wavelet1D : Wavelet<T,CoeffContainerT, WaveletSchemeT> {
  public:
   /// Constructor with zero initialization
-  Wavelet1D();
+  Wavelet1D() {
+  
+  }
   /// Constructor : Wavelet from image
   Wavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
-    const std::string& wname, int level);
-  /// Copy constructor
-  Wavelet1D(const Wavelet1D& w)=delete;
+    const std::string& wname, int level) {
+
+  }
   /// Default destructor
   virtual ~Wavelet1D()=default;
 
   /// Forward wavelet tranform
-  virtual int forward();
+  virtual int forward() {
+    return 1;
+  }
   /// Backward wavelet transform: transpose of the forward transpose
-  virtual int backward();
+  virtual int backward() {
+    return 1;
+  }
   /// Inverse of the wavelet tranform
-  virtual int inverse();
+  virtual int inverse() {
+    return 1;
+  }
 };
 
 /// Convenient type alias
