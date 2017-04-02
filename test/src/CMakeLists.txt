@@ -19,7 +19,7 @@ endif ()
 ##############
 #  Unit test #
 ##############
-add_test(NAME Daub2_1D COMMAND Daub21D)
+add_test(NAME Daub2_1D COMMAND Daub2_1D)
 
 if (CUDA_FOUND AND USE_CUDA)
 #  add_test(NAME cudalibtest1 COMMAND cudalibtest1)

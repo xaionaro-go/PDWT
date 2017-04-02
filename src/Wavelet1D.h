@@ -27,7 +27,8 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
   /// Constructor : Wavelet from image
   Wavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
-    const std::string& wname, int level) {
+      const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
+      WaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
 
   }
   /// Default destructor

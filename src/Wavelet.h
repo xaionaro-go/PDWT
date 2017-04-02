@@ -17,11 +17,11 @@
  */
 struct w_info {
   /// Number of columns in the image
-  int Nc;
+  int Nx;
   /// Number of rows of the image (2D)
-  int Nr;
+  int Ny;
   /// Number of slices in the image (3D)
-  int Ns;
+  int Nz;
 };
 
 /**
@@ -62,12 +62,12 @@ class Wavelet {
     m_currentShift{}, m_name{}, m_info{0}, m_state{w_state::W_INIT} {}
 
   /// Constructor : Wavelet from image
-  Wavelet(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
+  Wavelet(T* img, int Nx, int Ny, int Nz, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet() {
     m_image = img;
-    m_info.Nc = Nc;
-    m_info.Nr = Nr;
-    m_info.Ns = Ns;
+    m_info.Nx = Nx;
+    m_info.Ny = Ny;
+    m_info.Nz = Nz;
     m_doCycleSpinning = doCycleSpinning;
     m_name = wname;
     m_level = level;
@@ -113,7 +113,7 @@ class Wavelet {
   //T norm1();
   /// Get image pointer
   virtual void get_image(T* img) {
-    std::copy(m_image,m_image+m_info.Nc*m_info.Nr+m_info.Ns,img);
+    std::copy(m_image,m_image+m_info.Nx*m_info.Ny*m_info.Nz,img);
   }
   /// Return a reference to wavelet coefficients
   virtual CoeffContainerT& get_coeff() {
@@ -139,7 +139,7 @@ class Wavelet {
   /// Add wavelet
   //int add_wavelet(Wavelet W, T alpha=1.0f);
 
- public:
+ private:
   /// Image (input or result of reconstruction), on device
   T* m_image;
   /// Wavelet coefficients, on device
@@ -159,6 +159,5 @@ class Wavelet {
   /// Number of level od dyadic decomposition
   int m_level;
 };
-
 
 #endif //WAVELET_H
