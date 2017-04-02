@@ -20,12 +20,11 @@ class SeparableSubsampledConvolutionEngine {
   virtual ~SeparableSubsampledConvolutionEngine()=default;
 
   /// The main method : perform Subsampled convolution on one row
-  static int PerformSubsampledFilteringC(const T* in,
-      T* out, w_info info) {
+  static int PerformSubsampledFilteringXRef(const T* in,
+      T* out, int Nx) {
     
-    int Nc=w_info.Nc; 
-    int Nc_is_odd = (Nc & 1);
-    int NxOut = (Nc + Nc_is_odd)/2;
+    int Nx_is_odd = (Nx & 1);
+    int NxOut = (Nx + Nx_is_odd)/2;
 
     // Loop over output image
     for (int ox=0; ox<NxOut; ox++) {
@@ -34,15 +33,15 @@ class SeparableSubsampledConvolutionEngine {
       for (int fx=-FilterT::TapSizeLeft; fx<FilterT::TapSizeRight; fx++) {
         int ix = ox*2 + fx;
         // if N is odd, image is virtually extended
-        if (ix < 0) ix += (Nc + Nc_is_odd);
+        if (ix < 0) ix += (Nx + Nx_is_odd);
         // no "else if", since idx_x can be > N-1  after being incremented
-        if (ix > Nc-1) {
+        if (ix > Nx-1) {
           // if N is odd, repeat the right-most element
-          if ((ix == Nc) && (Nc_is_odd))
+          if ((ix == Nx) && (Nx_is_odd))
             ix--;
           // if N is odd, image is virtually extended
           else
-            ix -= (Nc + Nc_is_odd);
+            ix -= (Nx + Nx_is_odd);
         }
         acc += in[ix] * FilterT::Buf[fx];
       }
