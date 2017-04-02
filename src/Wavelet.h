@@ -112,10 +112,10 @@ class Wavelet {
   /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
   //T norm1();
   /// Get image pointer
-  virtual T* get_image() {
-    return m_image;
+  virtual void get_image(T* img) {
+    std::copy(m_image,m_image+m_info.Nc*m_info.Nr+m_info.Ns,img);
   }
-  /// Return a pointer to wavelet coefficients
+  /// Return a reference to wavelet coefficients
   virtual CoeffContainerT& get_coeff() {
     return *m_coeff;
   }
