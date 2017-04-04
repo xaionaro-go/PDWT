@@ -10,6 +10,7 @@
 // Local
 #include "coeffContainer.h"
 #include "filters.h"
+#include "separable.h"
 #include "vectorization.h"
 
 
@@ -36,6 +37,20 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 
   /// Forward wavelet tranform
   virtual int forward() {
+    int Nx=this->m_info.Nx;
+    T* in = this->m_image;
+    for (int l=0; l<this->m_level; l++) {
+      //#pragma omp parallel for
+      SeparableSubsampledConvolutionEngine<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+        >::PerformSubsampledFilteringXRef(
+          in, Nx,
+          this->m_coeff->GetLowPtr(l),
+          this->m_coeff->GetHighPtr(l));
+       //Update lowpass input
+       in=this->m_coeff->GetLowPtr(l);
+    }
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transpose

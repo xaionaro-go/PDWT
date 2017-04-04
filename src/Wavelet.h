@@ -139,7 +139,7 @@ class Wavelet {
   /// Add wavelet
   //int add_wavelet(Wavelet W, T alpha=1.0f);
 
- private:
+ protected:
   /// Image (input or result of reconstruction), on device
   T* m_image;
   /// Wavelet coefficients, on device
