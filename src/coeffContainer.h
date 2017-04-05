@@ -2,7 +2,9 @@
 #define COEFFCONTAINER_H
 
 // STL
-#include <list>
+#include <algorithm>
+#include <functional>
+#include <vector>
 
 // Local
 
@@ -20,6 +22,11 @@ class CoeffContainer {
   /// Defaulted Constructor
   CoeffContainer()=default;
 
+  /// Allocating constructor
+  CoeffContainer(std::vector<size_t> size, int nlevel) {
+    Initialize(size, nlevel);
+  }
+
   /// Defaulted Destructor
   virtual ~CoeffContainer()=default;
 
@@ -33,27 +40,68 @@ class CoeffContainer {
    *
    * \return void 
    */
-  virtual void Initialize(std::list<std::size_t> shape, std::size_t level,
-    T value = 0) {}
+  virtual void Initialize(std::vector<std::size_t> shape, std::size_t nlevel,
+      T value = 0) {
+    m_level = nlevel;
+    std::vector<std::size_t> curShape{shape};
+    auto sb = curShape.begin();
+    auto se = curShape.end();
+    auto divider = [](size_t in) {return in/2;};
+
+    for (size_t i=0; i<=m_level; i++) {
+      m_scaleSize.emplace_back(std::accumulate(
+        sb,se,1u, std::multiplies<size_t>()));
+      m_scaleShape.emplace_back(curShape);
+      std::transform(sb,se,sb,divider);
+    }
+    // Allocate memory
+    m_coeff.resize(m_scaleSize.front());
+  }
 
   /// Return the dimensionality of the container
   virtual std::size_t GetNbDimension() const = 0;
+
+  /// Returns a pointer to the Low frequency subspace for the given scale
+  T* GetLowSubspacePtr(size_t scale, size_t band=0) {
+    // Band offset, accounts for redundancy
+	size_t bandOffset = band*m_scaleSize.at(0);
+	// For each band, we have (2^d)-1 high frequency subband + 1 low frequency
+    // We decided to put the low frequency at the end in our layout
+	size_t nbHighFreqSubband = std::pow(2,GetNbDimension())-1;
+	size_t scaleOffset = nbHighFreqSubband*std::accumulate(
+      m_scaleSize.begin()+1, m_scaleSize.begin()+scale+2,
+      0u, std::plus<size_t>());
+	return m_coeff.data()+bandOffset+scaleOffset;
+  }
+
+  /// Return a pointer to the High frequency subspace for the given level
+  T* GetHighSubspacePtr(size_t scale, size_t subband, size_t band=0) {
+	// Band offset, accounts for redundancy
+	size_t bandOffset = band*m_scaleSize.at(0);
+	// For each band, we have (2^d)-1 high frequency subband + 1 low frequency
+    // We decided to put the low frequency at the end in our layout
+	size_t nbHighFreqSubband = std::pow(2,GetNbDimension())-1;
+	size_t scaleOffset = nbHighFreqSubband*std::accumulate(
+      m_scaleSize.begin()+1, m_scaleSize.begin()+scale+1,
+      0u, std::plus<size_t>());
+	// subband index accounts for filtering combination, ie ranges from 0 to
+    // (2^d)-2
+	size_t subbandOffset = subband*m_scaleSize.at(scale+1);
+	return  m_coeff.data()+bandOffset+scaleOffset+subbandOffset;
+  }
 
  protected:
   /// The pyramid containing Various stage of the DT
   SubContainerT m_coeff;
   
-  /// The initial image shape
-  std::list<std::size_t> m_shape;
-
   /// Scale depth of the wavelet decomposition
   std::size_t m_level;
 
   /// Shape of each level of coefficients
-  std::list<std::list<std::size_t>> m_scaleShape;
+  std::vector<std::vector<std::size_t>> m_scaleShape;
 
   /// Size of each level of coefficients
-  std::list<std::size_t> m_scaleSize;
+  std::vector<std::size_t> m_scaleSize;
  };
 
 /** \class CoeffContainer1D
@@ -67,6 +115,10 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
  public:
   /// Defaulted Constructor
   CoeffContainer1D()=default;
+
+  /// Allocating constructor
+  CoeffContainer1D(std::vector<size_t> size, int nlevel) :
+    CoeffContainer<T,SubContainerT>(size,nlevel) {}
 
   /// Defaulted Destructor
   virtual ~CoeffContainer1D()=default;

@@ -23,14 +23,15 @@ template<typename T, class CoeffContainerT, class WaveletSchemeT>
 class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
  public:
   /// Constructor with zero initialization
-  Wavelet1D() {
+  Wavelet1D()=default;
   
-  }
   /// Constructor : Wavelet from image
   Wavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
       WaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
-
+    size_t size = Nc*Nc*Nr;
+    this->m_coeff=std::make_unique<CoeffContainerT>(
+      std::vector<size_t>{size}, level);
   }
   /// Default destructor
   virtual ~Wavelet1D()=default;
@@ -46,10 +47,10 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           typename WaveletSchemeT::f_h
         >::PerformSubsampledFilteringXRef(
           in, Nx,
-          this->m_coeff->GetLowPtr(l),
-          this->m_coeff->GetHighPtr(l));
+          this->m_coeff->GetLowSubspacePtr(l),
+          this->m_coeff->GetHighSubspacePtr(l,0));
        //Update lowpass input
-       in=this->m_coeff->GetLowPtr(l);
+       in=this->m_coeff->GetLowSubspacePtr(l);
     }
     return 1;
   }
