@@ -20,7 +20,7 @@ template<class Filt>
 struct Updater<Filt> {
   template<typename I, typename M, typename O>
   static void update(I idx, M mult, O out) {
-    *out+=mult*Filt::Buf[idx+Filt::TapSizeLeft];
+    *out+=mult*Filt::Buff[idx+Filt::TapSizeLeft];
   }
 };
 
@@ -28,6 +28,8 @@ struct Updater<Filt> {
  * \brief Code for the separable subsample convolution. This class is a
  * variadic template class, because it can handle multiple filtering for each
  * main loop, assuming the filters have the same size
+ *
+ * TODO TN: perf issue: you should use temporary for accumulation
  *
  * \author Thibault Notargiacomo
  */

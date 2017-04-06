@@ -26,7 +26,7 @@ TODO TN: a specialiser et supprimer
 #include <string>
 
 // Local
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 
 /** \struct GenericFilter
  * \brief Generic interface that should be implemented by filters. It has been
@@ -77,12 +77,13 @@ struct GenericFilter {
 template<typename T, int TAP_SIZE_LEFT, int TAP_SIZE_RIGHT,
   typename FilterEnum, FilterEnum FilterVal>
 struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
+  using ParenT =  GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>; 
+
   /// Defaulted constructor
   Filter()=default;
   
   // Actual storage for the filter
-  static constexpr T Buf[GenericFilter<
-    T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT>::TapSize]={0};
+  static constexpr T Buf[ParenT::TapSize]={0};
 };
 
 /** \struct wFilter
@@ -171,35 +172,39 @@ enum class filterDB {
   DB2_L,
   DB2_H,
   DB2_I_L,
-  DB2_I_H,
+  DB2_I_H
 };
 
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,1,2,filterDB,filterDB::DB2_L> {
+struct Filter<T,1,2,filterDB,filterDB::DB2_L> : public
+    GenericFilter<T,1,2> {
   static constexpr T Buff[4] = { -0.12940952255092145, 0.22414386804185735,
     0.836516303737469, 0.48296291314469025 };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,1,2,filterDB,filterDB::DB2_H> {
+struct Filter<T,1,2,filterDB,filterDB::DB2_H> : public
+    GenericFilter<T,1,2> {
   static constexpr T Buff[4] = { -0.48296291314469025, 0.836516303737469,
     -0.22414386804185735, -0.12940952255092145 };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,2,1,filterDB,filterDB::DB2_I_L> {
+struct Filter<T,2,1,filterDB,filterDB::DB2_I_L> : public
+    GenericFilter<T,2,1> {
   static constexpr T Buff[4] = { 0.48296291314469025, 0.836516303737469,
     0.22414386804185735, -0.12940952255092145 };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> {
+struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> : public
+    GenericFilter<T,2,1> {
   static constexpr T Buff[4] = { -0.12940952255092145, -0.22414386804185735,
     0.836516303737469, -0.48296291314469025 };
 };
 
-/// The Daubechies2 wavelet system
+/// The Daubechies2 wavelet system, type agnostic
 template<typename T>
 using Daub2 = wFilter<
     Filter<T,1,2,filterDB,filterDB::DB2_L>,

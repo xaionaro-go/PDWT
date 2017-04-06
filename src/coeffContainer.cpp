@@ -6,7 +6,7 @@
 #include <vector>
 
 // Local
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 
 
 // Explicit instanciation

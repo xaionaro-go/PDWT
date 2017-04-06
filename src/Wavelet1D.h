@@ -11,7 +11,7 @@
 #include "coeffContainer.h"
 #include "filters.h"
 #include "separable.h"
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 
 
 /** \class Wavelet1D

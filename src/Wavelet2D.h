@@ -10,7 +10,7 @@
 // Local
 #include "coeffContainer.h"
 #include "filters.h"
-#include "vectorization.h"
+#include "vectorization/vectorization.h"
 
 
 /** \class Wavelet2D
