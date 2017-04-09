@@ -40,13 +40,13 @@ class CoeffContainer {
    *
    * \return void 
    */
-  virtual void Initialize(std::vector<std::size_t> shape, std::size_t nlevel,
+  virtual void Initialize(std::vector<size_t> shape, size_t nlevel,
       T value = 0) {
     m_level = nlevel;
-    std::vector<std::size_t> curShape{shape};
+    std::vector<size_t> curShape{shape};
     auto sb = curShape.begin();
     auto se = curShape.end();
-    auto divider = [](size_t in) {return in/2;};
+    auto divider = [](size_t in) {return (in+(in&1))/2;};
 
     for (size_t i=0; i<=m_level; i++) {
       m_scaleSize.emplace_back(std::accumulate(
@@ -59,7 +59,7 @@ class CoeffContainer {
   }
 
   /// Return the dimensionality of the container
-  virtual std::size_t GetNbDimension() const = 0;
+  virtual size_t GetNbDimension() const = 0;
 
   /// Returns a pointer to the Low frequency subspace for the given scale
   T* GetLowSubspacePtr(size_t scale, size_t band=0) {
@@ -90,18 +90,27 @@ class CoeffContainer {
 	return  m_coeff.data()+bandOffset+scaleOffset+subbandOffset;
   }
 
+  /// Simple proxy for subcontainer begin iterator getter
+  auto begin() { return m_coeff.begin(); }
+  /// Simple proxy for subcontainer end iterator getter
+  auto end() { return m_coeff.end(); }
+  /// Simple proxy for subcontainer const begin iterator getter
+  auto cbegin() const { return m_coeff.cbegin(); }
+  /// Simple proxy for subcontainer const end iterator getter
+  auto cend() const { return m_coeff.cend(); }
+
  protected:
   /// The pyramid containing Various stage of the DT
   SubContainerT m_coeff;
   
   /// Scale depth of the wavelet decomposition
-  std::size_t m_level;
+  size_t m_level;
 
   /// Shape of each level of coefficients
-  std::vector<std::vector<std::size_t>> m_scaleShape;
+  std::vector<std::vector<size_t>> m_scaleShape;
 
   /// Size of each level of coefficients
-  std::vector<std::size_t> m_scaleSize;
+  std::vector<size_t> m_scaleSize;
  };
 
 /** \class CoeffContainer1D
@@ -124,10 +133,10 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainer1D()=default;
 
   /// Return the dimensionality of the container
-  virtual std::size_t GetNbDimension() const override { return m_dimensions; };
+  virtual size_t GetNbDimension() const override { return m_dimensions; };
 
  protected:
-  static const std::size_t m_dimensions=1;
+  static const size_t m_dimensions=1;
 };
 
 /** \class CoeffContainer2D
@@ -146,10 +155,10 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainer2D()=default;
 
   /// Return the dimensionality of the container
-  virtual std::size_t GetNbDimension() const override { return m_dimensions; };
+  virtual size_t GetNbDimension() const override { return m_dimensions; };
 
  protected:
-  static const std::size_t m_dimensions=2;
+  static const size_t m_dimensions=2;
 };
 
 /** \class CoeffContainer3D
@@ -168,10 +177,10 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainer3D()=default;
  
   /// Return the dimensionality of the container 
-  virtual std::size_t GetNbDimension() const override { return m_dimensions; };
+  virtual size_t GetNbDimension() const override { return m_dimensions; };
 
  protected:
-  static const std::size_t m_dimensions=3;
+  static const size_t m_dimensions=3;
 };
 
 /** \class CoeffContainerCpx
