@@ -3,11 +3,11 @@
 
 // STL
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <vector>
 
 // Local
-
 
 /** \class CoeffContainer
  * \brief Generic interface that should be implemented by wavelet coefficient
@@ -23,7 +23,7 @@ class CoeffContainer {
   CoeffContainer()=default;
 
   /// Allocating constructor
-  CoeffContainer(std::vector<size_t> size, int nlevel) {
+  CoeffContainer(const std::vector<size_t>& size, int nlevel) {
     Initialize(size, nlevel);
   }
 
@@ -40,7 +40,7 @@ class CoeffContainer {
    *
    * \return void 
    */
-  virtual void Initialize(std::vector<size_t> shape, size_t nlevel,
+  virtual void Initialize(const std::vector<size_t>& shape, size_t nlevel,
       T value = 0) {
     m_level = nlevel;
     std::vector<size_t> curShape{shape};
@@ -49,13 +49,20 @@ class CoeffContainer {
     auto divider = [](size_t in) {return (in+(in&1))/2;};
 
     for (size_t i=0; i<=m_level; i++) {
-      m_scaleSize.emplace_back(std::accumulate(
-        sb,se,1u, std::multiplies<size_t>()));
+      size_t levelSize = std::accumulate(sb,se,1u, std::multiplies<size_t>());
+      assert(levelSize>0);
+      m_scaleSize.emplace_back(levelSize);
       m_scaleShape.emplace_back(curShape);
       std::transform(sb,se,sb,divider);
     }
+    /** Compute total size in the coeff space.
+     * It is equal to the sum of the size of all detail subspaces,
+     * plus the size of the last approximation space
+     */
+    size_t totalSize=std::accumulate(m_scaleSize.cbegin()+1,
+      m_scaleSize.cend(),0u)+m_scaleSize.back();
     // Allocate memory
-    m_coeff.resize(m_scaleSize.front());
+    m_coeff.resize(totalSize);
   }
 
   /// Return the dimensionality of the container
@@ -98,6 +105,11 @@ class CoeffContainer {
   auto cbegin() const { return m_coeff.cbegin(); }
   /// Simple proxy for subcontainer const end iterator getter
   auto cend() const { return m_coeff.cend(); }
+
+  /// Returns the size of data for the given scale
+  auto GetScaleShape(size_t scale) {
+    return m_scaleShape.at(scale);
+  }
 
  protected:
   /// The pyramid containing Various stage of the DT

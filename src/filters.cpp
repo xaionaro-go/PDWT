@@ -4,8 +4,6 @@
 
 #include "filters.h"
 
-
-
 /*
 DTYPE DB2_L
     -0.12940952255092145,

@@ -29,6 +29,6 @@ int main(int argc, char **argv) {
   std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
   std::cout<<std::endl;
 
- w.backward();
+  w.backward();
   return EXIT_SUCCESS;
 }

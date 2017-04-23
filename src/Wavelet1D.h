@@ -29,7 +29,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   Wavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
       WaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
-    size_t size = Nc*Nc*Nr;
+    size_t size = Nc*Nr*Ns;
     this->m_coeff=std::make_unique<CoeffContainerT>(
       std::vector<size_t>{size}, level);
   }
@@ -37,16 +37,18 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual ~Wavelet1D()=default;
 
   /// Forward wavelet tranform
+  // TODO TN: corriger les probleme de read/write sur la meme memoire
   virtual int forward() {
-    int Nx=this->m_info.Nx;
     T* in = this->m_image;
     for (int l=0; l<this->m_level; l++) {
-      //#pragma omp parallel for
+     std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
+     //#pragma omp parallel for
       SeparableSubsampledConvolutionEngine<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
         >::PerformSubsampledFilteringXRef(
-          in, Nx,
+          in,
+          this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetLowSubspacePtr(l),
           this->m_coeff->GetHighSubspacePtr(l,0));
        //Update lowpass input
@@ -67,7 +69,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 /// Convenient type alias
 template<typename T>
 using PackedContainer1D =
-  CoeffContainer1D<T,std::vector<T,PackAllocator<T>>>;
+  CoeffContainer1D<T,std::vector<T>>;
 
 // Aliasing ugly types into more simple ones
 template<typename T>
