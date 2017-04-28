@@ -39,7 +39,12 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   /// Forward wavelet tranform
   // TODO TN: corriger les probleme de read/write sur la meme memoire
   virtual int forward() {
-    T* in = this->m_image;
+    // At first step, input is simply input image
+    T* inlow = this->m_image;
+    // Lowpass output is either in the wv tree if we have already finished,
+    // or it is stored to a temporary buffer for further decomposition
+    T* outlow = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
+      this->m_coeff->GetTmpBuffPtr().at(0)->data();
     for (int l=0; l<this->m_level; l++) {
      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
      //#pragma omp parallel for
@@ -47,12 +52,21 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
         >::PerformSubsampledFilteringXRef(
-          in,
+          inlow,
           this->m_coeff->GetScaleShape(l).at(0),
-          this->m_coeff->GetLowSubspacePtr(l),
+          outlow,
           this->m_coeff->GetHighSubspacePtr(l,0));
-       //Update lowpass input
-       in=this->m_coeff->GetLowSubspacePtr(l);
+       
+       //Update lowpass input and output, order is important here
+       if (l==this->m_level-1) {
+         inlow=outlow;
+         outlow=this->m_coeff->GetLowSubspacePtr(l);
+       } else if (l==0) {
+         inlow=outlow;
+         outlow=this->m_coeff->GetTmpBuffPtr().at(1)->data();
+       } else if (l<this->m_level-1) {
+         std::swap(inlow,outlow);
+       }
     }
     return 1;
   }

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <memory>
 #include <vector>
 
 // Local
@@ -63,7 +64,14 @@ class CoeffContainer {
       m_scaleSize.cend(),0u)+m_scaleSize.back();
     // Allocate memory
     m_coeff.resize(totalSize);
-  }
+    // Allocate temporary buffer
+    if (m_level>1) {
+      m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(1)));
+    }
+    if (m_level>2) {
+      m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(2)));
+    }
+ }
 
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const = 0;
@@ -97,6 +105,11 @@ class CoeffContainer {
 	return  m_coeff.data()+bandOffset+scaleOffset+subbandOffset;
   }
 
+  /// Return a pointer to a temporary buffer
+  std::vector<std::unique_ptr<SubContainerT>>& GetTmpBuffPtr() {
+    return m_vptcoeff;
+  }
+
   /// Simple proxy for subcontainer begin iterator getter
   auto begin() { return m_coeff.begin(); }
   /// Simple proxy for subcontainer end iterator getter
@@ -114,7 +127,10 @@ class CoeffContainer {
  protected:
   /// The pyramid containing Various stage of the DT
   SubContainerT m_coeff;
-  
+
+  /// A temporary buffer used to compute DWT
+  std::vector<std::unique_ptr<SubContainerT>> m_vptcoeff;  
+
   /// Scale depth of the wavelet decomposition
   size_t m_level;
 
