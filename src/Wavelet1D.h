@@ -78,7 +78,9 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     T* outlow = (this->m_level%2==1) ? this->m_image :
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
     for (int l=this->m_level; l>0; l--) {
-      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
+      std::cout<<"Inverse, taking as input 2 subspaces of size "<<
+        this->m_coeff->GetScaleShape(l).at(l)<<" In order to form a new"<<
+        " image of size "<<this->m_coeff->GetScaleShape(l).at(l)<<std::endl;
       //#pragma omp parallel for
       /*SeparableSubsampledConvolutionEngine<T,
           typename WaveletSchemeT::f_l,
