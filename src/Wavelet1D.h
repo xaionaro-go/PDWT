@@ -37,7 +37,6 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual ~Wavelet1D()=default;
 
   /// Forward wavelet tranform
-  // TODO TN: corriger les probleme de read/write sur la meme memoire
   virtual int forward() {
     // At first step, input is simply input image
     T* inlow = this->m_image;
@@ -72,8 +71,31 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
   /// Backward wavelet transform: transpose of the forward transpose
   virtual int backward() {
+    // At first step, input lowpass image is part of the wavelet tree
+    T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level);
+    // Lowpass output is either in the image if we have already finished,
+    // or it is stored to a temporary buffer for further reconstruction
+    T* outlow = (this->m_level%2==1) ? this->m_image :
+      this->m_coeff->GetTmpBuffPtr().at(0)->data();
+    for (int l=this->m_level; l>0; l--) {
+      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
+      //#pragma omp parallel for
+      /*SeparableSubsampledConvolutionEngine<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+        >::PerformUpsampledFilteringXRef(
+          inlow,
+          this->m_coeff->GetHighSubspacePtr(l,0),
+          this->m_coeff->GetScaleShape(l).at(0),
+          outlow,
+      );
+      */
+      //Update lowpass input and output
+      std::swap(inlow,outlow);
+    }
     return 1;
   }
+
   /// Inverse of the wavelet tranform
   virtual int inverse() {
     return 1;
@@ -99,4 +121,27 @@ struct DB1DWt {
  Daub2_1D<T> daub2_1D;
 };
 
+/*
+-Cas 1 seul niveau :
+  LP et HP on ete ecrits direct dans les coeff
+  la reconstruction peut se faire direct dans image
+
+-Cas 2 niveaux :
+  On a alloue un buffer temp0 de taille lev1 pour mettre le LP1
+  coeff contient HP1 HP2 LP2
+  Lors de la reco on a besoin de reconstruire LP1 dans temp0
+
+-Cas 3 niveaux :
+  On alloue un buffer temp0 de taille lev1 pour mettre le LP1
+  coeff contient HP1 HP2 HP3 LP3
+  Lors de la reco on a besoin de reconstruire LP2 dans image
+  Puis on reco LP1 dans temp0
+
+-Cas 4 niveaux:
+  On alloue un buffer temp0 de taille lev1 pour mettre le LP1
+  coeff contient HP1 HP2 HP3 HP4 LP4
+  Lors de la reco on a besoin de reconstruire LP3 dans temp0
+  Puis on reco LP2 dans image
+  Puis on reco LP1 dans temp0
+*/
 #endif //WAVELET1D_H
