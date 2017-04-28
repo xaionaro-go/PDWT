@@ -79,8 +79,10 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
     for (int l=this->m_level; l>0; l--) {
       std::cout<<"Inverse, taking as input 2 subspaces of size "<<
-        this->m_coeff->GetScaleShape(l).at(l)<<" In order to form a new"<<
-        " image of size "<<this->m_coeff->GetScaleShape(l).at(l)<<std::endl;
+        this->m_coeff->GetScaleShape(l).at(0)<<" In order to form a new"<<
+        " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
+      std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
+        <<std::endl;
       //#pragma omp parallel for
       /*SeparableSubsampledConvolutionEngine<T,
           typename WaveletSchemeT::f_l,
@@ -93,7 +95,11 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       );
       */
       //Update lowpass input and output
-      std::swap(inlow,outlow);
+      if (l==this->m_level) {
+        inlow= (this->m_level%2==0) ? this->m_image :
+          this->m_coeff->GetTmpBuffPtr().at(0)->data();
+       }
+       std::swap(inlow,outlow);
     }
     return 1;
   }

@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   // Define wavelet tranform
   Daub2_1D<float> w(in.data(),in.size(),1,1,false,"Daub2",3);
   w.forward();
- 
+  w.backward(); 
   std::cout<<"Output is: ";
   std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
   std::cout<<std::endl;
