@@ -132,7 +132,7 @@ class SeparableUpsampledConvolutionEngine {
 
 // must be run with grid size = (2*Nr, 2*Nc) ; Nc = numcols of input coeffs. Here the param Nr is actually doubled wrt Nr_coeffs because of the vertical oversampling.
 // pass 2 : (tmp1, tmp2)  ==> Horiz convol with IL, IH  + horiz oversampling ==> I
-__global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int Nc2, int hlen) {
+/*__global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int Nc2, int hlen) {
     int gidx = threadIdx.x + blockIdx.x*blockDim.x;
     int gidy = threadIdx.y + blockIdx.y*blockDim.y;
     if (gidy < Nr && gidx < Nc2) { // horiz oversampling : Input (Nr*2, Nc) => Output (Nr*2, Nc*2)
@@ -171,6 +171,6 @@ __global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int N
         if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
         else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
     }
-}
+}*/
 
 #endif //SEPARABLE_H
