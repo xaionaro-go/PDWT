@@ -98,30 +98,31 @@ class SeparableUpsampledConvolutionEngine {
 
   /// The main method : perform Subsampled convolution on one row
   template<typename... O>
-  static int PerformUpsampledFilteringXRef(const T* in, int Nx,
+  static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxOut,
       O... out) {
 
-    int Nx_is_odd = (Nx & 1);
-    int NxOut = (Nx + Nx_is_odd)/2;
+    int NxIn = NxOut/2;
 
     // Loop over output image
     for (int ox=0; ox<NxOut; ox++) {
-      // Loop over filter size, with periodic boundary conditions
-      // TODO TN: this loop can actually be written as a compile time loop
-      // #pragma unroll Filt::TapSize
-      for (int fx=-Filt::TapSizeLeft; fx<Filt::TapSizeRight; fx++) {
-        int ix = ox*2 + fx;
-        // if N is odd, image is virtually extended
-        if (ix < 0) ix += (Nx + Nx_is_odd);
-        // no "else if", since idx_x can be > N-1  after being incremented
-        if (ix > Nx-1) {
-          // if N is odd, repeat the right-most element
-          if ((ix == Nx) && (Nx_is_odd))
-            ix--;
-          // if N is odd, image is virtually extended
-          else
-            ix -= (Nx + Nx_is_odd);
+
+        int max_x = NxIn-1;
+        //si index impair: pas d'offset, sinon offset 1
+		int offset_x = 1-(ox & 1);
+        int jx1 = ox/2-Filt::TapSizeLeft;
+
+        // Loop over filter, can be turned into a compile time loop
+        for (int jx = 0; jx <= Filt::TapSize; jx++) {
+            int idx_x = jx1 + jx;
+            if (idx_x<0) idx_x += NxIn;
+            if (idx_x>max_x) idx_x -= NxIn;
+            res_1 += inLow[idx_x] * Filter::[hlen-1 - (2*jx + offset_x)];
+            res_2 += inHigh[idx_x] * Filter::[hlen-1 - (2*jx + offset_x)];
         }
+        //Si half kernel est impair: on peut ecrire avec le bon mapping
+        if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
+        //Sinon on decale l'ecriture de 1 sur la gauche
+        else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
         // Update each buffer with its respective filter
         Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
       }
@@ -132,7 +133,7 @@ class SeparableUpsampledConvolutionEngine {
 
 // must be run with grid size = (2*Nr, 2*Nc) ; Nc = numcols of input coeffs. Here the param Nr is actually doubled wrt Nr_coeffs because of the vertical oversampling.
 // pass 2 : (tmp1, tmp2)  ==> Horiz convol with IL, IH  + horiz oversampling ==> I
-/*__global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int Nc2, int hlen) {
+__global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int Nc2, int hlen) {
     int gidx = threadIdx.x + blockIdx.x*blockDim.x;
     int gidy = threadIdx.y + blockIdx.y*blockDim.y;
     if (gidy < Nr && gidx < Nc2) { // horiz oversampling : Input (Nr*2, Nc) => Output (Nr*2, Nc*2)
@@ -155,8 +156,25 @@ class SeparableUpsampledConvolutionEngine {
         //gidx/2 represente l'indice de l'image d'entree qui va devoir etre considere
         //gidx/2-c represente l'indice a partir duquel la convolution devrait commencer
         //
-        int jx1 = c - gidx/2;
-        int jx2 = Nc - 1 - gidx/2 + c;
+        int max_x = Nc-1;
+        int offset_x = 1-(gidx & 1);i//si index impair: pas d'offset, sinon offset 1
+
+        DTYPE res_1 = 0, res_2 = 0;
+        for (int jx = 0; jx <= hR+hL; jx++) {
+            int idx_x = jx1 + jx;
+            if (idx_x<0) idx_x += Nc;
+            if (idx_x>max_x) idx_x -= Nc;
+            res_1 += tmp1[gidy*Nc + idx_x] * c_kern_IL[hlen-1 - (2*jx + offset_x)];
+            res_2 += tmp2[gidy*Nc + idx_x] * c_kern_IH[hlen-1 - (2*jx + offset_x)];
+        }
+        //Si half kernel est impair: on peut ecrire avec le bon mapping
+        if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
+        //Sinon on decale l'ecriture de 1 sur la gauche
+        else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
+    }
+}
+/*int jx1 = c - gidx/2;//= -(gidx/2-hl)
+        int jx2 = Nc - 1 - gidx/2 + c;//=Nc-1:adresse dernier elem entree, Nc-1-(gidx/2-hl)
         int offset_x = 1-(gidx & 1);
 
         DTYPE res_1 = 0, res_2 = 0;
@@ -170,7 +188,5 @@ class SeparableUpsampledConvolutionEngine {
         }
         if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
         else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
-    }
-}*/
-
+*/
 #endif //SEPARABLE_H
