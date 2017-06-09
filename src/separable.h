@@ -98,47 +98,70 @@ class SeparableUpsampledConvolutionEngine {
 
   /// The main method : perform Subsampled convolution on one row
   template<typename... O>
-  static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxOut,
-      O... out) {
+  static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxIn,
+    int NxOut, O... out) {
 
-    int NxIn = NxOut/2;
+    int NxInCentral = NxOut/2;
 
     // Loop over output image
-    for (int ox=0; ox<NxOut; ox++) {
-
+    for (int lox=0; lox<NxOut; lox++) {
+        int ox = lox + Filt::IsHalfSizeOdd?0:1;
         int max_x = NxIn-1;
         //si index impair: pas d'offset, sinon offset 1
-		int offset_x = 1-(ox & 1);
-        int jx1 = ox/2-Filt::TapSizeLeft;
+		int offset_x = 1-(ox&1);
 
         // Loop over filter, can be turned into a compile time loop
-        for (int jx = 0; jx <= Filt::TapSize; jx++) {
-            int idx_x = jx1 + jx;
+        for (int jx = 0; jx <= Filt::TapHalfSize; jx++) {
+            int idx_x = NxInCentral - Filt::TapHalfSizeLeft + jx;
             if (idx_x<0) idx_x += NxIn;
             if (idx_x>max_x) idx_x -= NxIn;
             res_1 += inLow[idx_x] * Filter::[hlen-1 - (2*jx + offset_x)];
             res_2 += inHigh[idx_x] * Filter::[hlen-1 - (2*jx + offset_x)];
         }
-        //Si half kernel est impair: on peut ecrire avec le bon mapping
-        if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
-        //Sinon on decale l'ecriture de 1 sur la gauche
-        else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
-        // Update each buffer with its respective filter
-        Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
+        img[ox-Filt::IsHalfSizeOdd?0:1] = res_1 + res_2;
       }
     }
     return 1;
   }
 };
 
+
 // must be run with grid size = (2*Nr, 2*Nc) ; Nc = numcols of input coeffs. Here the param Nr is actually doubled wrt Nr_coeffs because of the vertical oversampling.
 // pass 2 : (tmp1, tmp2)  ==> Horiz convol with IL, IH  + horiz oversampling ==> I
-__global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int Nr, int Nc, int Nc2, int hlen) {
-    int gidx = threadIdx.x + blockIdx.x*blockDim.x;
-    int gidy = threadIdx.y + blockIdx.y*blockDim.y;
+/**
+One has to keep in mind that forward transform in a convolution THEN subsampling
+ex:
+|1 0 0 0| |1 -1 0 -1|
+|0 0 1 0| |-1 1 -1 0|
+          |0 -1 1 -1|
+          |-1 0 -1 1|
+
+Transpose of that is then:
+
+|1 -1 0 -1| |1 0|
+|-1 1 -1 0| |0 0|
+|0 -1 1 -1| |0 1|
+|-1 0 -1 1| |0 0|
+So that only one out of 2 coefficients in the convolution is useful
+
+__global__ void w_kern_inverse_pass2(
+	DTYPE* tmp1, //input lowfrequency space
+    DTYPE* tmp2, //input highfrequency space
+	DTYPE* img,  //output image: upsampled in the x direction
+    int Nr,      //in/out size in y
+	int Nc,      //input size in x
+	int Nc2,     //output size in x ater upsampling
+	int hlen     //size of the filter
+  ) {
+
+    int gidx = threadIdx.x + blockIdx.x*blockDim.x;  //gidx: output address x (up to twice the size of the input)
+    int gidy = threadIdx.y + blockIdx.y*blockDim.y;  //gidy: input/output  address y
+
     if (gidy < Nr && gidx < Nc2) { // horiz oversampling : Input (Nr*2, Nc) => Output (Nr*2, Nc*2)
-        int c, hL, hR;
+
+        int hL, hR;
         int hlen2 = hlen/2; // Convolutions with even/odd indices of the kernels
+
         if (hlen2 & 1) { // odd half-kernel size
             c = hlen2/2;
             hL = c;
@@ -153,13 +176,9 @@ __global__ void w_kern_inverse_pass2(DTYPE* tmp1, DTYPE* tmp2, DTYPE* img, int N
             gidx += 1;
         }
         //Ce passage est important: il y a autant de thread que de pixels de sortie
-        //gidx/2 represente l'indice de l'image d'entree qui va devoir etre considere
-        //gidx/2-c represente l'indice a partir duquel la convolution devrait commencer
-        //
         int max_x = Nc-1;
         int offset_x = 1-(gidx & 1);i//si index impair: pas d'offset, sinon offset 1
 
-        DTYPE res_1 = 0, res_2 = 0;
         for (int jx = 0; jx <= hR+hL; jx++) {
             int idx_x = jx1 + jx;
             if (idx_x<0) idx_x += Nc;

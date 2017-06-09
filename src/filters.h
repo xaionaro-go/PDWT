@@ -51,10 +51,6 @@ struct GenericFilter {
   /// Typedef for vectorization type
   using VectorType=PackType<T>;
   
-  /// Total size of the filter, in number of elements
-  constexpr static int TapSize =
-    TAP_SIZE_LEFT + TAP_SIZE_RIGHT + 1; //+1 = the center pixel
-  
   /// Redefine template parameters
   constexpr static int VecSize = sizeof(VectorType)/sizeof(T);
   
@@ -66,6 +62,30 @@ struct GenericFilter {
   
   /// Compile time definition of filter feature: right tap number
   constexpr static int TapSizeRight = TAP_SIZE_RIGHT;
+
+  /// Total size of the filter, in number of elements
+  constexpr static int TapSize =
+    TAP_SIZE_LEFT + TAP_SIZE_RIGHT + 1; //+1 = the center pixel
+
+  /// For specific cases in conv with subsampled data
+  constexpr static bool IsHalfSizeOdd =
+    ((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1 == 1;
+
+  /// for conv with subsampled data: half tap number
+  constexpr static int TapHalfSizeLeft = (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4;
+  
+  /// for conv with subsampled data: half tap number
+  constexpr static int TapHalfSizeRight =
+    ((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1 ?
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4 :
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4-1;
+
+  /// Total size of the filter for conv with subsampled data
+  constexpr static int TapHalfSize =
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4 +
+    ((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1 ?
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4 :
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4-1;
 };
 
 /** \struct Filter
