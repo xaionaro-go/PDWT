@@ -84,16 +84,16 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
         <<std::endl;
       //#pragma omp parallel for
-      /*SeparableSubsampledConvolutionEngine<T,
-          typename WaveletSchemeT::f_l,
-          typename WaveletSchemeT::f_h
+      SeparableUpsampledConvolutionEngine<T,
+          typename WaveletSchemeT::i_l,
+          typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringXRef(
           inlow,
           this->m_coeff->GetHighSubspacePtr(l,0),
           this->m_coeff->GetScaleShape(l).at(0),
-          outlow,
-      );
-      */
+          this->m_coeff->GetScaleShape(l-1).at(0),
+          outlow);
+
       //Update lowpass input and output
       if (l==this->m_level) {
         inlow= (this->m_level%2==0) ? this->m_image :

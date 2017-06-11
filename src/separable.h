@@ -88,7 +88,7 @@ class SeparableSubsampledConvolutionEngine {
  *
  * \author Thibault Notargiacomo
  */
-template<typename T, class Filt, class... Filtn>
+template<typename T, class FiltLow, class FiltUp>
 class SeparableUpsampledConvolutionEngine {
  public:
   /// Defaulted constructor
@@ -99,7 +99,7 @@ class SeparableUpsampledConvolutionEngine {
   /// The main method : perform Subsampled convolution on one row
   template<typename... O>
   static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxIn,
-    int NxOut, O... out) {
+    int NxOut, out) {
 
     int NxInCentral = NxOut/2;
 
@@ -109,16 +109,20 @@ class SeparableUpsampledConvolutionEngine {
         int max_x = NxIn-1;
         //si index impair: pas d'offset, sinon offset 1
 		int offset_x = 1-(ox&1);
-
+        T acc = (T)0;
+        
         // Loop over filter, can be turned into a compile time loop
         for (int jx = 0; jx <= Filt::TapHalfSize; jx++) {
             int idx_x = NxInCentral - Filt::TapHalfSizeLeft + jx;
             if (idx_x<0) idx_x += NxIn;
             if (idx_x>max_x) idx_x -= NxIn;
-            res_1 += inLow[idx_x] * Filter::[hlen-1 - (2*jx + offset_x)];
-            res_2 += inHigh[idx_x] * Filter::[hlen-1 - (2*jx + offset_x)];
+            int fAddr = hlen-1 - (2*jx + offset_x);
+            // Update each buffer with its respective filter
+            acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+            acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
         }
-        img[ox-Filt::IsHalfSizeOdd?0:1] = res_1 + res_2;
+        // Update each buffer with its respective filter
+        out[ox-Filt::IsHalfSizeOdd?0:1] = acc;
       }
     }
     return 1;
