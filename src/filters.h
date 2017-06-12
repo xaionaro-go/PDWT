@@ -53,10 +53,7 @@ struct GenericFilter {
   
   /// Redefine template parameters
   constexpr static int VecSize = sizeof(VectorType)/sizeof(T);
-  
-  /// How many vector are needed to load a single filter support
-  constexpr static int NbVecPerFilt = (TapSize+VecSize-1)/(VecSize);
-  
+
   /// Compile time definition of filter feature: left tap number
   constexpr static int TapSizeLeft = TAP_SIZE_LEFT;
   
@@ -67,9 +64,10 @@ struct GenericFilter {
   constexpr static int TapSize =
     TAP_SIZE_LEFT + TAP_SIZE_RIGHT + 1; //+1 = the center pixel
 
+  //TODO TN: from here, use members instead of recomputing everything
   /// For specific cases in conv with subsampled data
   constexpr static bool IsHalfSizeOdd =
-    ((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1 == 1;
+    (((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1) == 1;
 
   /// for conv with subsampled data: half tap number
   constexpr static int TapHalfSizeLeft = (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4;
@@ -82,11 +80,14 @@ struct GenericFilter {
 
   /// Total size of the filter for conv with subsampled data
   constexpr static int TapHalfSize =
-    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4 +
-    ((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1 ?
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4 + (
+    (((TAP_SIZE_RIGHT+1+TAP_SIZE_RIGHT)/2)&1) == 1 ?
     (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4 :
-    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4-1;
-};
+    (TAP_SIZE_LEFT+1+TAP_SIZE_RIGHT)/4-1);
+
+  /// How many vector are needed to load a single filter support
+  constexpr static int NbVecPerFilt = (TapSize+VecSize-1)/(VecSize);
+ };
 
 /** \struct Filter
  * \bried We define an inheritance of the fully generic filter for a structure

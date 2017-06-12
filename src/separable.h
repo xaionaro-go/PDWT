@@ -71,6 +71,7 @@ class SeparableSubsampledConvolutionEngine {
           else
             ix -= (Nx + Nx_is_odd);
         }
+
         // Update each buffer with its respective filter
         Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
       }
@@ -80,15 +81,11 @@ class SeparableSubsampledConvolutionEngine {
 };
 
 /** \class SeparableUpsampledConvolutionEngine
- * \brief Code for the separable upsampled convolution. This class is a
- * variadic template class, because it can handle multiple filtering for each
- * main loop, assuming the filters have the same size
- *
- * TODO TN: perf issue: you should use temporary for accumulation
+ * \brief Code for the separable upsampled convolution.
  *
  * \author Thibault Notargiacomo
  */
-template<typename T, class FiltLow, class FiltUp>
+template<typename T, class FiltLow, class FiltHigh>
 class SeparableUpsampledConvolutionEngine {
  public:
   /// Defaulted constructor
@@ -97,33 +94,51 @@ class SeparableUpsampledConvolutionEngine {
   virtual ~SeparableUpsampledConvolutionEngine()=default;
 
   /// The main method : perform Subsampled convolution on one row
-  template<typename... O>
   static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxIn,
-    int NxOut, out) {
+    int NxOut, T* out) {
 
     int NxInCentral = NxOut/2;
 
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
-        int ox = lox + Filt::IsHalfSizeOdd?0:1;
-        int max_x = NxIn-1;
-        //si index impair: pas d'offset, sinon offset 1
-		int offset_x = 1-(ox&1);
-        T acc = (T)0;
-        
-        // Loop over filter, can be turned into a compile time loop
-        for (int jx = 0; jx <= Filt::TapHalfSize; jx++) {
-            int idx_x = NxInCentral - Filt::TapHalfSizeLeft + jx;
-            if (idx_x<0) idx_x += NxIn;
-            if (idx_x>max_x) idx_x -= NxIn;
-            int fAddr = hlen-1 - (2*jx + offset_x);
-            // Update each buffer with its respective filter
-            acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-            acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-        }
-        // Update each buffer with its respective filter
-        out[ox-Filt::IsHalfSizeOdd?0:1] = acc;
+      int ox = lox + FiltLow::IsHalfSizeOdd?0:1;
+      int max_x = NxIn-1;
+      //si index impair: pas d'offset, sinon offset 1
+	  int offset_x = 1-(ox&1);
+      T acc = (T)0;
+ 
+      if (offset_x==0) {
+		//TODO TN Filter loop, can be turned into an explicit compile time loop
+		for (int jx = 0; jx <= FiltLow::TapHalfSize; jx++) {
+			int idx_x = NxInCentral - FiltLow::TapHalfSizeLeft + jx;
+			if (idx_x<0) idx_x += NxIn;
+			if (idx_x>max_x) idx_x -= NxIn;
+			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
+			int fAddr = FiltLow::TapSize -1 - (2*jx);
+			// Update each buffer with its respective filter
+			acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
+		}
+		// Update each buffer with its respective filter
+		out[ox-FiltLow::IsHalfSizeOdd?0:1] = acc;
+      } else {
+		//TODO TN Filter loop, can be turned into an explicit compile time loop
+		for (int jx = 0; jx <= FiltLow::TapHalfSize; jx++) {
+			int idx_x = NxInCentral - FiltLow::TapHalfSizeLeft + jx;
+			if (idx_x<0) idx_x += NxIn;
+			if (idx_x>max_x) idx_x -= NxIn;
+			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
+			int fAddr = FiltLow::TapSize -1 - (2*jx+1);
+			// Update each buffer with its respective filter
+			acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
+		}
+		// Update each buffer with its respective filter
+		out[ox-FiltLow::IsHalfSizeOdd?0:1] = acc;
       }
+
     }
     return 1;
   }
@@ -196,7 +211,7 @@ __global__ void w_kern_inverse_pass2(
         else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
     }
 }
-/*int jx1 = c - gidx/2;//= -(gidx/2-hl)
+int jx1 = c - gidx/2;//= -(gidx/2-hl)
         int jx2 = Nc - 1 - gidx/2 + c;//=Nc-1:adresse dernier elem entree, Nc-1-(gidx/2-hl)
         int offset_x = 1-(gidx & 1);
 
