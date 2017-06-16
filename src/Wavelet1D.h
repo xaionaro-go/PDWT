@@ -46,8 +46,9 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
     for (int l=0; l<this->m_level; l++) {
      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
+     std::cout<<"Writing High subspace pointer at scale "<<l<<std::endl;
      //#pragma omp parallel for
-      SeparableSubsampledConvolutionEngine<T,
+     SeparableSubsampledConvolutionEngine<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
         >::PerformSubsampledFilteringXRef(
@@ -83,13 +84,14 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
       std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
         <<std::endl;
-      //#pragma omp parallel for
+     std::cout<<"Current scaleis: at scale "<<l<<std::endl;
+     //#pragma omp parallel for
       SeparableUpsampledConvolutionEngine<T,
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringXRef(
           inlow,
-          this->m_coeff->GetHighSubspacePtr(l,0),
+          this->m_coeff->GetHighSubspacePtr(l-1,0),
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
           outlow);
