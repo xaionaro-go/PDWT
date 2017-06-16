@@ -45,18 +45,18 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     T* outlow = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
     for (int l=0; l<this->m_level; l++) {
-     std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
-     std::cout<<"Writing High subspace pointer at scale "<<l<<std::endl;
-     //#pragma omp parallel for
-     SeparableSubsampledConvolutionEngine<T,
+      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
+      std::cout<<"Writing High subspace pointer at scale "<<l<<std::endl;
+      //#pragma omp parallel for
+      SeparableSubsampledConvolutionEngine<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
-        >::PerformSubsampledFilteringXRef(
-          inlow,
-          this->m_coeff->GetScaleShape(l).at(0),
-          outlow,
-          this->m_coeff->GetHighSubspacePtr(l,0));
-       
+          >::PerformSubsampledFilteringXRef(
+        inlow,
+        this->m_coeff->GetScaleShape(l).at(0),
+        outlow,
+        this->m_coeff->GetHighSubspacePtr(l,0));
+
        //Update lowpass input and output, order is important here
        if (l==this->m_level-1) {
          inlow=outlow;
@@ -64,7 +64,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
        } else if (l==0) {
          inlow=outlow;
          outlow=this->m_coeff->GetTmpBuffPtr().at(1)->data();
-       } else if (l<this->m_level-1) {
+       } else {
          std::swap(inlow,outlow);
        }
     }
@@ -74,8 +74,9 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual int backward() {
     // At first step, input lowpass image is part of the wavelet tree
     T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level);
-    // Lowpass output is either in the image if we have already finished,
-    // or it is stored to a temporary buffer for further reconstruction
+    // output is either in the image if we have already finished,
+    // or if number of level is odd. Otherwise, it is stored to a
+    //  temporary buffer for further reconstruction
     T* outlow = (this->m_level%2==1) ? this->m_image :
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
     for (int l=this->m_level; l>0; l--) {
