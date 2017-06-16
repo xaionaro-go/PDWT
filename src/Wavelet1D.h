@@ -85,7 +85,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
       std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
         <<std::endl;
-     std::cout<<"Current scaleis: at scale "<<l<<std::endl;
+     std::cout<<"Current scale is: at scale "<<l<<std::endl;
      //#pragma omp parallel for
       SeparableUpsampledConvolutionEngine<T,
           typename WaveletSchemeT::i_l,
