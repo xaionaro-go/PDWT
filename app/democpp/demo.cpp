@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   auto print = [](auto& in){ std::cout<<in<<", "; };
 
   // Define input/output
-  std::vector<float> in(10);
+  std::vector<float> in(7);
   std::vector<float> out(in.size());
   std::iota(in.begin(), in.end(),0);
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   std::cout<<std::endl;
 
   // Define wavelet tranform
-  Daub2_1D<float> w(in.data(),in.size(),1,1,false,"Daub2",1);
+  Daub2_1D<float> w(in.data(),in.size(),1,1,false,"Daub2",2);
   w.forward();
   //std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
   w.backward(); 

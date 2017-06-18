@@ -67,8 +67,6 @@ class CoeffContainer {
     // Allocate temporary buffer
     if (m_level>1) {
       m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(1)));
-    }
-    if (m_level>2) {
       m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(2)));
     }
  }

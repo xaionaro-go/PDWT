@@ -56,17 +56,16 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         this->m_coeff->GetScaleShape(l).at(0),
         outlow,
         this->m_coeff->GetHighSubspacePtr(l,0));
-
-       //Update lowpass input and output, order is important here
-       if (l==this->m_level-1) {
-         inlow=outlow;
-         outlow=this->m_coeff->GetLowSubspacePtr(l);
-       } else if (l==0) {
-         inlow=outlow;
-         outlow=this->m_coeff->GetTmpBuffPtr().at(1)->data();
-       } else {
-         std::swap(inlow,outlow);
-       }
+      //Update lowpass input and output, order is important here
+      if (l==this->m_level-1) {
+        inlow=outlow;
+        outlow=this->m_coeff->GetLowSubspacePtr(l);
+      } else if (l==0) {
+        inlow=outlow;
+        outlow=this->m_coeff->GetTmpBuffPtr().at(1)->data();
+      } else {
+        std::swap(inlow,outlow);
+      }
     }
     return 1;
   }
@@ -83,10 +82,10 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       std::cout<<"Inverse, taking as input 2 subspaces of size "<<
         this->m_coeff->GetScaleShape(l).at(0)<<" In order to form a new"<<
         " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
-      std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
-        <<std::endl;
-     std::cout<<"Current scale is: at scale "<<l<<std::endl;
-     //#pragma omp parallel for
+      //std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
+      //  <<std::endl;
+      std::cout<<"Current scale is: at scale "<<l<<std::endl;
+      //#pragma omp parallel for
       SeparableUpsampledConvolutionEngine<T,
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
@@ -98,7 +97,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           outlow);
 
       //Update lowpass input and output
-      if (l==this->m_level) {
+      if (l==this->m_level && l>1) {
         inlow= (this->m_level%2==0) ? this->m_image :
           this->m_coeff->GetTmpBuffPtr().at(0)->data();
        }
