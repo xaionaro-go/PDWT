@@ -72,12 +72,12 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   /// Backward wavelet transform: transpose of the forward transpose
   virtual int backward() {
     // At first step, input lowpass image is part of the wavelet tree
-    T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level);
+    T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level-1);
     // output is either in the image if we have already finished,
     // or if number of level is odd. Otherwise, it is stored to a
     //  temporary buffer for further reconstruction
-    T* outlow = (this->m_level%2==1) ? this->m_image :
-      this->m_coeff->GetTmpBuffPtr().at(0)->data();
+    T* outlow = ((this->m_level%2==1) ? this->m_image :
+      this->m_coeff->GetTmpBuffPtr().at(0)->data());
     for (int l=this->m_level; l>0; l--) {
       std::cout<<"Inverse, taking as input 2 subspaces of size "<<
         this->m_coeff->GetScaleShape(l).at(0)<<" In order to form a new"<<
@@ -98,8 +98,8 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 
       //Update lowpass input and output
       if (l==this->m_level && l>1) {
-        inlow= (this->m_level%2==0) ? this->m_image :
-          this->m_coeff->GetTmpBuffPtr().at(0)->data();
+        inlow= ((this->m_level%2==0) ? this->m_image :
+          this->m_coeff->GetTmpBuffPtr().at(0)->data());
        }
        std::swap(inlow,outlow);
     }
