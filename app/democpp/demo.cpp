@@ -16,7 +16,8 @@ int main(int argc, char **argv) {
   // Define input/output
   std::vector<float> in(8);
   std::vector<float> out(in.size());
-  std::iota(in.begin(), in.end(),0);
+  //std::iota(in.begin(), in.end(),0);
+  std::fill(in.begin(), in.end(), 2);
 
   std::cout<<"Input is: ";
   std::for_each(in.begin(),in.end(),print);

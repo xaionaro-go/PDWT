@@ -81,6 +81,9 @@ class SeparableSubsampledConvolutionEngine {
            ix -= (Nx + Nx_is_odd);
           }
         }
+        //std::cout<<"Accumulate low image idx "<<ix<<": "<<in[ix]
+        //  <<" x "<<Filtlow::Buff[fx+Filtlow::TapSizeLeft]
+        //  <<" filt idx: "<<fx+Filtlow::TapSizeLeft<<std::endl;
 
         // Update each buffer with its respective filter
         //Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
@@ -122,27 +125,38 @@ class SeparableUpsampledConvolutionEngine {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
 			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
-			if (idx_x<0) idx_x += NxIn;
-			if (idx_x>max_x) idx_x -= NxIn;
+			if (idx_x<0) {
+              idx_x += NxIn;
+            }
+			if (idx_x>max_x) {
+              idx_x -= NxIn;
+            }
 			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
 			int fAddr = FiltLow::TapSize -1 - (2*jx);
 			// Update each buffer with its respective filter
 			acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+			//acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
 		}
       } else {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
-			if (idx_x<0) idx_x += NxIn;
-			if (idx_x>max_x) idx_x -= NxIn;
-			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
-			int fAddr = FiltLow::TapSize -1 - (2*jx+1);
-			// Update each buffer with its respective filter
-			acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
+		  int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
+		  if (idx_x<0) {
+            idx_x += NxIn;
+          }
+		  if (idx_x>max_x) {
+            idx_x -= NxIn;
+          }
+		  //int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
+		  int fAddr = FiltLow::TapSize -1 - (2*jx+1);
+		  // Update each buffer with its respective filter
+         // std::cout<<"Accumulate low image idx "<<idx_x<<": "<<inLow[idx_x]
+         //   <<" x "<<FiltHigh::Buff[fAddr]<<" filt idx: "<<fAddr
+         //   <<" | jx="<<jx<<"<"<<FiltLow::TapHalfSize<<std::endl;
+		  acc += inLow[idx_x] * FiltLow::Buff[fAddr];//TODO TN should be low
+		  //acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+	      //Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
 		}
       }
       // Update each buffer with its respective filter

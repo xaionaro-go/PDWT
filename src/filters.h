@@ -65,7 +65,7 @@ struct GenericFilter {
     TapSizeLeft + TapSizeRight + 1; //+1 = the center pixel
 
   /// For specific cases in conv with subsampled data
-  constexpr static bool TapHalfSize = TapSize/2;
+  constexpr static int TapHalfSize = TapSize/2;
 
   /// For specific cases in conv with subsampled data
   constexpr static bool IsHalfSizeOdd = TapHalfSize&1;
