@@ -133,7 +133,7 @@ class SeparableUpsampledConvolutionEngine {
 		}
       } else {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
-		for (int jx = 0; jx <= FiltLow::TapHalfSize; jx++) {
+		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
 			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
 			if (idx_x<0) idx_x += NxIn;
 			if (idx_x>max_x) idx_x -= NxIn;
