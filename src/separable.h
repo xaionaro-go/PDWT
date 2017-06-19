@@ -37,7 +37,9 @@ struct Updater<Filt> {
  *
  * \author Thibault Notargiacomo
  */
-template<typename T, class Filt, class... Filtn>
+//TODO TN: replace second line by first one
+//template<typename T, class Filt, class... Filtn>
+template<typename T, class Filtlow, class Filthigh>
 class SeparableSubsampledConvolutionEngine {
  public:
   /// Defaulted constructor
@@ -46,34 +48,44 @@ class SeparableSubsampledConvolutionEngine {
   virtual ~SeparableSubsampledConvolutionEngine()=default;
 
   /// The main method : perform Subsampled convolution on one row
-  template<typename... O>
+  //template<typename... O>
+  //TODO TN: to be modified
   static int PerformSubsampledFilteringXRef(const T* in, int Nx,
-      O... out) {
+      T* outlow, T* outhigh) {
+//      O... out) {
 
     int Nx_is_odd = (Nx & 1);
     int NxOut = (Nx + Nx_is_odd)/2;
 
     // Loop over output image
     for (int ox=0; ox<NxOut; ox++) {
+      //TOD TN: delete next 2 lines
+      outlow[ox]=0;
+      outhigh[ox]=0;
       // Loop over filter size, with periodic boundary conditions
       // TODO TN: this loop can actually be written as a compile time loop
       // #pragma unroll Filt::TapSize
-      for (int fx=-Filt::TapSizeLeft; fx<Filt::TapSizeRight; fx++) {
+      for (int fx=-Filtlow::TapSizeLeft; fx<=Filtlow::TapSizeRight; fx++) {
         int ix = ox*2 + fx;
         // if N is odd, image is virtually extended
-        if (ix < 0) ix += (Nx + Nx_is_odd);
+        if (ix < 0) {
+          ix += (Nx + Nx_is_odd);
+        }
         // no "else if", since idx_x can be > N-1  after being incremented
         if (ix > Nx-1) {
           // if N is odd, repeat the right-most element
-          if ((ix == Nx) && (Nx_is_odd))
+          if ((ix == Nx) && (Nx_is_odd)) {
             ix--;
-          // if N is odd, image is virtually extended
-          else
-            ix -= (Nx + Nx_is_odd);
+          } else {
+           // if N is odd, image is virtually extended
+           ix -= (Nx + Nx_is_odd);
+          }
         }
 
         // Update each buffer with its respective filter
-        Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
+        //Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
+        outlow[ox]+=in[ix]*Filtlow::Buff[fx+Filtlow::TapSizeLeft];
+        outhigh[ox]+=in[ix]*Filthigh::Buff[fx+Filthigh::TapSizeLeft];
       }
     }
     return 1;
@@ -99,7 +111,7 @@ class SeparableUpsampledConvolutionEngine {
 
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
-      int ox = lox + FiltLow::IsHalfSizeOdd?0:1;
+      int ox = lox + (FiltLow::IsHalfSizeOdd?0:1);
       int ixCentral = ox/2;
       int max_x = NxIn-1;
       //si index impair: pas d'offset, sinon offset 1
@@ -108,7 +120,7 @@ class SeparableUpsampledConvolutionEngine {
  
       if (offset_x==0) {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
-		for (int jx = 0; jx <= FiltLow::TapHalfSize; jx++) {
+		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
 			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
 			if (idx_x<0) idx_x += NxIn;
 			if (idx_x>max_x) idx_x -= NxIn;
