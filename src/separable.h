@@ -97,11 +97,10 @@ class SeparableUpsampledConvolutionEngine {
   static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxIn,
     int NxOut, T* out) {
 
-    int NxInCentral = NxOut/2;
-
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
       int ox = lox + FiltLow::IsHalfSizeOdd?0:1;
+      int ixCentral = ox/2;
       int max_x = NxIn-1;
       //si index impair: pas d'offset, sinon offset 1
 	  int offset_x = 1-(ox&1);
@@ -110,7 +109,7 @@ class SeparableUpsampledConvolutionEngine {
       if (offset_x==0) {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int jx = 0; jx <= FiltLow::TapHalfSize; jx++) {
-			int idx_x = NxInCentral - FiltLow::TapHalfSizeLeft + jx;
+			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
 			if (idx_x<0) idx_x += NxIn;
 			if (idx_x>max_x) idx_x -= NxIn;
 			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
@@ -120,12 +119,10 @@ class SeparableUpsampledConvolutionEngine {
 			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
 		}
-		// Update each buffer with its respective filter
-		out[ox-FiltLow::IsHalfSizeOdd?0:1] = acc;
       } else {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int jx = 0; jx <= FiltLow::TapHalfSize; jx++) {
-			int idx_x = NxInCentral - FiltLow::TapHalfSizeLeft + jx;
+			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
 			if (idx_x<0) idx_x += NxIn;
 			if (idx_x>max_x) idx_x -= NxIn;
 			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
@@ -135,10 +132,9 @@ class SeparableUpsampledConvolutionEngine {
 			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
 		}
-		// Update each buffer with its respective filter
-		out[ox-FiltLow::IsHalfSizeOdd?0:1] = acc;
       }
-
+      // Update each buffer with its respective filter
+      out[lox] = acc;
     }
     return 1;
   }
