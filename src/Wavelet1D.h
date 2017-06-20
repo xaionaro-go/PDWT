@@ -57,9 +57,12 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         outlow,
         this->m_coeff->GetHighSubspacePtr(l,0));
       //Update lowpass input and output, order is important here
-      if (l==this->m_level-1) {
+      if (this->m_level==1) {
+        //nothing to do
+      } else if (l==this->m_level-2) {
         inlow=outlow;
-        outlow=this->m_coeff->GetLowSubspacePtr(l);
+        outlow=this->m_coeff->GetLowSubspacePtr(l+1);
+        std::cout<<"Next scale will write to low subspace"<<std::endl;
       } else if (l==0) {
         inlow=outlow;
         outlow=this->m_coeff->GetTmpBuffPtr().at(1)->data();

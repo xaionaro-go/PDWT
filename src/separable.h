@@ -115,16 +115,16 @@ class SeparableUpsampledConvolutionEngine {
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
       int ox = lox + (FiltLow::IsHalfSizeOdd?0:1);
-      int ixCentral = ox/2;
       int max_x = NxIn-1;
       //si index impair: pas d'offset, sinon offset 1
-	  int offset_x = 1-(ox&1);
+	  int offset_x = (ox&1);
+      int ixCentral = lox/2-offset_x;
       T acc = (T)0;
  
       if (offset_x==0) {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-			int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
+			int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
 			if (idx_x<0) {
               idx_x += NxIn;
             }
@@ -132,16 +132,16 @@ class SeparableUpsampledConvolutionEngine {
               idx_x -= NxIn;
             }
 			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
-			int fAddr = FiltLow::TapSize -1 - (2*jx);
+			int fAddr = 2*jx+1;//FiltLow::TapSize -1 - (2*jx);
 			// Update each buffer with its respective filter
 			acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-			//acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
 		}
       } else {
 		//TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-		  int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
+		  int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
 		  if (idx_x<0) {
             idx_x += NxIn;
           }
@@ -149,13 +149,13 @@ class SeparableUpsampledConvolutionEngine {
             idx_x -= NxIn;
           }
 		  //int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
-		  int fAddr = FiltLow::TapSize -1 - (2*jx+1);
+		  int fAddr = 2*jx;//FiltLow::TapSize -1 - (2*jx+1);
 		  // Update each buffer with its respective filter
          // std::cout<<"Accumulate low image idx "<<idx_x<<": "<<inLow[idx_x]
          //   <<" x "<<FiltHigh::Buff[fAddr]<<" filt idx: "<<fAddr
          //   <<" | jx="<<jx<<"<"<<FiltLow::TapHalfSize<<std::endl;
 		  acc += inLow[idx_x] * FiltLow::Buff[fAddr];//TODO TN should be low
-		  //acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+		  acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 	      //Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
 		}
       }
