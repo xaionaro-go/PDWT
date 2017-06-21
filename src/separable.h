@@ -6,6 +6,22 @@
 // Local
 #include "filters.h"
 
+/**
+One has to keep in mind that forward transform in a convolution THEN subsampling
+ex:
+|1 0 0 0| |1 -1 0 -1|
+|0 0 1 0| |-1 1 -1 0|
+          |0 -1 1 -1|
+          |-1 0 -1 1|
+
+Transpose of that is then:
+
+|1 -1 0 -1| |1 0|
+|-1 1 -1 0| |0 0|
+|0 -1 1 -1| |0 1|
+|-1 0 -1 1| |0 0|
+So that only one out of 2 coefficients in the convolution is useful
+*/
 
 // TODO TN: you should replace this updater by a slightly more complex struct
 // which is also in charge of storing an accumulator, and has actually two
@@ -118,46 +134,39 @@ class SeparableUpsampledConvolutionEngine {
       int max_x = NxIn-1;
       //si index impair: pas d'offset, sinon offset 1
 	  int offset_x = (ox&1);
-      int ixCentral = lox/2-(FiltLow::IsHalfSizeOdd?0:offset_x);
+      int ixCentral = ox/2-1;
       T acc = (T)0;
  
       if (offset_x==0) {
-		//TODO TN Filter loop, can be turned into an explicit compile time loop
-		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-			int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
-			if (idx_x<0) {
-              idx_x += NxIn;
-            }
-			if (idx_x>max_x) {
-              idx_x -= NxIn;
-            }
-			//int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
-			int fAddr = 2*jx+1;//FiltLow::TapSize -1 - (2*jx);
-			// Update each buffer with its respective filter
-			acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-			//Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
-		}
-      } else {
-		//TODO TN Filter loop, can be turned into an explicit compile time loop
-		for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-		  int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
-		  if (idx_x<0) {
+        //TODO TN Filter loop, can be turned into an explicit compile time loop
+        for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
+          int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
+          if (idx_x<0) {
             idx_x += NxIn;
           }
-		  if (idx_x>max_x) {
+          if (idx_x>max_x) {
             idx_x -= NxIn;
           }
-		  //int fAddr = FiltLow::TapSize -1 - (2*jx + offset_x);
-		  int fAddr = 2*jx;//FiltLow::TapSize -1 - (2*jx+1);
-		  // Update each buffer with its respective filter
-         // std::cout<<"Accumulate low image idx "<<idx_x<<": "<<inLow[idx_x]
-         //   <<" x "<<FiltHigh::Buff[fAddr]<<" filt idx: "<<fAddr
-         //   <<" | jx="<<jx<<"<"<<FiltLow::TapHalfSize<<std::endl;
-		  acc += inLow[idx_x] * FiltLow::Buff[fAddr];//TODO TN should be low
-		  acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-	      //Updater<FiltLow>::update(fAddr, inLow[idx_x], out+ox);
-		}
+          int fAddr = 2*jx+1-offset_x;
+          // Update each buffer with its respective filter
+          acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+          acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+        }
+      } else {
+        //TODO TN Filter loop, can be turned into an explicit compile time loop
+        for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
+          int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
+          if (idx_x<0) {
+            idx_x += NxIn;
+          }
+          if (idx_x>max_x) {
+            idx_x -= NxIn;
+          }
+          int fAddr = 2*jx+1-offset_x;
+          // Update each buffer with its respective filter
+          acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+          acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+        }
       }
       // Update each buffer with its respective filter
       out[lox] = acc;
@@ -167,86 +176,5 @@ class SeparableUpsampledConvolutionEngine {
 };
 
 
-// must be run with grid size = (2*Nr, 2*Nc) ; Nc = numcols of input coeffs. Here the param Nr is actually doubled wrt Nr_coeffs because of the vertical oversampling.
-// pass 2 : (tmp1, tmp2)  ==> Horiz convol with IL, IH  + horiz oversampling ==> I
-/**
-One has to keep in mind that forward transform in a convolution THEN subsampling
-ex:
-|1 0 0 0| |1 -1 0 -1|
-|0 0 1 0| |-1 1 -1 0|
-          |0 -1 1 -1|
-          |-1 0 -1 1|
 
-Transpose of that is then:
-
-|1 -1 0 -1| |1 0|
-|-1 1 -1 0| |0 0|
-|0 -1 1 -1| |0 1|
-|-1 0 -1 1| |0 0|
-So that only one out of 2 coefficients in the convolution is useful
-
-__global__ void w_kern_inverse_pass2(
-	DTYPE* tmp1, //input lowfrequency space
-    DTYPE* tmp2, //input highfrequency space
-	DTYPE* img,  //output image: upsampled in the x direction
-    int Nr,      //in/out size in y
-	int Nc,      //input size in x
-	int Nc2,     //output size in x ater upsampling
-	int hlen     //size of the filter
-  ) {
-
-    int gidx = threadIdx.x + blockIdx.x*blockDim.x;  //gidx: output address x (up to twice the size of the input)
-    int gidy = threadIdx.y + blockIdx.y*blockDim.y;  //gidy: input/output  address y
-
-    if (gidy < Nr && gidx < Nc2) { // horiz oversampling : Input (Nr*2, Nc) => Output (Nr*2, Nc*2)
-
-        int hL, hR;
-        int hlen2 = hlen/2; // Convolutions with even/odd indices of the kernels
-
-        if (hlen2 & 1) { // odd half-kernel size
-            c = hlen2/2;
-            hL = c;
-            hR = c;
-        }
-        else { // even half-kernel size : center is shifted to the RIGHT for reconstruction.
-            c = hlen2/2 - 0;
-            hL = c;
-            hR = c-1;
-            // virtual id for shift
-            // TODO : for the very first convolution (on the edges), this is not exactly accurate (?)
-            gidx += 1;
-        }
-        //Ce passage est important: il y a autant de thread que de pixels de sortie
-        int max_x = Nc-1;
-        int offset_x = 1-(gidx & 1);i//si index impair: pas d'offset, sinon offset 1
-
-        for (int jx = 0; jx <= hR+hL; jx++) {
-            int idx_x = jx1 + jx;
-            if (idx_x<0) idx_x += Nc;
-            if (idx_x>max_x) idx_x -= Nc;
-            res_1 += tmp1[gidy*Nc + idx_x] * c_kern_IL[hlen-1 - (2*jx + offset_x)];
-            res_2 += tmp2[gidy*Nc + idx_x] * c_kern_IH[hlen-1 - (2*jx + offset_x)];
-        }
-        //Si half kernel est impair: on peut ecrire avec le bon mapping
-        if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
-        //Sinon on decale l'ecriture de 1 sur la gauche
-        else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
-    }
-}
-int jx1 = c - gidx/2;//= -(gidx/2-hl)
-        int jx2 = Nc - 1 - gidx/2 + c;//=Nc-1:adresse dernier elem entree, Nc-1-(gidx/2-hl)
-        int offset_x = 1-(gidx & 1);
-
-        DTYPE res_1 = 0, res_2 = 0;
-        for (int jx = 0; jx <= hR+hL; jx++) {
-            int idx_x = gidx/2 - c + jx;
-            if (jx < jx1) idx_x += Nc;
-            if (jx > jx2) idx_x -= Nc;
-
-            res_1 += tmp1[gidy*Nc + idx_x] * c_kern_IL[hlen-1 - (2*jx + offset_x)];
-            res_2 += tmp2[gidy*Nc + idx_x] * c_kern_IH[hlen-1 - (2*jx + offset_x)];
-        }
-        if ((hlen2 & 1) == 1) img[gidy * Nc2 + gidx] = res_1 + res_2;
-        else img[gidy * Nc2 + (gidx-1)] = res_1 + res_2;
-*/
 #endif //SEPARABLE_H

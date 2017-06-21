@@ -1,7 +1,6 @@
 // STL
 #include <cstdlib>
-#include <functional>
-#include <iostream>
+#include <limits>
 #include <numeric>
 #include <vector>
 
@@ -9,9 +8,10 @@
 #include "coeffContainer.h"
 #include "Wavelet1D.h"
 
-int main(int argc, char **argv) {
+//Local
+#include "TestEngine.h"
 
-  auto print = [](auto& in){ std::cout<<in<<", "; };
+/*  auto print = [](auto& in){ std::cout<<in<<", "; };
 
   // Define input/output
   std::vector<float> in(17);
@@ -39,9 +39,10 @@ int main(int argc, char **argv) {
   w.get_image(out.data());
   std::cout<<"Output is: ";
   std::for_each(out.cbegin(),out.cend(),print);
+*/
 
+int main(int argc, char **argv) {
 
-  std::cout<<std::endl;
-
-  return EXIT_SUCCESS;
+  //std::all_of(c.cbegin(),c.cend(),[val](float in) { return in==val; });
+  return true?EXIT_SUCCESS:EXIT_FAILURE;
 }
