@@ -114,11 +114,11 @@ class SeparableUpsampledConvolutionEngine {
 
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
-      int ox = lox + (FiltLow::IsHalfSizeOdd?0:1);
+      int ox = lox + (FiltLow::IsHalfSizeOdd?2:1);
       int max_x = NxIn-1;
       //si index impair: pas d'offset, sinon offset 1
 	  int offset_x = (ox&1);
-      int ixCentral = lox/2-offset_x;
+      int ixCentral = lox/2-(FiltLow::IsHalfSizeOdd?0:offset_x);
       T acc = (T)0;
  
       if (offset_x==0) {
