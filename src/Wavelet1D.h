@@ -123,6 +123,12 @@ using PackedContainer1D =
 // Aliasing ugly types into more simple ones
 template<typename T>
 using Daub2_1D = Wavelet1D<T,PackedContainer1D<T>,Daub2<T>>;
+template<typename T>
+using Daub3_1D = Wavelet1D<T,PackedContainer1D<T>,Daub3<T>>;
+template<typename T>
+using Daub4_1D = Wavelet1D<T,PackedContainer1D<T>,Daub4<T>>;
+template<typename T>
+using Daub5_1D = Wavelet1D<T,PackedContainer1D<T>,Daub5<T>>;
 
 /** \struct All1DWavelet
  * \brief Utility struct that allow to instanciate all 1D wavelets at once
@@ -132,6 +138,9 @@ using Daub2_1D = Wavelet1D<T,PackedContainer1D<T>,Daub2<T>>;
 template<typename T>
 struct DB1DWt {
  Daub2_1D<T> daub2_1D;
+ Daub3_1D<T> daub3_1D;
+ Daub4_1D<T> daub4_1D;
+ Daub5_1D<T> daub5_1D;
 };
 
 /*
