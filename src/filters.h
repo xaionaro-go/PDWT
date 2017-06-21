@@ -184,36 +184,64 @@ enum class filterDB {
   DB2_L,
   DB2_H,
   DB2_I_L,
-  DB2_I_H
+  DB2_I_H,
+  DB3_L,
+  DB3_H,
+  DB3_I_L,
+  DB3_I_H,
+  DB4_L,
+  DB4_H,
+  DB4_I_L,
+  DB4_I_H,
+  DB5_L,
+  DB5_H,
+  DB5_I_L,
+  DB5_I_H
 };
 
 //Semi specialization, type agnostic
 template<typename T>
 struct Filter<T,1,2,filterDB,filterDB::DB2_L> : public
     GenericFilter<T,1,2> {
-  static constexpr T Buff[4] = { -0.12940952255092145, 0.22414386804185735,
-    0.836516303737469, 0.48296291314469025 };
+  static constexpr T Buff[4] = {
+    -0.12940952255092145,
+    0.22414386804185735,
+    0.836516303737469,
+    0.48296291314469025
+  };
 };
 //Semi specialization, type agnostic
 template<typename T>
 struct Filter<T,1,2,filterDB,filterDB::DB2_H> : public
     GenericFilter<T,1,2> {
-  static constexpr T Buff[4] = { -0.48296291314469025, 0.836516303737469,
-    -0.22414386804185735, -0.12940952255092145 };
+  static constexpr T Buff[4] = {
+    -0.48296291314469025,
+    0.836516303737469,
+    -0.22414386804185735,
+    -0.12940952255092145
+  };
 };
 //Semi specialization, type agnostic
 template<typename T>
 struct Filter<T,2,1,filterDB,filterDB::DB2_I_L> : public
     GenericFilter<T,2,1> {
-  static constexpr T Buff[4] = { 0.48296291314469025, 0.836516303737469,
-    0.22414386804185735, -0.12940952255092145 };
+  static constexpr T Buff[4] = {
+    0.48296291314469025,
+    0.836516303737469,
+    0.22414386804185735,
+    -0.12940952255092145
+  };
 };
 //Semi specialization, type agnostic
 template<typename T>
 struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> : public
     GenericFilter<T,2,1> {
-  static constexpr T Buff[4] = { -0.12940952255092145, -0.22414386804185735,
-    0.836516303737469, -0.48296291314469025 };
+  static constexpr T Buff[4] = {
+    -0.12940952255092145,
+    -0.22414386804185735,
+    0.836516303737469,
+    -0.48296291314469025
+  };
 };
 
 /// The Daubechies2 wavelet system, type agnostic
@@ -224,6 +252,218 @@ using Daub2 = wFilter<
     Filter<T,2,1,filterDB,filterDB::DB2_I_L>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_H>>;
 
+
+
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,3,filterDB,filterDB::DB3_L> : public
+    GenericFilter<T,2,3> {
+  static constexpr T Buff[6] = {
+    0.035226291882100656,
+    -0.08544127388224149,
+    -0.13501102001039084,
+    0.4598775021193313, 
+    0.8068915093133388,
+    0.3326705529509569
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,3,filterDB,filterDB::DB3_H> : public
+    GenericFilter<T,2,3> {
+  static constexpr T Buff[6] = {
+    -0.3326705529509569,
+    0.8068915093133388,
+    -0.4598775021193313,
+    -0.13501102001039084,
+    0.08544127388224149,
+    0.035226291882100656
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,3,2,filterDB,filterDB::DB3_I_L> : public
+    GenericFilter<T,3,2> {
+  static constexpr T Buff[6] = {
+    0.3326705529509569, 
+    0.8068915093133388,
+    0.4598775021193313,
+    -0.13501102001039084,
+    -0.08544127388224149,
+    0.035226291882100656
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,3,2,filterDB,filterDB::DB3_I_H> : public
+    GenericFilter<T,3,2> {
+  static constexpr T Buff[6] = {
+    0.035226291882100656,
+    0.08544127388224149,
+    -0.13501102001039084,
+    -0.4598775021193313,
+    0.8068915093133388,
+    -0.3326705529509569
+  };
+};
+
+/// The Daubechies2 wavelet system, type agnostic
+template<typename T>
+using Daub3 = wFilter<
+    Filter<T,2,3,filterDB,filterDB::DB3_L>,
+    Filter<T,2,3,filterDB,filterDB::DB3_H>,
+    Filter<T,3,2,filterDB,filterDB::DB3_I_L>,
+    Filter<T,3,2,filterDB,filterDB::DB3_I_H>>;
+
+
+
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,3,4,filterDB,filterDB::DB4_L> : public
+    GenericFilter<T,3,4> {
+  static constexpr T Buff[8] = {
+    -0.010597401784997278,
+    0.032883011666982945 ,
+    0.030841381835986965 ,
+    -0.18703481171888114 ,
+    -0.02798376941698385 ,
+    0.6308807679295904   ,
+    0.7148465705525415   ,
+    0.23037781330885523
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,3,4,filterDB,filterDB::DB4_H> : public
+    GenericFilter<T,3,4> {
+  static constexpr T Buff[8] = {
+    -0.23037781330885523 ,
+    0.7148465705525415   ,
+    -0.6308807679295904  ,
+    -0.02798376941698385 ,
+    0.18703481171888114  ,
+    0.030841381835986965 ,
+    -0.032883011666982945,
+    -0.010597401784997278
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,3,filterDB,filterDB::DB4_I_L> : public
+    GenericFilter<T,4,3> {
+  static constexpr T Buff[8] = {
+    0.23037781330885523  ,
+    0.7148465705525415   ,
+    0.6308807679295904   ,
+    -0.02798376941698385 ,
+    -0.18703481171888114 ,
+    0.030841381835986965 ,
+    0.032883011666982945 ,
+    -0.010597401784997278
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,3,filterDB,filterDB::DB4_I_H> : public
+    GenericFilter<T,4,3> {
+  static constexpr T Buff[8] = {
+    -0.010597401784997278,
+    -0.032883011666982945,
+    0.030841381835986965 ,
+    0.18703481171888114  ,
+    -0.02798376941698385 ,
+    -0.6308807679295904  ,
+    0.7148465705525415   ,
+    -0.23037781330885523
+  };
+};
+
+/// The Daubechies2 wavelet system, type agnostic
+template<typename T>
+using Daub4 = wFilter<
+    Filter<T,3,4,filterDB,filterDB::DB4_L>,
+    Filter<T,3,4,filterDB,filterDB::DB4_H>,
+    Filter<T,4,3,filterDB,filterDB::DB4_I_L>,
+    Filter<T,4,3,filterDB,filterDB::DB4_I_H>>;
+
+
+
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,5,filterDB,filterDB::DB5_L> : public
+    GenericFilter<T,4,5> {
+  static constexpr T Buff[10] = {
+    0.003335725285001549,
+    -0.012580751999015526,
+    -0.006241490213011705,
+    0.07757149384006515,
+    -0.03224486958502952,
+    -0.24229488706619015,
+    0.13842814590110342,
+    0.7243085284385744,
+    0.6038292697974729,
+    0.160102397974125
+ };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,5,filterDB,filterDB::DB5_H> : public
+    GenericFilter<T,4,5> {
+  static constexpr T Buff[10] = {
+    -0.160102397974125,
+    0.6038292697974729,
+    -0.7243085284385744,
+    0.13842814590110342,
+    0.24229488706619015,
+    -0.03224486958502952,
+    -0.07757149384006515,
+    -0.006241490213011705,
+    0.012580751999015526,
+    0.003335725285001549
+ };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,5,4,filterDB,filterDB::DB5_I_L> : public
+    GenericFilter<T,5,4> {
+  static constexpr T Buff[10] = {
+    0.160102397974125,
+    0.6038292697974729,
+    0.7243085284385744,
+    0.13842814590110342,
+    -0.24229488706619015,
+    -0.03224486958502952,
+    0.07757149384006515,
+    -0.006241490213011705,
+    -0.012580751999015526,
+    0.003335725285001549
+ };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,5,4,filterDB,filterDB::DB5_I_H> : public
+    GenericFilter<T,5,4> {
+  static constexpr T Buff[10] = {
+    0.003335725285001549,
+    0.012580751999015526,
+    -0.006241490213011705,
+    -0.07757149384006515,
+    -0.03224486958502952,
+    0.24229488706619015,
+    0.13842814590110342,
+    -0.7243085284385744,
+    0.6038292697974729,
+    -0.160102397974125
+ };
+};
+
+/// The Daubechies2 wavelet system, type agnostic
+template<typename T>
+using Daub5 = wFilter<
+    Filter<T,4,5,filterDB,filterDB::DB5_L>,
+    Filter<T,4,5,filterDB,filterDB::DB5_H>,
+    Filter<T,5,4,filterDB,filterDB::DB5_I_L>,
+    Filter<T,5,4,filterDB,filterDB::DB5_I_H>>;
 
 /*
 DB2_L[4];
