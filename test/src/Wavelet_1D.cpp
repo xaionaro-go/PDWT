@@ -1,4 +1,5 @@
 // STL
+#include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <numeric>
@@ -11,109 +12,57 @@
 //Local
 #include "TestEngine.h"
 
-/*template<
-  typename T,
-  typename M,
-  typename N,
-  typename K,
-  typename D>
+template<
+  template<typename> class C,
+  typename T,//data type
+  typename L,//nb of level
+  typename S>//Size of input data
 struct Wavelet1DTestFunctor {
   static bool test() {
 
     //more practical
-    constexpr const int m = M::value;
-    constexpr const int n = N::value;
-    constexpr const int k = K::value;
+    constexpr const int level = L::value;
+    constexpr const int size = S::value;
 
     // Define input/output
-    std::vector<T> in();
-    std::vector<T> out(in.size());
+    std::vector<T> in(size);
     std::iota(in.begin(), in.end(),0);
+    const std::vector<T> incopy(in.cbegin(),in.cend());
+    std::vector<T> out(in.size());
 
     // Define wavelet tranform
-    Daub3_1D<float> w(in.data(),in.size(),1,1,false,"Daub2",2);
-    // print coeffs when initialized
-    std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
+    C<T> w(in.data(),in.size(),1,1,false,"Test",level);
     // perform forward transform
     w.forward();
-    //Delete previous image
-    std::fill(in.begin(),in.end(),0);
-    // print coeffs
-    std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
     // perform inverse transform
     w.backward(); 
-    
+    //get reconstruction 
     w.get_image(out.data());
-    std::cout<<"Output is: ";
-    std::for_each(out.cbegin(),out.cend(),print);
-    //std::all_of(c.cbegin(),c.cend(),[val](float in) { return in==val; });
-
-    //Allocate the A, B, C and Ccheck matrices
-    std::vector<T> A(m*k);
-    std::vector<T> B(k*n);
-    std::vector<T> C(m*n);
-    std::vector<T> Ccheck(C.size(),0);
-
-    //Init A and B
-    Initializer<T> init;
-    init.initialize(m, k, n, A.data(), B.data(), C.data());
-
-    //Compute naive serial MM
-    for(size_t i=0;i<m;i++){
-      for(size_t j=0;j<n;j++){
-        for(size_t l=0;l<k;l++){
-          Ccheck[j*m+i]+=A[l*m+i]*B[j*k+l];
-        }
-      }
-    }
-
-    //Custom method to be tested
-    Carma::Multiply<T>(m, k, n,
-      A.data(), B.data(), C.data(), D::value);
-
-    //Correctness checking
-    double tol = 1e4*std::numeric_limits<T>::epsilon();
-    double refNrm2 = std::sqrt(std::inner_product(Ccheck.cbegin(),
-      Ccheck.cend(), Ccheck.cbegin(), 0.0));
-    assert(("Norm of the resulting matrix C should not be too small for the\
-      correctness test", refNrm2 > std::sqrt(tol)));
-    //Now substract Ccheck from C
-    std::transform(C.begin(),C.end(),Ccheck.cbegin(),C.begin(),
-      std::minus<T>());
-    double epsNrm2 = std::sqrt(std::inner_product(C.cbegin(), C.cend(),
-      C.cbegin(), 0.0));
-
-    if( epsNrm2/refNrm2 > tol ) {
-      std::cout<< "FAILURE: error in matrix multiply exceeds an acceptable "
-        <<"margin (m,n,k)=("<<m<<","<<n<<","<<k<<")"<<std::endl;
-      return false;
-    }
- 
-    return true;
+   
+    //check reconstruction quality
+    return std::inner_product(incopy.cbegin(),incopy.cend(),out.cbegin(), true,
+      [](bool acc0, bool acc1) {
+        return acc0&&acc1;
+      },
+      [](T a, T b) {
+        return std::abs(a-b) < 1;
+      });
   }
 };
-*/
+
+template<typename T, typename L, typename S>
+using Daub2_1DTestFctr= Wavelet1DTestFunctor<Daub2_1D,T,L,S>;
 
 int main(int argc, char* argv[])  {
 
   // Defining different sizes
-  using M = std::tuple<IntType<1>,IntType<2>,IntType<3>,IntType<4>,IntType<5>,
-    IntType<64>>;
-  using N = std::tuple<IntType<1>,IntType<2>,IntType<3>,IntType<4>,IntType<5>,
-    IntType<64>>;
-  using K = std::tuple<IntType<1>,IntType<2>,IntType<3>,IntType<4>,IntType<5>,
-    IntType<64>>;
-
-  // Defining max recursion size
-  using D = std::tuple<IntType<0>,IntType<1>,IntType<2>,
-    IntType<3>,IntType<100>>;
-
-  // Carma only defined for single and doubles for now
-  using T = std::tuple<float,double>;
+  using T = std::tuple<float>;//,double>;
+  using L = std::tuple<IntType<1>>;//,IntType<2>,IntType<3>,IntType<4>>;
+  using S = std::tuple<IntType<63>>;//,IntType<63>,IntType<64>,IntType<65>,
+  //  IntType<66>, IntType<127>>;
 
   //We challenge the template test functor over the
-  //cartesian product of the type sets M,N,K,D
-  //return TestImp<MMTestFunctor>(T(), M(), N(), K(), D()) ?
-  //  EXIT_SUCCESS : EXIT_FAILURE;
-  return EXIT_SUCCESS;
+  //cartesian product of the type sets T,L,S
+  return TestImp<Daub2_1DTestFctr>(T(), L(), S()) ?
+    EXIT_SUCCESS : EXIT_FAILURE;
 }
