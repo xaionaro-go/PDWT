@@ -196,7 +196,11 @@ enum class filterDB {
   DB5_L,
   DB5_H,
   DB5_I_L,
-  DB5_I_H
+  DB5_I_H,
+  ANTO9_L,
+  ANTO7_H,
+  ANTO7_I_L,
+  ANTO9_I_H
 };
 
 //Semi specialization, type agnostic
@@ -243,7 +247,6 @@ struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> : public
     -0.48296291314469025
   };
 };
-
 /// The Daubechies2 wavelet system, type agnostic
 template<typename T>
 using Daub2 = wFilter<
@@ -251,7 +254,6 @@ using Daub2 = wFilter<
     Filter<T,1,2,filterDB,filterDB::DB2_H>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_L>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_H>>;
-
 
 
 //Semi specialization, type agnostic
@@ -306,15 +308,13 @@ struct Filter<T,3,2,filterDB,filterDB::DB3_I_H> : public
     -0.3326705529509569
   };
 };
-
-/// The Daubechies2 wavelet system, type agnostic
+/// The Daubechies3 wavelet system, type agnostic
 template<typename T>
 using Daub3 = wFilter<
     Filter<T,2,3,filterDB,filterDB::DB3_L>,
     Filter<T,2,3,filterDB,filterDB::DB3_H>,
     Filter<T,3,2,filterDB,filterDB::DB3_I_L>,
     Filter<T,3,2,filterDB,filterDB::DB3_I_H>>;
-
 
 
 //Semi specialization, type agnostic
@@ -377,15 +377,13 @@ struct Filter<T,4,3,filterDB,filterDB::DB4_I_H> : public
     -0.23037781330885523
   };
 };
-
-/// The Daubechies2 wavelet system, type agnostic
+/// The Daubechies4 wavelet system, type agnostic
 template<typename T>
 using Daub4 = wFilter<
     Filter<T,3,4,filterDB,filterDB::DB4_L>,
     Filter<T,3,4,filterDB,filterDB::DB4_H>,
     Filter<T,4,3,filterDB,filterDB::DB4_I_L>,
     Filter<T,4,3,filterDB,filterDB::DB4_I_H>>;
-
 
 
 //Semi specialization, type agnostic
@@ -456,8 +454,7 @@ struct Filter<T,5,4,filterDB,filterDB::DB5_I_H> : public
     -0.160102397974125
  };
 };
-
-/// The Daubechies2 wavelet system, type agnostic
+/// The Daubechies5 wavelet system, type agnostic
 template<typename T>
 using Daub5 = wFilter<
     Filter<T,4,5,filterDB,filterDB::DB5_L>,
@@ -465,295 +462,92 @@ using Daub5 = wFilter<
     Filter<T,5,4,filterDB,filterDB::DB5_I_L>,
     Filter<T,5,4,filterDB,filterDB::DB5_I_H>>;
 
-/*
-DB2_L[4];
-DB2_H[4];
-DB2_I_L[4];
-DB2_I_H[4];
-DB3_L[6];
-DB3_H[6];
-DB3_I_L[6];
-DB3_I_H[6];
-DB4_L[8];
-DB4_H[8];
-DB4_I_L[8];
-DB4_I_H[8];
-DB5_L[10];
-DB5_H[10];
-DB5_I_L[10];
-DB5_I_H[10];
-DB6_L[12];
-DB6_H[12];
-DB6_I_L[12];
-DB6_I_H[12];
-DB7_L[14];
-DB7_I_L[14];
-DB7_H[14];
-DB7_I_H[14];
-DB8_L[16];
-DB8_I_L[16];
-DB8_H[16];
-DB8_I_H[16];
-DB9_L[18];
-DB9_I_L[18];
-DB9_H[18];
-DB9_I_H[18];
-DB10_L[20];
-DB10_I_L[20];
-DB10_H[20];
-DB10_I_H[20];
-DB11_L[22];
-DB11_I_L[22];
-DB11_H[22];
-DB11_I_H[22];
-DB12_L[24];
-DB12_I_L[24];
-DB12_H[24];
-DB12_I_H[24];
-DB13_L[26];
-DB13_I_L[26];
-DB13_H[26];
-DB13_I_H[26];
-DB14_L[28];
-DB14_I_L[28];
-DB14_H[28];
-DB14_I_H[28];
-DB15_L[30];
-DB15_I_L[30];
-DB15_H[30];
-DB15_I_H[30];
-DB16_L[32];
-DB16_I_L[32];
-DB16_H[32];
-DB16_I_H[32];
-DB17_L[34];
-DB17_I_L[34];
-DB17_H[34];
-DB17_I_H[34];
-DB18_L[36];
-DB18_I_L[36];
-DB18_H[36];
-DB18_I_H[36];
-DB19_L[38];
-DB19_I_L[38];
-DB19_H[38];
-DB19_I_H[38];
-DB20_L[40];
-DB20_I_L[40];
-DB20_H[40];
-DB20_I_H[40];
-SYM2_L[4];
-SYM2_I_L[4];
-SYM2_H[4];
-SYM2_I_H[4];
-SYM3_L[6];
-SYM3_I_L[6];
-SYM3_H[6];
-SYM3_I_H[6];
-SYM4_L[8];
-SYM4_I_L[8];
-SYM4_H[8];
-SYM4_I_H[8];
-SYM5_L[10];
-SYM5_I_L[10];
-SYM5_H[10];
-SYM5_I_H[10];
-SYM6_L[12];
-SYM6_I_L[12];
-SYM6_H[12];
-SYM6_I_H[12];
-SYM7_L[14];
-SYM7_I_L[14];
-SYM7_H[14];
-SYM7_I_H[14];
-SYM8_L[16];
-SYM8_I_L[16];
-SYM8_H[16];
-SYM8_I_H[16];
-SYM9_L[18];
-SYM9_I_L[18];
-SYM9_H[18];
-SYM9_I_H[18];
-SYM10_L[20];
-SYM10_I_L[20];
-SYM10_H[20];
-SYM10_I_H[20];
-SYM11_L[22];
-SYM11_I_L[22];
-SYM11_H[22];
-SYM11_I_H[22];
-SYM12_L[24];
-SYM12_I_L[24];
-SYM12_H[24];
-SYM12_I_H[24];
-SYM13_L[26];
-SYM13_I_L[26];
-SYM13_H[26];
-SYM13_I_H[26];
-SYM14_L[28];
-SYM14_I_L[28];
-SYM14_H[28];
-SYM14_I_H[28];
-SYM15_L[30];
-SYM15_I_L[30];
-SYM15_H[30];
-SYM15_I_H[30];
-SYM16_L[32];
-SYM16_I_L[32];
-SYM16_H[32];
-SYM16_I_H[32];
-SYM17_L[34];
-SYM17_I_L[34];
-SYM17_H[34];
-SYM17_I_H[34];
-SYM18_L[36];
-SYM18_I_L[36];
-SYM18_H[36];
-SYM18_I_H[36];
-SYM19_L[38];
-SYM19_I_L[38];
-SYM19_H[38];
-SYM19_I_H[38];
-SYM20_L[40];
-SYM20_I_L[40];
-SYM20_H[40];
-SYM20_I_H[40];
-COIF1_L[6];
-COIF1_I_L[6];
-COIF1_H[6];
-COIF1_I_H[6];
-COIF2_L[12];
-COIF2_I_L[12];
-COIF2_H[12];
-COIF2_I_H[12];
-COIF3_L[18];
-COIF3_I_L[18];
-COIF3_H[18];
-COIF3_I_H[18];
-COIF4_L[24];
-COIF4_I_L[24];
-COIF4_H[24];
-COIF4_I_H[24];
-COIF5_L[30];
-COIF5_I_L[30];
-COIF5_H[30];
-COIF5_I_H[30];
-BIOR1_3_L[6];
-BIOR1_3_I_L[6];
-BIOR1_3_H[6];
-BIOR1_3_I_H[6];
-BIOR1_5_L[10];
-BIOR1_5_I_L[10];
-BIOR1_5_H[10];
-BIOR1_5_I_H[10];
-BIOR2_2_L[6];
-BIOR2_2_I_L[6];
-BIOR2_2_H[6];
-BIOR2_2_I_H[6];
-BIOR2_4_L[10];
-BIOR2_4_I_L[10];
-BIOR2_4_H[10];
-BIOR2_4_I_H[10];
-BIOR2_6_L[14];
-BIOR2_6_I_L[14];
-BIOR2_6_H[14];
-BIOR2_6_I_H[14];
-BIOR2_8_L[18];
-BIOR2_8_I_L[18];
-BIOR2_8_H[18];
-BIOR2_8_I_H[18];
-BIOR3_1_L[4];
-BIOR3_1_I_L[4];
-BIOR3_1_H[4];
-BIOR3_1_I_H[4];
-BIOR3_3_L[8];
-BIOR3_3_I_L[8];
-BIOR3_3_H[8];
-BIOR3_3_I_H[8];
-BIOR3_5_L[12];
-BIOR3_5_I_L[12];
-BIOR3_5_H[12];
-BIOR3_5_I_H[12];
-BIOR3_7_L[16];
-BIOR3_7_I_L[16];
-BIOR3_7_H[16];
-BIOR3_7_I_H[16];
-BIOR3_9_L[20];
-BIOR3_9_I_L[20];
-BIOR3_9_H[20];
-BIOR3_9_I_H[20];
-BIOR4_4_L[10];
-BIOR4_4_I_L[10];
-BIOR4_4_H[10];
-BIOR4_4_I_H[10];
-BIOR5_5_L[12];
-BIOR5_5_H[12];
-BIOR5_5_I_L[12];
-BIOR5_5_I_H[12];
-BIOR6_8_L[18];
-BIOR6_8_H[18];
-BIOR6_8_I_L[18];
-BIOR6_8_I_H[18];
-RBIOR1_3_L[6];
-RBIOR1_3_I_L[6];
-RBIOR1_3_H[6];
-RBIOR1_3_I_H[6];
-RBIOR1_5_L[10];
-RBIOR1_5_I_L[10];
-RBIOR1_5_H[10];
-RBIOR1_5_I_H[10];
-RBIOR2_2_L[6];
-RBIOR2_2_I_L[6];
-RBIOR2_2_H[6];
-RBIOR2_2_I_H[6];
-RBIOR2_4_L[10];
-RBIOR2_4_I_L[10];
-RBIOR2_4_H[10];
-RBIOR2_4_I_H[10];
-RBIOR2_6_L[14];
-RBIOR2_6_I_L[14];
-RBIOR2_6_H[14];
-RBIOR2_6_I_H[14];
-RBIOR2_8_L[18];
-RBIOR2_8_I_L[18];
-RBIOR2_8_H[18];
-RBIOR2_8_I_H[18];
-RBIOR3_1_L[4];
-RBIOR3_1_I_L[4];
-RBIOR3_1_H[4];
-RBIOR3_1_I_H[4];
-RBIOR3_3_L[8];
-RBIOR3_3_I_L[8];
-RBIOR3_3_H[8];
-RBIOR3_3_I_H[8];
-RBIOR3_5_L[12];
-RBIOR3_5_I_L[12];
-RBIOR3_5_H[12];
-RBIOR3_5_I_H[12];
-RBIOR3_7_L[16];
-RBIOR3_7_I_L[16];
-RBIOR3_7_H[16];
-RBIOR3_7_I_H[16];
-RBIOR3_9_L[20];
-RBIOR3_9_I_L[20];
-RBIOR3_9_H[20];
-RBIOR3_9_I_H[20];
-RBIOR4_4_L[10];
-RBIOR4_4_I_L[10];
-RBIOR4_4_H[10];
-RBIOR4_4_I_H[10];
-RBIOR5_5_L[12];
-RBIOR5_5_I_L[12];
-RBIOR5_5_H[12];
-RBIOR5_5_I_H[12];
-RBIOR6_8_L[18];
-RBIOR6_8_I_L[18];
-RBIOR6_8_H[18];
-RBIOR6_8_I_H[18];
-HAAR_L[4];
-HAAR_H[4];
-HAAR_I_L[4];
-HAAR_I_H[4];
+
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,4,filterDB,filterDB::ANTO9_L> : public
+    GenericFilter<T,4,4> {
+  static constexpr T Buff[9] = {
+    0.02674875741081,
+    -0.01686411844287 ,
+    -0.07822326652899,
+    0.26686411844288,
+    0.60294901823636,
+    0.26686411844287,
+    -0.07822326652899,
+    -0.01686411844287,
+    0.02674875741081
+ };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,3,3,filterDB,filterDB::ANTO7_H> : public
+    GenericFilter<T,3,3> {
+  static constexpr T Buff[7] = {
+    0.04563588155712,
+    -0.02877176311425,
+    -0.29563588155712,
+    0.55754352622850,
+    -0.29563588155713,
+    -0.02877176311425,
+     0.04563588155712
+ };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,3,3,filterDB,filterDB::ANTO7_I_L> : public
+    GenericFilter<T,3,3> {
+  static constexpr T Buff[7] = {
+    -0.09127176311424,
+    -0.05754352622850,
+    0.59127176311424,
+    1.11508705245700,
+    0.59127176311426,
+    -0.05754352622850,
+    -0.09127176311424
+ };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,4,filterDB,filterDB::ANTO9_I_H> : public
+    GenericFilter<T,4,4> {
+  static constexpr T Buff[9] = {
+    0.05349751482162,
+    0.03372823688574,
+    -0.15644653305798,
+    -0.53372823688576,
+    1.20589803647272,
+    -0.53372823688574,
+    -0.15644653305798,
+    0.03372823688574,
+    0.05349751482162
+ };
+};
+/// The (9,7) tap bi-orthogonal Antonini filter, type agnostic
+template<typename T>
+using Anto97_BiOrth = wFilter<
+    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
+    Filter<T,3,3,filterDB,filterDB::ANTO7_H>,
+    Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
+    Filter<T,3,3,filterDB,filterDB::ANTO9_I_H>>;
+
+/*See ../../Pix3DGIT/tools/Volumix2/src/Cuda/CudaConstantMemoryHelper.cpp 
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,3,filterDB,filterDB::QSHIFT6_L> : public
+    GenericFilter<T,2,3> {
+  static constexpr T Buff[6] = {
+ };
+};
+/// The 6 tap orthogonal Q-Shift filter, type agnostic
+template<typename T>
+using QSHIFT6_Orth = wFilter<
+    Filter<T,4,4,filterDB,filterDB::QSHIFT6_L>,
+    Filter<T,3,3,filterDB,filterDB::QSHIFT6_H>,
+    Filter<T,3,3,filterDB,filterDB::QSHIFT6_I_L>,
+    Filter<T,3,3,filterDB,filterDB::QSHIFT6_I_H>>;
 */
+
+
 
 #endif
