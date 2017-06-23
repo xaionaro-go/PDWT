@@ -69,7 +69,7 @@ class CoeffContainer {
       m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(1)));
       m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(2)));
     }
- }
+  }
 
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const = 0;
@@ -81,8 +81,10 @@ class CoeffContainer {
 	// For each band, we have (2^d)-1 high frequency subband + 1 low frequency
     // We decided to put the low frequency at the end in our layout
 	size_t nbHighFreqSubband = std::pow(2,GetNbDimension())-1;
+    assert(m_scaleSize.size()>1);
 	size_t scaleOffset = nbHighFreqSubband*std::accumulate(
-      m_scaleSize.begin()+1, m_scaleSize.begin()+scale+2,
+      m_scaleSize.cbegin()+1,
+      std::min(m_scaleSize.cbegin()+scale+2,m_scaleSize.cend()),
       0u, std::plus<size_t>());
 	return m_coeff.data()+bandOffset+scaleOffset;
   }

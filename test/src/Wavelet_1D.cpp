@@ -56,10 +56,10 @@ using Daub2_1DTestFctr= Wavelet1DTestFunctor<Daub2_1D,T,L,S>;
 int main(int argc, char* argv[])  {
 
   // Defining different sizes
-  using T = std::tuple<float>;//,double>;
-  using L = std::tuple<IntType<1>>;//,IntType<2>,IntType<3>,IntType<4>>;
-  using S = std::tuple<IntType<63>>;//,IntType<63>,IntType<64>,IntType<65>,
-  //  IntType<66>, IntType<127>>;
+  using T = std::tuple<float,double>;
+  using L = std::tuple<IntType<1>,IntType<2>,IntType<3>,IntType<4>>;
+  using S = std::tuple<IntType<63>,IntType<63>,IntType<64>,IntType<65>,
+    IntType<66>, IntType<127>>;
 
   //We challenge the template test functor over the
   //cartesian product of the type sets T,L,S
