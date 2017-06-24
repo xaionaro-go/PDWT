@@ -466,9 +466,9 @@ using Daub5 = wFilter<
 
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,4,5,filterDB,filterDB::ANTO9_L> : public
-    GenericFilter<T,4,5> {
-  static const constexpr std::array<T,10> Buff = {
+struct Filter<T,4,4,filterDB,filterDB::ANTO9_L> : public
+    GenericFilter<T,4,4> {
+  static const constexpr std::array<T,9> Buff = {
     0.02674875741081,
     -0.01686411844287,
     -0.07822326652899,
@@ -477,16 +477,14 @@ struct Filter<T,4,5,filterDB,filterDB::ANTO9_L> : public
     0.26686411844287,
     -0.07822326652899,
     -0.01686411844287,
-    0.02674875741081,
-    0.
+    0.02674875741081
  };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,4,5,filterDB,filterDB::ANTO7_H> : public
-    GenericFilter<T,4,5> {
-  static const constexpr std::array<T,10> Buff = {
-    0.,0.,
+struct Filter<T,2,4,filterDB,filterDB::ANTO7_H> : public
+    GenericFilter<T,2,4> {
+  static const constexpr std::array<T,7> Buff = {
     0.04563588155712,
     -0.02877176311425,
     -0.29563588155712,
@@ -494,7 +492,6 @@ struct Filter<T,4,5,filterDB,filterDB::ANTO7_H> : public
     -0.29563588155713,
     -0.02877176311425,
     0.04563588155712,
-    0.
  };
 };
 //Semi specialization, type agnostic
@@ -515,9 +512,9 @@ struct Filter<T,5,4,filterDB,filterDB::ANTO7_I_L> : public
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,5,4,filterDB,filterDB::ANTO9_I_H> : public
-    GenericFilter<T,5,4> {
-  static const constexpr std::array<T,10> Buff = {
+struct Filter<T,5,3,filterDB,filterDB::ANTO9_I_H> : public
+    GenericFilter<T,5,3> {
+  static const constexpr std::array<T,9> Buff = {
     0.05349751482162,
     0.03372823688574,
     -0.15644653305798,
@@ -526,26 +523,25 @@ struct Filter<T,5,4,filterDB,filterDB::ANTO9_I_H> : public
     -0.53372823688574,
     -0.15644653305798,
     0.03372823688574,
-    0.05349751482162,
-    0
+    0.05349751482162
  };
 };
 /// The (9,7) tap bi-orthogonal Antonini filter, type agnostic
 template<typename T>
 using Anto97_BiOrth = wFilter<
-    Filter<T,4,5,filterDB,filterDB::ANTO9_L>,
-    Filter<T,4,5,filterDB,filterDB::ANTO7_H>,
+    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
+    Filter<T,2,4,filterDB,filterDB::ANTO7_H>,
     Filter<T,5,4,filterDB,filterDB::ANTO7_I_L>,
-    Filter<T,5,4,filterDB,filterDB::ANTO9_I_H>>;
+    Filter<T,5,3,filterDB,filterDB::ANTO9_I_H>>;
 /*    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
     Filter<T,3,3,filterDB,filterDB::ANTO7_H>,
     Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
     Filter<T,4,4,filterDB,filterDB::ANTO9_I_H>>;*/
 
 template <typename T>
-const std::array<T,10> Filter<T,4,5,filterDB,filterDB::ANTO9_L>::Buff;
+const std::array<T,9> Filter<T,4,4,filterDB,filterDB::ANTO9_L>::Buff;
 template <typename T>
-const std::array<T,10> Filter<T,4,5,filterDB,filterDB::ANTO7_H>::Buff;
+const std::array<T,7> Filter<T,2,4,filterDB,filterDB::ANTO7_H>::Buff;
 
 /*See ../../Pix3DGIT/tools/Volumix2/src/Cuda/CudaConstantMemoryHelper.cpp 
 and ../../Pix3DGIT/tools/Volumix2/src/Cuda/DualTreeComplexWaveletOperator/DTCWT.cu.h
