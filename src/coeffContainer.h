@@ -4,8 +4,10 @@
 // STL
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <functional>
 #include <memory>
+#include <numeric>
 #include <vector>
 
 // Local

@@ -16,17 +16,18 @@ int main(int argc, char **argv) {
   auto print = [](auto& in){ std::cout<<in<<", "; };
 
   // Define input/output
-  std::vector<T> in(63);
+  std::vector<T> in(8);
   std::vector<T> out(in.size());
-  std::iota(in.begin(), in.end(),0);
-  //std::fill(in.begin(), in.end(), 2);
+  //std::iota(in.begin(), in.end(),0);
+  std::fill(in.begin(), in.end(), 2);
 
   std::cout<<"Input is: ";
   std::for_each(in.begin(),in.end(),print);
   std::cout<<std::endl;
 
   // Define wavelet tranform
-  Daub2_1D<T> w(in.data(),in.size(),1,1,false,"Daub2",1);
+  //Daub2_1D<T> w(in.data(),in.size(),1,1,false,"Daub2",1);
+  Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",1);
   // print coeffs when initialized
   std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
   // perform forward transform

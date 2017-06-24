@@ -23,6 +23,7 @@ TODO TN: a specialiser et supprimer
 
 
 // STL
+#include <array>
 #include <string>
 
 // Local
@@ -95,7 +96,7 @@ struct Filter : public GenericFilter<T,TAP_SIZE_LEFT,TAP_SIZE_RIGHT> {
   Filter()=default;
   
   // Actual storage for the filter
-  static constexpr T Buf[ParenT::TapSize]={0};
+  static const constexpr std::array<T,ParenT::TapSize> Buff = {0};
 };
 
 /** \struct wFilter
@@ -207,7 +208,7 @@ enum class filterDB {
 template<typename T>
 struct Filter<T,1,2,filterDB,filterDB::DB2_L> : public
     GenericFilter<T,1,2> {
-  static constexpr T Buff[4] = {
+  static const constexpr std::array<T,4> Buff = {
     -0.12940952255092145,
     0.22414386804185735,
     0.836516303737469,
@@ -218,7 +219,7 @@ struct Filter<T,1,2,filterDB,filterDB::DB2_L> : public
 template<typename T>
 struct Filter<T,1,2,filterDB,filterDB::DB2_H> : public
     GenericFilter<T,1,2> {
-  static constexpr T Buff[4] = {
+  static const constexpr std::array<T,4> Buff = {
     -0.48296291314469025,
     0.836516303737469,
     -0.22414386804185735,
@@ -229,7 +230,7 @@ struct Filter<T,1,2,filterDB,filterDB::DB2_H> : public
 template<typename T>
 struct Filter<T,2,1,filterDB,filterDB::DB2_I_L> : public
     GenericFilter<T,2,1> {
-  static constexpr T Buff[4] = {
+  static const constexpr std::array<T,4> Buff = {
     0.48296291314469025,
     0.836516303737469,
     0.22414386804185735,
@@ -240,7 +241,7 @@ struct Filter<T,2,1,filterDB,filterDB::DB2_I_L> : public
 template<typename T>
 struct Filter<T,2,1,filterDB,filterDB::DB2_I_H> : public
     GenericFilter<T,2,1> {
-  static constexpr T Buff[4] = {
+  static const constexpr std::array<T,4> Buff = {
     -0.12940952255092145,
     -0.22414386804185735,
     0.836516303737469,
@@ -260,7 +261,7 @@ using Daub2 = wFilter<
 template<typename T>
 struct Filter<T,2,3,filterDB,filterDB::DB3_L> : public
     GenericFilter<T,2,3> {
-  static constexpr T Buff[6] = {
+  static const constexpr std::array<T,6> Buff = {
     0.035226291882100656,
     -0.08544127388224149,
     -0.13501102001039084,
@@ -273,7 +274,7 @@ struct Filter<T,2,3,filterDB,filterDB::DB3_L> : public
 template<typename T>
 struct Filter<T,2,3,filterDB,filterDB::DB3_H> : public
     GenericFilter<T,2,3> {
-  static constexpr T Buff[6] = {
+  static const constexpr std::array<T,6> Buff = {
     -0.3326705529509569,
     0.8068915093133388,
     -0.4598775021193313,
@@ -286,7 +287,7 @@ struct Filter<T,2,3,filterDB,filterDB::DB3_H> : public
 template<typename T>
 struct Filter<T,3,2,filterDB,filterDB::DB3_I_L> : public
     GenericFilter<T,3,2> {
-  static constexpr T Buff[6] = {
+  static const constexpr std::array<T,6> Buff = {
     0.3326705529509569, 
     0.8068915093133388,
     0.4598775021193313,
@@ -299,7 +300,7 @@ struct Filter<T,3,2,filterDB,filterDB::DB3_I_L> : public
 template<typename T>
 struct Filter<T,3,2,filterDB,filterDB::DB3_I_H> : public
     GenericFilter<T,3,2> {
-  static constexpr T Buff[6] = {
+  static const constexpr std::array<T,6> Buff = {
     0.035226291882100656,
     0.08544127388224149,
     -0.13501102001039084,
@@ -321,7 +322,7 @@ using Daub3 = wFilter<
 template<typename T>
 struct Filter<T,3,4,filterDB,filterDB::DB4_L> : public
     GenericFilter<T,3,4> {
-  static constexpr T Buff[8] = {
+  static const constexpr std::array<T,8> Buff = {
     -0.010597401784997278,
     0.032883011666982945 ,
     0.030841381835986965 ,
@@ -336,7 +337,7 @@ struct Filter<T,3,4,filterDB,filterDB::DB4_L> : public
 template<typename T>
 struct Filter<T,3,4,filterDB,filterDB::DB4_H> : public
     GenericFilter<T,3,4> {
-  static constexpr T Buff[8] = {
+  static const constexpr std::array<T,8> Buff = {
     -0.23037781330885523 ,
     0.7148465705525415   ,
     -0.6308807679295904  ,
@@ -351,7 +352,7 @@ struct Filter<T,3,4,filterDB,filterDB::DB4_H> : public
 template<typename T>
 struct Filter<T,4,3,filterDB,filterDB::DB4_I_L> : public
     GenericFilter<T,4,3> {
-  static constexpr T Buff[8] = {
+  static const constexpr std::array<T,8> Buff = {
     0.23037781330885523  ,
     0.7148465705525415   ,
     0.6308807679295904   ,
@@ -366,7 +367,7 @@ struct Filter<T,4,3,filterDB,filterDB::DB4_I_L> : public
 template<typename T>
 struct Filter<T,4,3,filterDB,filterDB::DB4_I_H> : public
     GenericFilter<T,4,3> {
-  static constexpr T Buff[8] = {
+  static const constexpr std::array<T,8> Buff = {
     -0.010597401784997278,
     -0.032883011666982945,
     0.030841381835986965 ,
@@ -390,7 +391,7 @@ using Daub4 = wFilter<
 template<typename T>
 struct Filter<T,4,5,filterDB,filterDB::DB5_L> : public
     GenericFilter<T,4,5> {
-  static constexpr T Buff[10] = {
+  static const constexpr std::array<T,10> Buff = {
     0.003335725285001549,
     -0.012580751999015526,
     -0.006241490213011705,
@@ -407,7 +408,7 @@ struct Filter<T,4,5,filterDB,filterDB::DB5_L> : public
 template<typename T>
 struct Filter<T,4,5,filterDB,filterDB::DB5_H> : public
     GenericFilter<T,4,5> {
-  static constexpr T Buff[10] = {
+  static const constexpr std::array<T,10> Buff = {
     -0.160102397974125,
     0.6038292697974729,
     -0.7243085284385744,
@@ -424,7 +425,7 @@ struct Filter<T,4,5,filterDB,filterDB::DB5_H> : public
 template<typename T>
 struct Filter<T,5,4,filterDB,filterDB::DB5_I_L> : public
     GenericFilter<T,5,4> {
-  static constexpr T Buff[10] = {
+  static const constexpr std::array<T,10> Buff = {
     0.160102397974125,
     0.6038292697974729,
     0.7243085284385744,
@@ -441,7 +442,7 @@ struct Filter<T,5,4,filterDB,filterDB::DB5_I_L> : public
 template<typename T>
 struct Filter<T,5,4,filterDB,filterDB::DB5_I_H> : public
     GenericFilter<T,5,4> {
-  static constexpr T Buff[10] = {
+  static const constexpr std::array<T,10> Buff = {
     0.003335725285001549,
     0.012580751999015526,
     -0.006241490213011705,
@@ -465,53 +466,60 @@ using Daub5 = wFilter<
 
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,4,4,filterDB,filterDB::ANTO9_L> : public
-    GenericFilter<T,4,4> {
-  static constexpr T Buff[9] = {
+struct Filter<T,5,6,filterDB,filterDB::ANTO9_L> : public
+    GenericFilter<T,5,6> {
+  static const constexpr std::array<T,12> Buff = {
+    0.,
     0.02674875741081,
-    -0.01686411844287 ,
+    -0.01686411844287,
     -0.07822326652899,
     0.26686411844288,
     0.60294901823636,
     0.26686411844287,
     -0.07822326652899,
     -0.01686411844287,
-    0.02674875741081
+    0.02674875741081,
+    0.,0.
  };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,3,3,filterDB,filterDB::ANTO7_H> : public
-    GenericFilter<T,3,3> {
-  static constexpr T Buff[7] = {
+struct Filter<T,5,6,filterDB,filterDB::ANTO7_H> : public
+    GenericFilter<T,5,6> {
+  static const constexpr std::array<T,12> Buff = {
+    0.,0.,0.,
     0.04563588155712,
     -0.02877176311425,
     -0.29563588155712,
     0.55754352622850,
     -0.29563588155713,
     -0.02877176311425,
-     0.04563588155712
+    0.04563588155712,
+    0.,0.
  };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,3,3,filterDB,filterDB::ANTO7_I_L> : public
-    GenericFilter<T,3,3> {
-  static constexpr T Buff[7] = {
+struct Filter<T,6,5,filterDB,filterDB::ANTO7_I_L> : public
+    GenericFilter<T,6,5> {
+  static const constexpr std::array<T,12> Buff = {
+    0.,0.,0.,
     -0.09127176311424,
     -0.05754352622850,
     0.59127176311424,
     1.11508705245700,
     0.59127176311426,
     -0.05754352622850,
-    -0.09127176311424
+    -0.09127176311424,
+    0.,0.
  };
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,4,4,filterDB,filterDB::ANTO9_I_H> : public
-    GenericFilter<T,4,4> {
-  static constexpr T Buff[9] = {
+struct Filter<T,6,5,filterDB,filterDB::ANTO9_I_H> : public
+    GenericFilter<T,6,5> {
+  static const constexpr std::array<T,12> Buff = {
+    0,
     0.05349751482162,
     0.03372823688574,
     -0.15644653305798,
@@ -520,23 +528,34 @@ struct Filter<T,4,4,filterDB,filterDB::ANTO9_I_H> : public
     -0.53372823688574,
     -0.15644653305798,
     0.03372823688574,
-    0.05349751482162
+    0.05349751482162,
+    0,0
  };
 };
 /// The (9,7) tap bi-orthogonal Antonini filter, type agnostic
 template<typename T>
 using Anto97_BiOrth = wFilter<
-    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
+    Filter<T,5,6,filterDB,filterDB::ANTO9_L>,
+    Filter<T,5,6,filterDB,filterDB::ANTO7_H>,
+    Filter<T,6,5,filterDB,filterDB::ANTO7_I_L>,
+    Filter<T,6,5,filterDB,filterDB::ANTO9_I_H>>;
+/*    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
     Filter<T,3,3,filterDB,filterDB::ANTO7_H>,
     Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
-    Filter<T,3,3,filterDB,filterDB::ANTO9_I_H>>;
+    Filter<T,4,4,filterDB,filterDB::ANTO9_I_H>>;*/
+
+template <typename T>
+const std::array<T,12> Filter<T,5,6,filterDB,filterDB::ANTO9_L>::Buff;
+template <typename T>
+const std::array<T,12> Filter<T,5,6,filterDB,filterDB::ANTO7_H>::Buff;
 
 /*See ../../Pix3DGIT/tools/Volumix2/src/Cuda/CudaConstantMemoryHelper.cpp 
+and ../../Pix3DGIT/tools/Volumix2/src/Cuda/DualTreeComplexWaveletOperator/DTCWT.cu.h
 //Semi specialization, type agnostic
 template<typename T>
 struct Filter<T,2,3,filterDB,filterDB::QSHIFT6_L> : public
     GenericFilter<T,2,3> {
-  static constexpr T Buff[6] = {
+  static const constexpr std::array<T,6> Buff = {
  };
 };
 /// The 6 tap orthogonal Q-Shift filter, type agnostic
