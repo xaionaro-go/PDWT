@@ -72,10 +72,7 @@ struct GenericFilter {
   constexpr static bool IsHalfSizeOdd = TapHalfSize&1;
 
   /// for conv with subsampled data: half tap number
-  constexpr static int TapHalfSizeLeft = TapHalfSize/2;
-  
-  /// for conv with subsampled data: half tap number
-  constexpr static int TapHalfSizeRight = TapHalfSizeLeft-(IsHalfSizeOdd?0:1);
+  constexpr static int TapHalfSizeLeft = TapHalfSize/2-(IsHalfSizeOdd?0:1);
 
   /// How many vector are needed to load a single filter support
   constexpr static int NbVecPerFilt = (TapSize+VecSize-1)/(VecSize);
@@ -496,18 +493,16 @@ struct Filter<T,2,4,filterDB,filterDB::ANTO7_H> : public
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,5,4,filterDB,filterDB::ANTO7_I_L> : public
-    GenericFilter<T,5,4> {
-  static const constexpr std::array<T,10> Buff = {
-    0.,0.,
+struct Filter<T,3,3,filterDB,filterDB::ANTO7_I_L> : public
+    GenericFilter<T,3,3> {
+  static const constexpr std::array<T,7> Buff = {
     -0.09127176311424,
     -0.05754352622850,
     0.59127176311424,
     1.11508705245700,
     0.59127176311426,
     -0.05754352622850,
-    -0.09127176311424,
-    0.
+    -0.09127176311424
  };
 };
 //Semi specialization, type agnostic
@@ -531,7 +526,7 @@ template<typename T>
 using Anto97_BiOrth = wFilter<
     Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
     Filter<T,2,4,filterDB,filterDB::ANTO7_H>,
-    Filter<T,5,4,filterDB,filterDB::ANTO7_I_L>,
+    Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
     Filter<T,5,3,filterDB,filterDB::ANTO9_I_H>>;
 /*    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
     Filter<T,3,3,filterDB,filterDB::ANTO7_H>,

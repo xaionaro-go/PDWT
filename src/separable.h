@@ -81,7 +81,8 @@ class SeparableSubsampledConvolutionEngine {
       // Loop over filter size, with periodic boundary conditions
       // TODO TN: this loop can actually be written as a compile time loop
       // #pragma unroll Filt::TapSize
-      for (int fx=-Filtlow::TapSizeLeft; fx<=Filtlow::TapSizeRight; fx++) {
+      for (int fx=-std::max(Filtlow::TapSizeLeft,Filthigh::TapSizeLeft);
+          fx<=std::max(Filtlow::TapSizeRight,Filthigh::TapSizeRight); fx++) {
         int ix = ox*2 + fx;
         // if N is odd, image is virtually extended
         if (ix < 0) {
@@ -103,8 +104,14 @@ class SeparableSubsampledConvolutionEngine {
 
         // Update each buffer with its respective filter
         //Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
-        outlow[ox]+=in[ix]*Filtlow::Buff[fx+Filtlow::TapSizeLeft];
-        outhigh[ox]+=in[ix]*Filthigh::Buff[fx+Filthigh::TapSizeLeft];
+        
+        //actualy, this is a condition update
+        if ((fx>=-Filtlow::TapSizeLeft)&&(fx<=Filtlow::TapSizeRight)) {
+          outlow[ox]+=in[ix]*Filtlow::Buff[fx+Filtlow::TapSizeLeft];
+        }
+        if ((fx>=-Filthigh::TapSizeLeft)&&(fx<=Filthigh::TapSizeRight)) {
+          outhigh[ox]+=in[ix]*Filthigh::Buff[fx+Filthigh::TapSizeLeft];
+        }
       }
     }
     return 1;
@@ -133,39 +140,50 @@ class SeparableUpsampledConvolutionEngine {
       int ox = lox + (FiltLow::IsHalfSizeOdd?2:1);
       int max_x = NxIn-1;
       //si index impair: pas d'offset, sinon offset 1
-	  int offset_x = (ox&1);
+	  int offset_x = 1-(ox&1); //pose probleme dans le cas Anto
       int ixCentral = ox/2-1;
       T acc = (T)0;
- 
-      if (offset_x==0) {
+
+      if (offset_x==1) {
         //TODO TN Filter loop, can be turned into an explicit compile time loop
-        for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-          int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
+        for (int jx = 0; jx < std::max(FiltLow::TapHalfSize,
+            FiltHigh::TapHalfSize); jx++) {
+          int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
           if (idx_x<0) {
             idx_x += NxIn;
           }
           if (idx_x>max_x) {
             idx_x -= NxIn;
           }
-          int fAddr = 2*jx+1-offset_x;
-          // Update each buffer with its respective filter
-          acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-          acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+          int fAddr = 2*jx+offset_x;
+
+          // conditional update with respective filter
+          if(jx<=FiltLow::TapHalfSize) {
+            acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+          }
+          if(jx<=FiltHigh::TapHalfSize) {
+            acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+          }
         }
       } else {
         //TODO TN Filter loop, can be turned into an explicit compile time loop
-        for (int jx = 0; jx < FiltLow::TapHalfSize; jx++) {
-          int idx_x = ixCentral - FiltLow::TapHalfSizeRight + jx;
+        for (int jx = 0; jx < std::max(FiltLow::TapHalfSize,
+            FiltHigh::TapHalfSize); jx++) {
+          int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
           if (idx_x<0) {
             idx_x += NxIn;
           }
           if (idx_x>max_x) {
             idx_x -= NxIn;
           }
-          int fAddr = 2*jx+1-offset_x;
-          // Update each buffer with its respective filter
-          acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-          acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+          int fAddr = 2*jx+offset_x;
+          // conditional update with respective filter
+          if(jx<=FiltLow::TapHalfSize) {
+            acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+          }
+          if(jx<=FiltHigh::TapHalfSize) {
+            acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+          }
         }
       }
       // Update each buffer with its respective filter

@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
   std::cout<<std::endl;
 
   // Define wavelet tranform
-  //Daub2_1D<T> w(in.data(),in.size(),1,1,false,"Daub2",1);
-  Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",3);
+  //Daub3_1D<T> w(in.data(),in.size(),1,1,false,"Daub2",1);
+  Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",1);
   // print coeffs when initialized
   std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
   // perform forward transform
