@@ -574,10 +574,9 @@ struct Filter<T,5,2,filterDB,filterDB::REVERSE_QSHIFT6_I_L> : public
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,4,5,filterDB,filterDB::QSHIFT6_H> : public
-    GenericFilter<T,4,5> {
-  static const constexpr std::array<T,10> Buff = {
-    0.0, 0.0,
+struct Filter<T,2,5,filterDB,filterDB::QSHIFT6_H> : public
+    GenericFilter<T,2,5> {
+  static const constexpr std::array<T,8> Buff = {
     -0.11430184000000,
     0.0,
     0.58751830000000,
@@ -590,17 +589,16 @@ struct Filter<T,4,5,filterDB,filterDB::QSHIFT6_H> : public
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,5,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H> : public
-    GenericFilter<T,5,4> {
-  static const constexpr std::array<T,10> Buff =
-    Filter<T,4,5,filterDB,filterDB::QSHIFT6_H>::Buff;
+struct Filter<T,3,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H> : public
+    GenericFilter<T,3,4> {
+  static const constexpr std::array<T,8> Buff =
+    Filter<T,2,5,filterDB,filterDB::QSHIFT6_H>::Buff;
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L> : public
-    GenericFilter<T,5,4> {
-  static const constexpr std::array<T,10> Buff = {
-    0.0, 0.0,
+struct Filter<T,3,4,filterDB,filterDB::QSHIFT6_I_L> : public
+    GenericFilter<T,3,4> {
+  static const constexpr std::array<T,8> Buff = {
     -0.11430184000000,
     0.0,
     0.58751830000000,
@@ -613,10 +611,10 @@ struct Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L> : public
 };
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_L> : public
-    GenericFilter<T,4,5> {
-  static const constexpr std::array<T,10> Buff =
-    Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L>::Buff;
+struct Filter<T,2,5,filterDB,filterDB::REVERSE_QSHIFT6_L> : public
+    GenericFilter<T,2,5> {
+  static const constexpr std::array<T,8> Buff =
+    Filter<T,3,4,filterDB,filterDB::QSHIFT6_I_L>::Buff;
 };
 //Semi specialization, type agnostic
 template<typename T>
@@ -646,30 +644,30 @@ struct Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_H> : public
 template<typename T>
 using QSHIFT6_Orth = wFilter<
     Filter<T,4,3,filterDB,filterDB::QSHIFT6_L>,
-    Filter<T,4,5,filterDB,filterDB::QSHIFT6_H>,
-    Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L>,
+    Filter<T,2,5,filterDB,filterDB::QSHIFT6_H>,
+    Filter<T,3,4,filterDB,filterDB::QSHIFT6_I_L>,
     Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_H>>;
 
 template <typename T>
 const std::array<T,8> Filter<T,4,3,filterDB,filterDB::QSHIFT6_L>::Buff;
 template <typename T>
-const std::array<T,10> Filter<T,4,5,filterDB,filterDB::QSHIFT6_H>::Buff;
+const std::array<T,8> Filter<T,2,5,filterDB,filterDB::QSHIFT6_H>::Buff;
 template <typename T>
-const std::array<T,10> Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L>::Buff;
+const std::array<T,8> Filter<T,3,4,filterDB,filterDB::QSHIFT6_I_L>::Buff;
 template <typename T>
 const std::array<T,10> Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_H>::Buff;
 
 template<typename T>
 using REVERSE_QSHIFT6_Orth = wFilter<
-    Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_L>,
+    Filter<T,2,5,filterDB,filterDB::REVERSE_QSHIFT6_L>,
     Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_H>,
     Filter<T,5,2,filterDB,filterDB::REVERSE_QSHIFT6_I_L>,
-    Filter<T,5,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H>>;
+    Filter<T,3,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H>>;
 template <typename T>
 const std::array<T,8> Filter<T,5,2,filterDB,
   filterDB::REVERSE_QSHIFT6_I_L>::Buff;
 template <typename T>
-const std::array<T,10> Filter<T,5,4,
+const std::array<T,8> Filter<T,3,4,
   filterDB,filterDB::REVERSE_QSHIFT6_I_H>::Buff;
 
 #endif
