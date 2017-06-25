@@ -115,58 +115,46 @@ struct wFilter {
  *
  * \author Thibault Notargiacomo
  */
-template<class ForwardLowStage0RealT,
-         class ForwardLowStage0ImagT,
-         class ForwardHighStage0RealT,
-         class ForwardHighStage0ImagT,
-         class ForwardLowStageNRealT,
-         class ForwardLowStageNImagT,
-         class ForwardHighStageNRealT,
-         class ForwardHighStageNImagT,
-         class InverseLowStage0RealT,
-         class InverseLowStage0ImagT,
-         class InverseHighStage0RealT,
-         class InverseHighStage0ImagT,
-         class InverseLowStageNRealT,
-         class InverseLowStageNImagT,
-         class InverseHighStageNRealT,
-         class InverseHighStageNImagT>
+template<class Stage0RealT,
+         class Stage0ImagT,
+         class StageNRealT,
+         class StageNImagT>
 struct cwFilter {
   /// A small string that defines the wavelet system name
   std::string wname;
   
   /// Forward lowpass filter stage 0 real part
-  using f_l0r = ForwardLowStage0RealT;
+  using f_l0r = typename Stage0RealT::f_l;
   /// Forward lowpass filter stage 0 imaginary part
-  using f_l0i = ForwardLowStage0ImagT;
+  using f_l0i = typename Stage0ImagT::f_l;
   /// Forward highpass filter stage 0 real part
-  using f_h0r = ForwardHighStage0RealT;
+  using f_h0r = typename Stage0RealT::f_h;
   /// Forward highpass filter stage 0 imaginary part
-  using f_h0i = ForwardHighStage0ImagT;
+  using f_h0i = typename Stage0ImagT::f_h;
   /// Forward lowpass filter stage n real part
-  using f_lnr = ForwardLowStageNRealT;
+  using f_lnr = typename StageNRealT::f_l;
   /// Forward lowpass filter stage n imaginary part
-  using f_lni = ForwardLowStageNImagT;
+  using f_lni = typename StageNImagT::f_l;
   /// Forward highpass filter stage n real part
-  using f_hnr = ForwardHighStageNRealT;
+  using f_hnr = typename StageNRealT::f_h;
   /// Forward highpass filter stage n imaginary part
-  using f_hni = ForwardHighStageNImagT;
+  using f_hni = typename StageNImagT::f_h;
   /// Inverse lowpass filter stage 0 real part
-  using i_l0r = InverseLowStage0RealT;
+  using i_l0r = typename Stage0RealT::i_l;
   /// Inverse lowpass filter stage 0 imaginary part
-  using i_l0i = InverseLowStage0ImagT;
+  using i_l0i = typename Stage0ImagT::i_l;
   /// Inverse highpass filter stage 0 real part
-  using i_h0r = InverseHighStage0RealT;
+  using i_h0r = typename Stage0RealT::i_h;
   /// Inverse highpass filter stage 0 imaginary part
-  using i_h0i = InverseHighStage0ImagT;
+  using i_h0i = typename Stage0ImagT::i_h;
   /// Inverse lowpass filter stage n real part
-  using i_lnr = InverseLowStageNRealT;
+  using i_lnr = typename StageNRealT::i_l;
   /// Inverse lowpass filter stage n imaginary part
-  using i_lni = InverseLowStageNImagT;
+  using i_lni = typename StageNImagT::i_l;
   /// Inverse highpass filter stage n real part
-  using i_hnr = InverseHighStageNRealT;
+  using i_hnr = typename StageNRealT::i_h;
   /// Inverse highpass filter stage n imaginary part
-  using i_hni = InverseHighStageNImagT;
+  using i_hni = typename StageNImagT::i_h;
 };
 
 enum class filterDB {
