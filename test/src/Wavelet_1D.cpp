@@ -51,15 +51,20 @@ struct Wavelet1DTestFunctor {
 };
 
 template<typename T, typename L, typename S>
-using Daub2_1DTestFctr= Wavelet1DTestFunctor<Daub2_1D,T,L,S>;
+using Daub2_1DTestFctr = Wavelet1DTestFunctor<Daub2_1D,T,L,S>;
 template<typename T, typename L, typename S>
-using Daub3_1DTestFctr= Wavelet1DTestFunctor<Daub3_1D,T,L,S>;
+using Daub3_1DTestFctr = Wavelet1DTestFunctor<Daub3_1D,T,L,S>;
 template<typename T, typename L, typename S>
-using Daub4_1DTestFctr= Wavelet1DTestFunctor<Daub4_1D,T,L,S>;
+using Daub4_1DTestFctr = Wavelet1DTestFunctor<Daub4_1D,T,L,S>;
 template<typename T, typename L, typename S>
-using Daub5_1DTestFctr= Wavelet1DTestFunctor<Daub5_1D,T,L,S>;
+using Daub5_1DTestFctr = Wavelet1DTestFunctor<Daub5_1D,T,L,S>;
 template<typename T, typename L, typename S>
-using Anto97_BiOrth_1DTestFctr= Wavelet1DTestFunctor<Anto97_BiOrth_1D,T,L,S>;
+using Anto97_BiOrth_1DTestFctr = Wavelet1DTestFunctor<Anto97_BiOrth_1D,T,L,S>;
+template<typename T, typename L, typename S>
+using QSHIFT6_Orth_1DTestFctr = Wavelet1DTestFunctor<QSHIFT6_Orth_1D,T,L,S>;
+template<typename T, typename L, typename S>
+using REVERSE_QSHIFT6_Orth_1DTestFctr = 
+  Wavelet1DTestFunctor<REVERSE_QSHIFT6_Orth_1D,T,L,S>;
 
 int main(int argc, char* argv[])  {
 
@@ -76,6 +81,8 @@ int main(int argc, char* argv[])  {
     TestImp<Daub3_1DTestFctr>(T(), L(), S()) &&
     TestImp<Daub4_1DTestFctr>(T(), L(), S()) &&
     TestImp<Daub5_1DTestFctr>(T(), L(), S()) &&
-    TestImp<Anto97_BiOrth_1DTestFctr>(T(), L(), S())
+    TestImp<Anto97_BiOrth_1DTestFctr>(T(), L(), S()) &&
+    TestImp<QSHIFT6_Orth_1DTestFctr>(T(), L(), S()) &&
+    TestImp<REVERSE_QSHIFT6_Orth_1DTestFctr>(T(), L(), S())
     ? EXIT_SUCCESS : EXIT_FAILURE;
 }

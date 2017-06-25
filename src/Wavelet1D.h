@@ -131,6 +131,11 @@ template<typename T>
 using Daub5_1D = Wavelet1D<T,PackedContainer1D<T>,Daub5<T>>;
 template<typename T>
 using Anto97_BiOrth_1D = Wavelet1D<T,PackedContainer1D<T>,Anto97_BiOrth<T>>;
+template<typename T>
+using QSHIFT6_Orth_1D = Wavelet1D<T,PackedContainer1D<T>,QSHIFT6_Orth<T>>;
+template<typename T>
+using REVERSE_QSHIFT6_Orth_1D = 
+  Wavelet1D<T,PackedContainer1D<T>,REVERSE_QSHIFT6_Orth<T>>;
 
 /** \struct All1DWavelet
  * \brief Utility struct that allow to instanciate all 1D wavelets at once
@@ -144,6 +149,8 @@ struct DB1DWt {
  Daub4_1D<T> daub4_1D;
  Daub5_1D<T> daub5_1D;
  Anto97_BiOrth_1D<T> anto97_BiOrth_1D;
+ QSHIFT6_Orth<T> QSHIFT6_Orth_1D;
+ REVERSE_QSHIFT6_Orth<T> REVERSE_QSHIFT6_Orth_1D;
 };
 
 /*

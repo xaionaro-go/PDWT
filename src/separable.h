@@ -187,13 +187,11 @@ class SeparableUpsampledConvolutionEngine {
 		  if ((fx>=-(FiltLow::TapSizeLeft-1)/2)&&
 		      (fx<=(FiltLow::TapSizeRight+1)/2)) {
 	   	    int fAddr = 2*(fx+(FiltLow::TapSizeLeft-1)/2)+offFiltLow;
-		    std::cout<<"Low fx is "<<fAddr<<std::endl;
             acc += inLow[idx_x] * FiltLow::Buff[fAddr];
 		  }
 		  if ((fx>=-(FiltHigh::TapSizeLeft-1)/2)&&
 			  (fx<=(FiltHigh::TapSizeRight+1)/2)) {
 	        int fAddr = 2*(fx+(FiltHigh::TapSizeLeft-1)/2)+offFiltHigh;
-			std::cout<<"High fx is "<<fAddr<<std::endl;
 		    acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 		  }
 		}

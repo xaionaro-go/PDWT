@@ -189,7 +189,15 @@ enum class filterDB {
   ANTO9_L,
   ANTO7_H,
   ANTO7_I_L,
-  ANTO9_I_H
+  ANTO9_I_H,
+  QSHIFT6_L,
+  QSHIFT6_H,
+  QSHIFT6_I_L,
+  QSHIFT6_I_H,
+  REVERSE_QSHIFT6_L,
+  REVERSE_QSHIFT6_H,
+  REVERSE_QSHIFT6_I_L,
+  REVERSE_QSHIFT6_I_H
 };
 
 //Semi specialization, type agnostic
@@ -541,24 +549,127 @@ const std::array<T,7> Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>::Buff;
 template <typename T>
 const std::array<T,9> Filter<T,5,3,filterDB,filterDB::ANTO9_I_H>::Buff;
 
-/*See ../../Pix3DGIT/tools/Volumix2/src/Cuda/CudaConstantMemoryHelper.cpp 
-and ../../Pix3DGIT/tools/Volumix2/src/Cuda/DualTreeComplexWaveletOperator/DTCWT.cu.h
+
 //Semi specialization, type agnostic
 template<typename T>
-struct Filter<T,2,3,filterDB,filterDB::QSHIFT6_L> : public
-    GenericFilter<T,2,3> {
-  static const constexpr std::array<T,6> Buff = {
- };
+struct Filter<T,4,3,filterDB,filterDB::QSHIFT6_L> : public
+    GenericFilter<T,4,3> {
+  static const constexpr std::array<T,8> Buff = {
+    0.03516384000000,
+    0.0,
+    -0.08832942000000,
+    0.23389032000000,
+    0.76027237000000,
+	0.58751830000000,
+    0.0,
+    -0.11430184000000
+  };
 };
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,5,2,filterDB,filterDB::REVERSE_QSHIFT6_I_L> : public
+    GenericFilter<T,5,2> {
+  static const constexpr std::array<T,8> Buff =
+    Filter<T,4,3,filterDB,filterDB::QSHIFT6_L>::Buff;
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,5,filterDB,filterDB::QSHIFT6_H> : public
+    GenericFilter<T,4,5> {
+  static const constexpr std::array<T,10> Buff = {
+    0.0, 0.0,
+    -0.11430184000000,
+    0.0,
+    0.58751830000000,
+    -0.76027237000000, 
+    0.23389032000000,
+    0.08832942000000,
+    0.0,
+    -0.03516384000000
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,5,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H> : public
+    GenericFilter<T,5,4> {
+  static const constexpr std::array<T,10> Buff =
+    Filter<T,4,5,filterDB,filterDB::QSHIFT6_H>::Buff;
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L> : public
+    GenericFilter<T,5,4> {
+  static const constexpr std::array<T,10> Buff = {
+    0.0, 0.0,
+    -0.11430184000000,
+    0.0,
+    0.58751830000000,
+    0.76027237000000,
+    0.23389032000000,
+    -0.08832942000000,
+    0.0,
+    0.03516384000000
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_L> : public
+    GenericFilter<T,4,5> {
+  static const constexpr std::array<T,10> Buff =
+    Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L>::Buff;
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_H> : public
+    GenericFilter<T,5,4> {
+  static const constexpr std::array<T,10> Buff = {
+    -0.03516384000000,
+    0.0,
+    0.08832942000000,
+    0.23389032000000,
+    -0.76027237000000,
+    0.58751830000000,
+    0.0,
+    -0.11430184000000,
+    0.0, 0.0
+  };
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_H> : public
+    GenericFilter<T,4,5> {
+  static const constexpr std::array<T,10> Buff =
+    Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_H>::Buff;
+};
+
 /// The 6 tap orthogonal Q-Shift filter, type agnostic
 template<typename T>
 using QSHIFT6_Orth = wFilter<
-    Filter<T,4,4,filterDB,filterDB::QSHIFT6_L>,
-    Filter<T,3,3,filterDB,filterDB::QSHIFT6_H>,
-    Filter<T,3,3,filterDB,filterDB::QSHIFT6_I_L>,
-    Filter<T,3,3,filterDB,filterDB::QSHIFT6_I_H>>;
-*/
+    Filter<T,4,3,filterDB,filterDB::QSHIFT6_L>,
+    Filter<T,4,5,filterDB,filterDB::QSHIFT6_H>,
+    Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L>,
+    Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_H>>;
 
+template <typename T>
+const std::array<T,8> Filter<T,4,3,filterDB,filterDB::QSHIFT6_L>::Buff;
+template <typename T>
+const std::array<T,10> Filter<T,4,5,filterDB,filterDB::QSHIFT6_H>::Buff;
+template <typename T>
+const std::array<T,10> Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_L>::Buff;
+template <typename T>
+const std::array<T,10> Filter<T,5,4,filterDB,filterDB::QSHIFT6_I_H>::Buff;
 
+template<typename T>
+using REVERSE_QSHIFT6_Orth = wFilter<
+    Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_L>,
+    Filter<T,4,5,filterDB,filterDB::REVERSE_QSHIFT6_H>,
+    Filter<T,5,2,filterDB,filterDB::REVERSE_QSHIFT6_I_L>,
+    Filter<T,5,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H>>;
+template <typename T>
+const std::array<T,8> Filter<T,5,2,filterDB,
+  filterDB::REVERSE_QSHIFT6_I_L>::Buff;
+template <typename T>
+const std::array<T,10> Filter<T,5,4,
+  filterDB,filterDB::REVERSE_QSHIFT6_I_H>::Buff;
 
 #endif
