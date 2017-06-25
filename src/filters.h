@@ -109,7 +109,7 @@ struct wFilter {
   using i_h = InverseHighT;
 };
 
-/** \struct cwFilter
+/** \struct dtwFilter
  * \brief A group of filters that defines a full forward and backward complex
  * wavelet filter process
  *
@@ -119,7 +119,7 @@ template<class Stage0RealT,
          class Stage0ImagT,
          class StageNRealT,
          class StageNImagT>
-struct cwFilter {
+struct dtwFilter {
   /// A small string that defines the wavelet system name
   std::string wname;
   
@@ -664,7 +664,7 @@ const std::array<T,8> Filter<T,3,4,
   filterDB,filterDB::REVERSE_QSHIFT6_I_H>::Buff;
 
 template <typename T>
-using cwAnto97QSHIFT6 = cwFilter<Anto97_BiOrth<T>,
+using dtwAnto97QSHIFT6 = dtwFilter<Anto97_BiOrth<T>,
          Anto97_BiOrth<T>,
          QSHIFT6_Orth<T>,
          REVERSE_QSHIFT6_Orth<T>>;

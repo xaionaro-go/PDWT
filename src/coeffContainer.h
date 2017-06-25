@@ -26,7 +26,7 @@ class CoeffContainer {
   CoeffContainer()=default;
 
   /// Allocating constructor
-  CoeffContainer(const std::vector<size_t>& size, int nlevel) {
+  CoeffContainer(const std::vector<size_t>& size, size_t nlevel ) {
     Initialize(size, nlevel);
   }
 
@@ -61,8 +61,10 @@ class CoeffContainer {
     /** Compute total size in the coeff space.
      * It is equal to the sum of the size of all detail subspaces,
      * plus the size of the last approximation space
+     * times the number of band if one uses dual tree scheme
      */
-    size_t totalSize=std::accumulate(m_scaleSize.cbegin()+1,
+   size_t nbSubband = DoUseDualTreeBand() ? std::pow(2,GetNbDimension()):1;
+   size_t totalSize = nbSubband * std::accumulate(m_scaleSize.cbegin()+1,
       m_scaleSize.cend(),0u)+m_scaleSize.back();
     // Allocate memory
     m_coeff.resize(totalSize);
@@ -75,6 +77,9 @@ class CoeffContainer {
 
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const = 0;
+  
+  /// Return wether we are using the dual tree scheme or not
+  virtual bool DoUseDualTreeBand() const { return false; };
 
   /// Returns a pointer to the Low frequency subspace for the given scale
   T* GetLowSubspacePtr(size_t scale, size_t band=0) {
@@ -167,6 +172,29 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
 
  protected:
   static const size_t m_dimensions=1;
+};
+
+/** \class DTCoeffContainer1D
+ * \brief Implementation of the CoeffContainer interface for the one
+ * dimensional case, compatible with the dual tree scheme
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class SubContainerT>
+class DTCoeffContainer1D : public CoeffContainer1D<T,SubContainerT> {
+ public:
+  /// Defaulted Constructor
+  DTCoeffContainer1D()=default;
+
+  /// Allocating constructor
+  DTCoeffContainer1D(std::vector<size_t> size, int nlevel) :
+    CoeffContainer1D<T,SubContainerT>(size,nlevel) {}
+
+  /// Defaulted Destructor
+  virtual ~DTCoeffContainer1D()=default;
+
+  /// Return wether we are using the dual tree scheme or not
+  virtual bool DoUseDualTreeBand() const override { return true; };
 };
 
 /** \class CoeffContainer2D

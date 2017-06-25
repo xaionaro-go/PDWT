@@ -72,7 +72,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     }
     return 1;
   }
-  /// Backward wavelet transform: transpose of the forward transpose
+  /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
     // At first step, input lowpass image is part of the wavelet tree
     T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level-1);
@@ -137,6 +137,119 @@ template<typename T>
 using REVERSE_QSHIFT6_Orth_1D = 
   Wavelet1D<T,PackedContainer1D<T>,REVERSE_QSHIFT6_Orth<T>>;
 
+
+/** \class DTWavelet1D
+ * \brief Inheritance of Wavelet class for the Dual Tree 1 dimensional case
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class CoeffContainerT, class DTWaveletSchemeT>
+class DTWavelet1D : public Wavelet1D<T,CoeffContainerT, DTWaveletSchemeT> {
+ public:
+  /// Constructor with zero initialization
+  DTWavelet1D()=default;
+  
+  /// Constructor : Wavelet from image
+  DTWavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
+      const std::string& wname, int level) : Wavelet1D<T,CoeffContainerT,
+      DTWaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {}
+
+  /// Default destructor
+  virtual ~DTWavelet1D()=default;
+
+  /// Forward wavelet tranform
+  virtual int forward() {
+    // At first step, input is simply input image
+    T* inlow = this->m_image;
+    // Lowpass output is either in the wv tree if we have already finished,
+    // or it is stored to a temporary buffer for further decomposition
+    T* outlowReal = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
+      this->m_coeff->GetTmpBuffPtr().at(0)->data();
+    T* outlowImag = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
+      this->m_coeff->GetTmpBuffPtr().at(0)->data();
+
+
+    for (int l=0; l<this->m_level; l++) {
+      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
+      std::cout<<"Writing High subspace pointer at scale "<<l<<std::endl;
+      //#pragma omp parallel for
+      SeparableSubsampledConvolutionEngine<T,
+          typename DTWaveletSchemeT::f_l0r,
+          typename DTWaveletSchemeT::f_h0r
+          >::PerformSubsampledFilteringXRef(
+        inlow,
+        this->m_coeff->GetScaleShape(l).at(0),
+        outlowReal,
+        this->m_coeff->GetHighSubspacePtr(l,0));
+      //Update lowpass input and output, order is important here
+      if (this->m_level==1) {
+        //nothing to do
+      } else if (l==this->m_level-2) {
+        inlow=outlowReal;
+        outlowReal=this->m_coeff->GetLowSubspacePtr(l+1);
+        std::cout<<"Next scale will write to low subspace"<<std::endl;
+      } else if (l==0) {
+        inlow=outlowReal;
+        outlowReal=this->m_coeff->GetTmpBuffPtr().at(1)->data();
+      } else {
+        std::swap(inlow,outlowReal);
+      }
+    }
+    return 1;
+  }
+  /// Backward wavelet transform: transpose of the forward transform
+  virtual int backward() {
+    // At first step, input lowpass image is part of the wavelet tree
+    T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level-1);
+    // output is either in the image if we have already finished,
+    // or if number of level is odd. Otherwise, it is stored to a
+    //  temporary buffer for further reconstruction
+    T* outlow = ((this->m_level%2==1) ? this->m_image :
+      this->m_coeff->GetTmpBuffPtr().at(0)->data());
+    for (int l=this->m_level; l>0; l--) {
+      std::cout<<"Inverse, taking as input 2 subspaces of size "<<
+        this->m_coeff->GetScaleShape(l).at(0)<<" In order to form a new"<<
+        " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
+      //std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
+      //  <<std::endl;
+      std::cout<<"Current scale is: at scale "<<l<<std::endl;
+      //#pragma omp parallel for
+      SeparableUpsampledConvolutionEngine<T,
+          typename DTWaveletSchemeT::i_l0r,
+          typename DTWaveletSchemeT::i_h0r
+        >::PerformUpsampledFilteringXRef(
+          inlow,
+          this->m_coeff->GetHighSubspacePtr(l-1,0),
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l-1).at(0),
+          outlow);
+
+      //Update lowpass input and output
+      if (l==this->m_level && l>1) {
+        inlow= ((this->m_level%2==0) ? this->m_image :
+          this->m_coeff->GetTmpBuffPtr().at(0)->data());
+       }
+       std::swap(inlow,outlow);
+    }
+    return 1;
+  }
+
+  /// Inverse of the wavelet tranform
+  virtual int inverse() {
+    return 1;
+  }
+};
+
+/// Convenient type alias
+template<typename T>
+using PackedDTContainer1D =
+  DTCoeffContainer1D<T,std::vector<T>>;
+
+// Aliasing ugly types into more simple ones
+template<typename T>
+using dtwAnto97QSHIFT6_1D = 
+  DTWavelet1D<T,PackedDTContainer1D<T>,dtwAnto97QSHIFT6<T>>;
+
 /** \struct All1DWavelet
  * \brief Utility struct that allow to instanciate all 1D wavelets at once
  *
@@ -149,8 +262,9 @@ struct DB1DWt {
  Daub4_1D<T> daub4_1D;
  Daub5_1D<T> daub5_1D;
  Anto97_BiOrth_1D<T> anto97_BiOrth_1D;
- QSHIFT6_Orth<T> QSHIFT6_Orth_1D;
- REVERSE_QSHIFT6_Orth<T> REVERSE_QSHIFT6_Orth_1D;
+ QSHIFT6_Orth_1D<T> QShift6_Orth_1D;
+ REVERSE_QSHIFT6_Orth_1D<T> Reverse_Qshift6_Orth_1D;
+ dtwAnto97QSHIFT6_1D<T> dtwAnto97QShift6_1D; 
 };
 
 /*
