@@ -76,7 +76,6 @@ int main(int argc, char* argv[])  {
     TestImp<Daub3_1DTestFctr>(T(), L(), S()) &&
     TestImp<Daub4_1DTestFctr>(T(), L(), S()) &&
     TestImp<Daub5_1DTestFctr>(T(), L(), S()) &&
-    TestImp<Daub5_1DTestFctr>(T(), L(), S())
-    //TestImp<Anto97_BiOrth_1DTestFctr>(T(), L(), S())
+    TestImp<Anto97_BiOrth_1DTestFctr>(T(), L(), S())
     ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -55,7 +55,7 @@ struct Updater<Filt> {
  */
 //TODO TN: replace second line by first one
 //template<typename T, class Filt, class... Filtn>
-template<typename T, class Filtlow, class Filthigh>
+template<typename T, class FiltLow, class FiltHigh>
 class SeparableSubsampledConvolutionEngine {
  public:
   /// Defaulted constructor
@@ -81,8 +81,8 @@ class SeparableSubsampledConvolutionEngine {
       // Loop over filter size, with periodic boundary conditions
       // TODO TN: this loop can actually be written as a compile time loop
       // #pragma unroll Filt::TapSize
-      for (int fx=-std::max(Filtlow::TapSizeLeft,Filthigh::TapSizeLeft);
-          fx<=std::max(Filtlow::TapSizeRight,Filthigh::TapSizeRight); fx++) {
+      for (int fx=-std::max(FiltLow::TapSizeLeft,FiltHigh::TapSizeLeft);
+          fx<=std::max(FiltLow::TapSizeRight,FiltHigh::TapSizeRight); fx++) {
         int ix = ox*2 + fx;
         // if N is odd, image is virtually extended
         if (ix < 0) {
@@ -99,18 +99,18 @@ class SeparableSubsampledConvolutionEngine {
           }
         }
         //std::cout<<"Accumulate low image idx "<<ix<<": "<<in[ix]
-        //  <<" x "<<Filtlow::Buff[fx+Filtlow::TapSizeLeft]
-        //  <<" filt idx: "<<fx+Filtlow::TapSizeLeft<<std::endl;
+        //  <<" x "<<FiltLow::Buff[fx+FiltLow::TapSizeLeft]
+        //  <<" filt idx: "<<fx+FiltLow::TapSizeLeft<<std::endl;
 
         // Update each buffer with its respective filter
         //Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
         
-        //actualy, this is a condition update
-        if ((fx>=-Filtlow::TapSizeLeft)&&(fx<=Filtlow::TapSizeRight)) {
-          outlow[ox]+=in[ix]*Filtlow::Buff[fx+Filtlow::TapSizeLeft];
+        //actualy, this is a conditional update
+        if ((fx>=-FiltLow::TapSizeLeft)&&(fx<=FiltLow::TapSizeRight)) {
+          outlow[ox]+=in[ix]*FiltLow::Buff[fx+FiltLow::TapSizeLeft];
         }
-        if ((fx>=-Filthigh::TapSizeLeft)&&(fx<=Filthigh::TapSizeRight)) {
-          outhigh[ox]+=in[ix]*Filthigh::Buff[fx+Filthigh::TapSizeLeft];
+        if ((fx>=-FiltHigh::TapSizeLeft)&&(fx<=FiltHigh::TapSizeRight)) {
+          outhigh[ox]+=in[ix]*FiltHigh::Buff[fx+FiltHigh::TapSizeLeft];
         }
       }
     }
@@ -137,54 +137,67 @@ class SeparableUpsampledConvolutionEngine {
 
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
-      int ox = lox + (FiltLow::IsHalfSizeOdd?2:1);
       int max_x = NxIn-1;
-      //si index impair: pas d'offset, sinon offset 1
-	  int offset_x = 1-(ox&1); //pose probleme dans le cas Anto
-      int ixCentral = ox/2-1;
+      int ixCentral = lox/2;
       T acc = (T)0;
 
-      if (offset_x==1) {
-        //TODO TN Filter loop, can be turned into an explicit compile time loop
-        for (int jx = 0; jx < std::max(FiltLow::TapHalfSize,
-            FiltHigh::TapHalfSize); jx++) {
-          int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
-          if (idx_x<0) {
-            idx_x += NxIn;
-          }
-          if (idx_x>max_x) {
-            idx_x -= NxIn;
-          }
-          int fAddr = 2*jx+offset_x;
-
-          // conditional update with respective filter
-          if(jx<=FiltLow::TapHalfSize) {
-            acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-          }
-          if(jx<=FiltHigh::TapHalfSize) {
-            acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-          }
-        }
+      if ((lox%2)==0) {
+        int offFiltLow=FiltLow::TapSizeLeft&1;
+	    int offFiltHigh=FiltHigh::TapSizeLeft&1;
+	    //TODO TN Filter loop, can be turned into an explicit compile time loop
+		for (int 
+			fx=-std::max(FiltLow::TapSizeLeft/2,FiltHigh::TapSizeLeft/2);
+			fx<=std::max(FiltLow::TapSizeRight/2,FiltHigh::TapSizeRight/2);
+			fx++) {
+		  int idx_x = ixCentral + fx;
+		  if (idx_x<0) {
+			idx_x += NxIn;
+		  }
+		  if (idx_x>max_x) {
+			idx_x -= NxIn;
+		  }
+		  // conditional update with respective filter
+		  if ((fx>=-FiltLow::TapSizeLeft/2)&&
+			 (fx<=FiltLow::TapSizeRight/2)) {
+		   int fAddr = 2*(fx+FiltLow::TapSizeLeft/2)+offFiltLow;
+		   acc += inLow[idx_x] * FiltLow::Buff[fAddr];
+		  }
+		  if ((fx>=-FiltHigh::TapSizeLeft/2)&&
+			  (fx<=FiltHigh::TapSizeRight/2)) {
+			int fAddr = 2*(fx+FiltHigh::TapSizeLeft/2)+offFiltHigh;
+			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+		  }
+		}
       } else {
-        //TODO TN Filter loop, can be turned into an explicit compile time loop
-        for (int jx = 0; jx < std::max(FiltLow::TapHalfSize,
-            FiltHigh::TapHalfSize); jx++) {
-          int idx_x = ixCentral - FiltLow::TapHalfSizeLeft + jx;
-          if (idx_x<0) {
-            idx_x += NxIn;
-          }
-          if (idx_x>max_x) {
-            idx_x -= NxIn;
-          }
-          int fAddr = 2*jx+offset_x;
-          // conditional update with respective filter
-          if(jx<=FiltLow::TapHalfSize) {
+        int offFiltLow=1-(FiltLow::TapSizeLeft&1);
+	    int offFiltHigh=1-(FiltHigh::TapSizeLeft&1);
+	    //TODO TN Filter loop, can be turned into an explicit compile time loop
+		for (int 
+			fx=-std::max((FiltLow::TapSizeLeft-1)/2,(FiltHigh::TapSizeLeft-1)/2);
+			fx<=std::max((FiltLow::TapSizeRight+1)/2,(FiltHigh::TapSizeRight+1)/2);
+			fx++) {
+		  int idx_x = ixCentral + fx;
+		  if (idx_x<0) {
+			idx_x += NxIn;
+		  }
+		  if (idx_x>max_x) {
+			idx_x -= NxIn;
+		  }
+		  // conditional update with respective filter
+		  if ((fx>=-(FiltLow::TapSizeLeft-1)/2)&&
+		      (fx<=(FiltLow::TapSizeRight+1)/2)) {
+	   	    int fAddr = 2*(fx+(FiltLow::TapSizeLeft-1)/2)+offFiltLow;
+		    std::cout<<"Low fx is "<<fAddr<<std::endl;
             acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-          }
-          if(jx<=FiltHigh::TapHalfSize) {
-            acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-          }
-        }
+		  }
+		  if ((fx>=-(FiltHigh::TapSizeLeft-1)/2)&&
+			  (fx<=(FiltHigh::TapSizeRight+1)/2)) {
+	        int fAddr = 2*(fx+(FiltHigh::TapSizeLeft-1)/2)+offFiltHigh;
+			std::cout<<"High fx is "<<fAddr<<std::endl;
+		    acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
+		  }
+		}
+
       }
       // Update each buffer with its respective filter
       out[lox] = acc;

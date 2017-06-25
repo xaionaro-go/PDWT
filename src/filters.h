@@ -65,15 +65,6 @@ struct GenericFilter {
   constexpr static int TapSize =
     TapSizeLeft + TapSizeRight + 1; //+1 = the center pixel
 
-  /// For specific cases in conv with subsampled data
-  constexpr static int TapHalfSize = TapSize/2;
-
-  /// For specific cases in conv with subsampled data
-  constexpr static bool IsHalfSizeOdd = TapHalfSize&1;
-
-  /// for conv with subsampled data: half tap number
-  constexpr static int TapHalfSizeLeft = TapHalfSize/2-(IsHalfSizeOdd?0:1);
-
   /// How many vector are needed to load a single filter support
   constexpr static int NbVecPerFilt = (TapSize+VecSize-1)/(VecSize);
  };
@@ -252,6 +243,10 @@ using Daub2 = wFilter<
     Filter<T,1,2,filterDB,filterDB::DB2_H>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_L>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_H>>;
+template <typename T>
+const std::array<T,4> Filter<T,2,1,filterDB,filterDB::DB2_I_L>::Buff;
+template <typename T>
+const std::array<T,4> Filter<T,2,1,filterDB,filterDB::DB2_I_H>::Buff;
 
 
 //Semi specialization, type agnostic
@@ -313,6 +308,10 @@ using Daub3 = wFilter<
     Filter<T,2,3,filterDB,filterDB::DB3_H>,
     Filter<T,3,2,filterDB,filterDB::DB3_I_L>,
     Filter<T,3,2,filterDB,filterDB::DB3_I_H>>;
+template <typename T>
+const std::array<T,6> Filter<T,3,2,filterDB,filterDB::DB3_I_L>::Buff;
+template <typename T>
+const std::array<T,6> Filter<T,3,2,filterDB,filterDB::DB3_I_H>::Buff;
 
 
 //Semi specialization, type agnostic
@@ -382,6 +381,10 @@ using Daub4 = wFilter<
     Filter<T,3,4,filterDB,filterDB::DB4_H>,
     Filter<T,4,3,filterDB,filterDB::DB4_I_L>,
     Filter<T,4,3,filterDB,filterDB::DB4_I_H>>;
+template <typename T>
+const std::array<T,8> Filter<T,4,3,filterDB,filterDB::DB4_I_L>::Buff;
+template <typename T>
+const std::array<T,8> Filter<T,4,3,filterDB,filterDB::DB4_I_H>::Buff;
 
 
 //Semi specialization, type agnostic
@@ -459,6 +462,10 @@ using Daub5 = wFilter<
     Filter<T,4,5,filterDB,filterDB::DB5_H>,
     Filter<T,5,4,filterDB,filterDB::DB5_I_L>,
     Filter<T,5,4,filterDB,filterDB::DB5_I_H>>;
+template <typename T>
+const std::array<T,10> Filter<T,5,4,filterDB,filterDB::DB5_I_L>::Buff;
+template <typename T>
+const std::array<T,10> Filter<T,5,4,filterDB,filterDB::DB5_I_H>::Buff;
 
 
 //Semi specialization, type agnostic
@@ -528,15 +535,11 @@ using Anto97_BiOrth = wFilter<
     Filter<T,2,4,filterDB,filterDB::ANTO7_H>,
     Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
     Filter<T,5,3,filterDB,filterDB::ANTO9_I_H>>;
-/*    Filter<T,4,4,filterDB,filterDB::ANTO9_L>,
-    Filter<T,3,3,filterDB,filterDB::ANTO7_H>,
-    Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
-    Filter<T,4,4,filterDB,filterDB::ANTO9_I_H>>;*/
 
 template <typename T>
-const std::array<T,9> Filter<T,4,4,filterDB,filterDB::ANTO9_L>::Buff;
+const std::array<T,7> Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>::Buff;
 template <typename T>
-const std::array<T,7> Filter<T,2,4,filterDB,filterDB::ANTO7_H>::Buff;
+const std::array<T,9> Filter<T,5,3,filterDB,filterDB::ANTO9_I_H>::Buff;
 
 /*See ../../Pix3DGIT/tools/Volumix2/src/Cuda/CudaConstantMemoryHelper.cpp 
 and ../../Pix3DGIT/tools/Volumix2/src/Cuda/DualTreeComplexWaveletOperator/DTCWT.cu.h
