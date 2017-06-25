@@ -651,10 +651,23 @@ using REVERSE_QSHIFT6_Orth = wFilter<
     Filter<T,5,2,filterDB,filterDB::REVERSE_QSHIFT6_I_L>,
     Filter<T,3,4,filterDB,filterDB::REVERSE_QSHIFT6_I_H>>;
 template <typename T>
+const std::array<T,8> Filter<T,2,5,filterDB,
+  filterDB::REVERSE_QSHIFT6_L>::Buff;
+template <typename T>
+const std::array<T,8> Filter<T,4,3,
+  filterDB,filterDB::REVERSE_QSHIFT6_H>::Buff;
+template <typename T>
 const std::array<T,8> Filter<T,5,2,filterDB,
   filterDB::REVERSE_QSHIFT6_I_L>::Buff;
 template <typename T>
 const std::array<T,8> Filter<T,3,4,
   filterDB,filterDB::REVERSE_QSHIFT6_I_H>::Buff;
+
+template <typename T>
+using cwAnto97QSHIFT6 = cwFilter<Anto97_BiOrth<T>,
+         Anto97_BiOrth<T>,
+         QSHIFT6_Orth<T>,
+         REVERSE_QSHIFT6_Orth<T>>;
+
 
 #endif
