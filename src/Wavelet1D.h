@@ -163,9 +163,9 @@ class DTWavelet1D : public Wavelet1D<T,CoeffContainerT, DTWaveletSchemeT> {
     T* inlow = this->m_image;
     // Lowpass output is either in the wv tree if we have already finished,
     // or it is stored to a temporary buffer for further decomposition
-    T* outlowReal = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
+    T* outlowReal = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1,0) :
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
-    T* outlowImag = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
+    T* outlowImag = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1,1) :
       this->m_coeff->GetTmpBuffPtr().at(0)->data();
 
 

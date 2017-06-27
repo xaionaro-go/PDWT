@@ -142,12 +142,10 @@ class SeparableUpsampledConvolutionEngine {
       T acc = (T)0;
 
       if ((lox%2)==0) {
-        int offFiltLow=FiltLow::TapSizeLeft&1;
-	    int offFiltHigh=FiltHigh::TapSizeLeft&1;
 	    //TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int 
-			fx=-std::max(FiltLow::TapSizeLeft/2,FiltHigh::TapSizeLeft/2);
-			fx<=std::max(FiltLow::TapSizeRight/2,FiltHigh::TapSizeRight/2);
+			fx=-std::max(FiltLow::TapHalfSizeLeft,FiltHigh::TapHalfSizeLeft);
+			fx<=std::max(FiltLow::TapHalfSizeRight,FiltHigh::TapHalfSizeRight);
 			fx++) {
 		  int idx_x = ixCentral + fx;
 		  if (idx_x<0) {
@@ -157,24 +155,26 @@ class SeparableUpsampledConvolutionEngine {
 			idx_x -= NxIn;
 		  }
 		  // conditional update with respective filter
-		  if ((fx>=-FiltLow::TapSizeLeft/2)&&
-			 (fx<=FiltLow::TapSizeRight/2)) {
-		   int fAddr = 2*(fx+FiltLow::TapSizeLeft/2)+offFiltLow;
+		  if ((fx>=-FiltLow::TapHalfSizeLeft)&&
+			 (fx<=FiltLow::TapHalfSizeRight)) {
+		   int fAddr = 2*(fx+FiltLow::TapHalfSizeLeft)+
+             FiltLow::EvenSubSampOffset;
 		   acc += inLow[idx_x] * FiltLow::Buff[fAddr];
 		  }
-		  if ((fx>=-FiltHigh::TapSizeLeft/2)&&
-			  (fx<=FiltHigh::TapSizeRight/2)) {
-			int fAddr = 2*(fx+FiltHigh::TapSizeLeft/2)+offFiltHigh;
+		  if ((fx>=-FiltHigh::TapHalfSizeLeft)&&
+			  (fx<=FiltHigh::TapHalfSizeRight)) {
+			int fAddr = 2*(fx+FiltHigh::TapHalfSizeLeft)+
+              FiltHigh::EvenSubSampOffset;
 			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 		  }
 		}
       } else {
-        int offFiltLow=1-(FiltLow::TapSizeLeft&1);
-	    int offFiltHigh=1-(FiltHigh::TapSizeLeft&1);
 	    //TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int 
-			fx=-std::max((FiltLow::TapSizeLeft-1)/2,(FiltHigh::TapSizeLeft-1)/2);
-			fx<=std::max((FiltLow::TapSizeRight+1)/2,(FiltHigh::TapSizeRight+1)/2);
+			fx=-std::max(FiltLow::TapHalfFloorSizeLeft,
+              FiltHigh::TapHalfFloorSizeLeft);
+			fx<=std::max(FiltLow::TapHalfCeilSizeRight,
+              FiltHigh::TapHalfCeilSizeRight);
 			fx++) {
 		  int idx_x = ixCentral + fx;
 		  if (idx_x<0) {
@@ -184,14 +184,16 @@ class SeparableUpsampledConvolutionEngine {
 			idx_x -= NxIn;
 		  }
 		  // conditional update with respective filter
-		  if ((fx>=-(FiltLow::TapSizeLeft-1)/2)&&
-		      (fx<=(FiltLow::TapSizeRight+1)/2)) {
-	   	    int fAddr = 2*(fx+(FiltLow::TapSizeLeft-1)/2)+offFiltLow;
+		  if ((fx>=-FiltLow::TapHalfFloorSizeLeft)&&
+		      (fx<=FiltLow::TapHalfCeilSizeRight)) {
+	   	    int fAddr = 2*(fx+FiltLow::TapHalfFloorSizeLeft)+
+              FiltLow::OddSubSampOffset;
             acc += inLow[idx_x] * FiltLow::Buff[fAddr];
 		  }
-		  if ((fx>=-(FiltHigh::TapSizeLeft-1)/2)&&
-			  (fx<=(FiltHigh::TapSizeRight+1)/2)) {
-	        int fAddr = 2*(fx+(FiltHigh::TapSizeLeft-1)/2)+offFiltHigh;
+		  if ((fx>=-FiltHigh::TapHalfFloorSizeLeft)&&
+			  (fx<=FiltHigh::TapHalfCeilSizeRight)) {
+	        int fAddr = 2*(fx+FiltHigh::TapHalfFloorSizeLeft)+
+              FiltHigh::OddSubSampOffset;
 		    acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
 		  }
 		}

@@ -53,20 +53,38 @@ struct GenericFilter {
   using VectorType=PackType<T>;
   
   /// Redefine template parameters
-  constexpr static int VecSize = sizeof(VectorType)/sizeof(T);
+  static constexpr const int VecSize = sizeof(VectorType)/sizeof(T);
 
   /// Compile time definition of filter feature: left tap number
-  constexpr static int TapSizeLeft = TAP_SIZE_LEFT;
+  static constexpr const int TapSizeLeft = TAP_SIZE_LEFT;
   
   /// Compile time definition of filter feature: right tap number
-  constexpr static int TapSizeRight = TAP_SIZE_RIGHT;
+  static constexpr const int TapSizeRight = TAP_SIZE_RIGHT;
 
   /// Total size of the filter, in number of elements
-  constexpr static int TapSize =
+  static constexpr const int TapSize =
     TapSizeLeft + TapSizeRight + 1; //+1 = the center pixel
 
+  /// Convenient variables used to compute upsampled convolution
+  static constexpr const int TapHalfSizeLeft = TapSizeLeft/2;
+
+  /// Convenient variables used to compute upsampled convolution
+  static constexpr const int TapHalfSizeRight = TapSizeRight/2;
+
+  /// Convenient variables used to compute upsampled convolution
+  static constexpr const int TapHalfFloorSizeLeft = (TapSizeLeft-1)/2;
+
+  /// Convenient variables used to compute upsampled convolution
+  static constexpr const int TapHalfCeilSizeRight = (TapSizeRight+1)/2;
+
+  /// Convenient variables used to compute upsampled convolution
+  static constexpr const int EvenSubSampOffset = TapSizeLeft&1;
+
+  /// Convenient variables used to compute upsampled convolution
+  static constexpr const int OddSubSampOffset = 1-(TapSizeLeft&1);
+
   /// How many vector are needed to load a single filter support
-  constexpr static int NbVecPerFilt = (TapSize+VecSize-1)/(VecSize);
+  static constexpr const int NbVecPerFilt = (TapSize+VecSize-1)/(VecSize);
  };
 
 /** \struct Filter
