@@ -54,8 +54,8 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           >::PerformSubsampledFilteringXRef(
         inlow,
         this->m_coeff->GetScaleShape(l).at(0),
-        outlow,
-        this->m_coeff->GetHighSubspacePtr(l,0));
+        Accumulator<T,T>(outlow),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0)));
       //Update lowpass input and output, order is important here
       if (this->m_level==1) {
         //nothing to do
@@ -93,11 +93,11 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringXRef(
-          inlow,
-          this->m_coeff->GetHighSubspacePtr(l-1,0),
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
-          outlow);
+          outlow,
+          inlow,
+          this->m_coeff->GetHighSubspacePtr(l-1,0));
 
       //Update lowpass input and output
       if (l==this->m_level && l>1) {

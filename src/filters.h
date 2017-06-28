@@ -258,6 +258,10 @@ using Daub2 = wFilter<
     Filter<T,2,1,filterDB,filterDB::DB2_I_L>,
     Filter<T,2,1,filterDB,filterDB::DB2_I_H>>;
 template <typename T>
+const std::array<T,4> Filter<T,1,2,filterDB,filterDB::DB2_L>::Buff;
+template <typename T>
+const std::array<T,4> Filter<T,1,2,filterDB,filterDB::DB2_H>::Buff;
+template <typename T>
 const std::array<T,4> Filter<T,2,1,filterDB,filterDB::DB2_I_L>::Buff;
 template <typename T>
 const std::array<T,4> Filter<T,2,1,filterDB,filterDB::DB2_I_H>::Buff;
@@ -322,6 +326,10 @@ using Daub3 = wFilter<
     Filter<T,2,3,filterDB,filterDB::DB3_H>,
     Filter<T,3,2,filterDB,filterDB::DB3_I_L>,
     Filter<T,3,2,filterDB,filterDB::DB3_I_H>>;
+template <typename T>
+const std::array<T,6> Filter<T,2,3,filterDB,filterDB::DB3_L>::Buff;
+template <typename T>
+const std::array<T,6> Filter<T,2,3,filterDB,filterDB::DB3_H>::Buff;
 template <typename T>
 const std::array<T,6> Filter<T,3,2,filterDB,filterDB::DB3_I_L>::Buff;
 template <typename T>
@@ -395,6 +403,10 @@ using Daub4 = wFilter<
     Filter<T,3,4,filterDB,filterDB::DB4_H>,
     Filter<T,4,3,filterDB,filterDB::DB4_I_L>,
     Filter<T,4,3,filterDB,filterDB::DB4_I_H>>;
+template <typename T>
+const std::array<T,8> Filter<T,3,4,filterDB,filterDB::DB4_L>::Buff;
+template <typename T>
+const std::array<T,8> Filter<T,3,4,filterDB,filterDB::DB4_H>::Buff;
 template <typename T>
 const std::array<T,8> Filter<T,4,3,filterDB,filterDB::DB4_I_L>::Buff;
 template <typename T>
@@ -477,6 +489,10 @@ using Daub5 = wFilter<
     Filter<T,5,4,filterDB,filterDB::DB5_I_L>,
     Filter<T,5,4,filterDB,filterDB::DB5_I_H>>;
 template <typename T>
+const std::array<T,10> Filter<T,4,5,filterDB,filterDB::DB5_L>::Buff;
+template <typename T>
+const std::array<T,10> Filter<T,4,5,filterDB,filterDB::DB5_H>::Buff;
+template <typename T>
 const std::array<T,10> Filter<T,5,4,filterDB,filterDB::DB5_I_L>::Buff;
 template <typename T>
 const std::array<T,10> Filter<T,5,4,filterDB,filterDB::DB5_I_H>::Buff;
@@ -550,6 +566,10 @@ using Anto97_BiOrth = wFilter<
     Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>,
     Filter<T,5,3,filterDB,filterDB::ANTO9_I_H>>;
 
+template <typename T>
+const std::array<T,9> Filter<T,4,4,filterDB,filterDB::ANTO9_L>::Buff;
+template <typename T>
+const std::array<T,7> Filter<T,2,4,filterDB,filterDB::ANTO7_H>::Buff;
 template <typename T>
 const std::array<T,7> Filter<T,3,3,filterDB,filterDB::ANTO7_I_L>::Buff;
 template <typename T>

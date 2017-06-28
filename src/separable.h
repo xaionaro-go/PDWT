@@ -23,24 +23,158 @@ Transpose of that is then:
 So that only one out of 2 coefficients in the convolution is useful
 */
 
-// TODO TN: you should replace this updater by a slightly more complex struct
-// which is also in charge of storing an accumulator, and has actually two
-// methods: accumulate and update
+template <class Filt=void, class... Filtn>
+struct MaxTapSizeLeft {
+  static const constexpr int value =
+    std::max(Filt::TapSizeLeft,MaxTapSizeLeft<Filtn...>::value);
+};
+template <> 
+struct MaxTapSizeLeft<void> {
+  static const constexpr int value = 0;
+};
+template <class Filt=void, class... Filtn>
+struct MaxTapSizeRight {
+  static const constexpr int value =
+    std::max(Filt::TapSizeRight,MaxTapSizeRight<Filtn...>::value);
+};
+template <> 
+struct MaxTapSizeRight<void> {
+  static const constexpr int value = 0;
+};
+template <class Filt=void, class... Filtn>
+struct MaxTapHalfSizeLeft {
+  static const constexpr int value =
+    std::max(Filt::TapHalfSizeLeft,MaxTapHalfSizeLeft<Filtn...>::value);
+};
+template <> 
+struct MaxTapHalfSizeLeft<void> {
+  static const constexpr int value = 0;
+};
+template <class Filt=void, class... Filtn>
+struct MaxTapHalfSizeRight {
+  static const constexpr int value =
+    std::max(Filt::TapHalfSizeRight,MaxTapHalfSizeRight<Filtn...>::value);
+};
+template <>
+struct MaxTapHalfSizeRight<void> {
+  static const constexpr int value = 0;
+};
+template <class Filt=void, class... Filtn>
+struct MaxTapHalfFloorSizeLeft {
+  static const constexpr int value =
+    std::max(Filt::TapHalfFloorSizeLeft,
+      MaxTapHalfFloorSizeLeft<Filtn...>::value);
+};
+template <> 
+struct MaxTapHalfFloorSizeLeft<void> {
+  static const constexpr int value = 0;
+};
+template <class Filt=void, class... Filtn>
+struct MaxTapHalfCeilSizeRight {
+  static const constexpr int value =
+    std::max(Filt::TapHalfCeilSizeRight,
+    MaxTapHalfCeilSizeRight<Filtn...>::value);
+};
+template <> 
+struct MaxTapHalfCeilSizeRight<void> {
+  static const constexpr int value = 0;
+};
+
+template<typename T, typename I, typename J, class Filt, class... Filtn>
+struct EvenSubSampledAccumulator {
+  template<class In, class... InN>
+  static constexpr T acc(I filtIdx, J inIdx, const In in, const InN... inn) {
+   return EvenSubSampledAccumulator<T,I,J,Filt>::acc(filtIdx, inIdx, in)+
+     EvenSubSampledAccumulator<T,I,J,Filtn...>::acc(filtIdx, inIdx, inn...);
+  }
+};
+template<typename T, typename I, typename J, class Filt>
+struct EvenSubSampledAccumulator<T,I,J,Filt> {
+ template<class In>
+ static constexpr T acc(I filtIdx, J inIdx, In in) {
+    if ((filtIdx>=-Filt::TapHalfSizeLeft)&&(filtIdx<=Filt::TapHalfSizeRight)) {
+	  return Filt::Buff[2*(filtIdx+Filt::TapHalfSizeLeft)+
+        Filt::EvenSubSampOffset]*in[inIdx];
+    } else {
+      return (T)0;
+    }
+  }
+};
+template<typename T, typename I, typename J>
+struct EvenSubSampledAccumulator<T,I,J,void> {
+ static constexpr T acc(I index) { return (T)0; }
+};
+
+template<typename T, typename I, typename J, class Filt, class... Filtn>
+struct OddSubSampledAccumulator {
+ template<class In, class... InN>
+ static constexpr T acc (I filtIdx, J inIdx, In in, InN... inn) {
+    return  OddSubSampledAccumulator<T,I,J,Filt>::acc(filtIdx, inIdx, in) +
+      OddSubSampledAccumulator<T,I,J,Filtn...>::acc(filtIdx, inIdx, inn...);
+   }
+};
+
+template<typename T, typename I, typename J, class Filt>
+struct OddSubSampledAccumulator<T,I,J,Filt> {
+ template<class In>
+ static constexpr T acc(I filtIdx, J inIdx, In in) {
+    if ((filtIdx>=-Filt::TapHalfFloorSizeLeft)&&
+        (filtIdx<=Filt::TapHalfCeilSizeRight)) {
+	  return Filt::Buff[2*(filtIdx+Filt::TapHalfFloorSizeLeft)+
+        Filt::OddSubSampOffset]*in[inIdx];
+    } else {
+      return (T)0;
+    }
+  }
+};
+template<typename T, typename I, typename J>
+struct OddSubSampledAccumulator<T,I,J,void> {
+  static constexpr T acc(I index) { return (T)0; }
+};
+
+template<typename T, typename U>
+class Accumulator {
+ public:
+  Accumulator(T* ptr): acc(0), dst(ptr) {}
+  void accumulate(T val) {
+   acc+=val;
+ }
+  void write(size_t idx) {
+   dst[idx]=acc;
+   acc=0;
+  }
+ protected:
+  U acc;
+  T* dst;
+};
+
 template<class Filt, class... Filtn>
 struct Updater {
-  template<typename I, typename M, typename O, typename... On>
-  static void update(I idx, M mult, O out, On... outn) {
-    Updater<Filt>::update(idx, mult, out);
-    Updater<Filtn...>::update(idx, mult, outn...);
+  template<typename I, typename M, class Acc, class... AccN>
+  static void accumulate(I idx, M mult, Acc&& acc, AccN&& ... accn) {
+    Updater<Filt>::accumulate(idx, mult, std::forward<Acc>(acc));
+    Updater<Filtn...>::accumulate(idx, mult, std::forward<AccN>(accn)...);
   }
+  template<typename I, class Acc, class... AccN>
+  static void write(I idx, Acc&& acc, AccN&& ... accn) {
+    Updater<Filt>::write(idx, std::forward<Acc>(acc));
+    Updater<Filtn...>::write(idx, std::forward<AccN>(accn)...);
+  }
+
 };
 
 /// Actually performs the accumulation
 template<class Filt>
 struct Updater<Filt> {
-  template<typename I, typename M, typename O>
-  static void update(I idx, M mult, O out) {
-    *out+=mult*Filt::Buff[idx+Filt::TapSizeLeft];
+  template<typename I, typename M, class Acc>
+  static void accumulate(I idx, M mult, Acc&& acc) {
+    if((idx>=-Filt::TapSizeLeft) && (idx<=Filt::TapSizeRight)) {
+      acc.accumulate(mult*Filt::Buff[Filt::TapSizeLeft+idx]);
+    }
+  }
+  template<typename I, class Acc>
+  static void write(I idx, Acc&& acc) {
+   acc.write(idx);
   }
 };
 
@@ -55,7 +189,7 @@ struct Updater<Filt> {
  */
 //TODO TN: replace second line by first one
 //template<typename T, class Filt, class... Filtn>
-template<typename T, class FiltLow, class FiltHigh>
+template<typename T, class... Filtn>
 class SeparableSubsampledConvolutionEngine {
  public:
   /// Defaulted constructor
@@ -64,25 +198,20 @@ class SeparableSubsampledConvolutionEngine {
   virtual ~SeparableSubsampledConvolutionEngine()=default;
 
   /// The main method : perform Subsampled convolution on one row
-  //template<typename... O>
-  //TODO TN: to be modified
+  template<class... AccN>
   static int PerformSubsampledFilteringXRef(const T* in, int Nx,
-      T* outlow, T* outhigh) {
-//      O... out) {
+      AccN... accn) {
 
     int Nx_is_odd = (Nx & 1);
     int NxOut = (Nx + Nx_is_odd)/2;
 
     // Loop over output image
     for (int ox=0; ox<NxOut; ox++) {
-      //TOD TN: delete next 2 lines
-      outlow[ox]=0;
-      outhigh[ox]=0;
       // Loop over filter size, with periodic boundary conditions
       // TODO TN: this loop can actually be written as a compile time loop
       // #pragma unroll Filt::TapSize
-      for (int fx=-std::max(FiltLow::TapSizeLeft,FiltHigh::TapSizeLeft);
-          fx<=std::max(FiltLow::TapSizeRight,FiltHigh::TapSizeRight); fx++) {
+      for (int fx=-MaxTapSizeLeft<Filtn...>::value;
+          fx<=MaxTapSizeRight<Filtn...>::value; fx++) {
         int ix = ox*2 + fx;
         // if N is odd, image is virtually extended
         if (ix < 0) {
@@ -98,21 +227,10 @@ class SeparableSubsampledConvolutionEngine {
            ix -= (Nx + Nx_is_odd);
           }
         }
-        //std::cout<<"Accumulate low image idx "<<ix<<": "<<in[ix]
-        //  <<" x "<<FiltLow::Buff[fx+FiltLow::TapSizeLeft]
-        //  <<" filt idx: "<<fx+FiltLow::TapSizeLeft<<std::endl;
-
         // Update each buffer with its respective filter
-        //Updater<Filt,Filtn...>::update(fx, in[ix], out+ox...);
-        
-        //actualy, this is a conditional update
-        if ((fx>=-FiltLow::TapSizeLeft)&&(fx<=FiltLow::TapSizeRight)) {
-          outlow[ox]+=in[ix]*FiltLow::Buff[fx+FiltLow::TapSizeLeft];
-        }
-        if ((fx>=-FiltHigh::TapSizeLeft)&&(fx<=FiltHigh::TapSizeRight)) {
-          outhigh[ox]+=in[ix]*FiltHigh::Buff[fx+FiltHigh::TapSizeLeft];
-        }
+        Updater<Filtn...>::accumulate(fx, in[ix], std::forward<AccN>(accn)...);
       }
+      Updater<Filtn...>::write(ox,accn...);
     }
     return 1;
   }
@@ -123,7 +241,7 @@ class SeparableSubsampledConvolutionEngine {
  *
  * \author Thibault Notargiacomo
  */
-template<typename T, class FiltLow, class FiltHigh>
+template<typename T, class... Filtn>
 class SeparableUpsampledConvolutionEngine {
  public:
   /// Defaulted constructor
@@ -132,8 +250,9 @@ class SeparableUpsampledConvolutionEngine {
   virtual ~SeparableUpsampledConvolutionEngine()=default;
 
   /// The main method : perform Subsampled convolution on one row
-  static int PerformUpsampledFilteringXRef(const T* inLow, T* inHigh, int NxIn,
-    int NxOut, T* out) {
+  template<class... InN>
+  static int PerformUpsampledFilteringXRef(int NxIn, int NxOut, T* out,
+    InN... inn) {
 
     // Loop over output image
     for (int lox=0; lox<NxOut; lox++) {
@@ -143,10 +262,8 @@ class SeparableUpsampledConvolutionEngine {
 
       if ((lox%2)==0) {
 	    //TODO TN Filter loop, can be turned into an explicit compile time loop
-		for (int 
-			fx=-std::max(FiltLow::TapHalfSizeLeft,FiltHigh::TapHalfSizeLeft);
-			fx<=std::max(FiltLow::TapHalfSizeRight,FiltHigh::TapHalfSizeRight);
-			fx++) {
+		for (int fx=-MaxTapHalfSizeLeft<Filtn...>::value;
+            fx<=MaxTapHalfSizeRight<Filtn...>::value;fx++) {
 		  int idx_x = ixCentral + fx;
 		  if (idx_x<0) {
 			idx_x += NxIn;
@@ -154,8 +271,9 @@ class SeparableUpsampledConvolutionEngine {
 		  if (idx_x>max_x) {
 			idx_x -= NxIn;
 		  }
-		  // conditional update with respective filter
-		  if ((fx>=-FiltLow::TapHalfSizeLeft)&&
+          acc+=EvenSubSampledAccumulator<T,int,int,Filtn...>::acc(
+            fx, idx_x, inn...);
+          /*if ((fx>=-FiltLow::TapHalfSizeLeft)&&
 			 (fx<=FiltLow::TapHalfSizeRight)) {
 		   int fAddr = 2*(fx+FiltLow::TapHalfSizeLeft)+
              FiltLow::EvenSubSampOffset;
@@ -166,16 +284,12 @@ class SeparableUpsampledConvolutionEngine {
 			int fAddr = 2*(fx+FiltHigh::TapHalfSizeLeft)+
               FiltHigh::EvenSubSampOffset;
 			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-		  }
+		  }*/
 		}
       } else {
 	    //TODO TN Filter loop, can be turned into an explicit compile time loop
-		for (int 
-			fx=-std::max(FiltLow::TapHalfFloorSizeLeft,
-              FiltHigh::TapHalfFloorSizeLeft);
-			fx<=std::max(FiltLow::TapHalfCeilSizeRight,
-              FiltHigh::TapHalfCeilSizeRight);
-			fx++) {
+		for (int fx=-MaxTapHalfFloorSizeLeft<Filtn...>::value;
+            fx<=MaxTapHalfCeilSizeRight<Filtn...>::value; fx++) {
 		  int idx_x = ixCentral + fx;
 		  if (idx_x<0) {
 			idx_x += NxIn;
@@ -183,8 +297,10 @@ class SeparableUpsampledConvolutionEngine {
 		  if (idx_x>max_x) {
 			idx_x -= NxIn;
 		  }
-		  // conditional update with respective filter
-		  if ((fx>=-FiltLow::TapHalfFloorSizeLeft)&&
+	      acc+=OddSubSampledAccumulator<T,int,int,Filtn...>::acc(
+            fx, idx_x, inn...);
+	      // conditional update with respective filter
+		  /*if ((fx>=-FiltLow::TapHalfFloorSizeLeft)&&
 		      (fx<=FiltLow::TapHalfCeilSizeRight)) {
 	   	    int fAddr = 2*(fx+FiltLow::TapHalfFloorSizeLeft)+
               FiltLow::OddSubSampOffset;
@@ -195,7 +311,7 @@ class SeparableUpsampledConvolutionEngine {
 	        int fAddr = 2*(fx+FiltHigh::TapHalfFloorSizeLeft)+
               FiltHigh::OddSubSampOffset;
 		    acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-		  }
+		  }*/
 		}
 
       }
