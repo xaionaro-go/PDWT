@@ -137,13 +137,15 @@ class Accumulator {
  public:
   Accumulator(T* ptr): acc(0), dst(ptr) {}
   void accumulate(T val) {
-   acc+=val;
- }
-  void write(size_t idx) {
-   dst[idx]=acc;
-   acc=0;
+    acc+=val;
   }
- protected:
+  void write(size_t idx) {
+    dst[idx]=acc;
+  }
+  void reset() {
+    acc=0;
+  }
+protected:
   U acc;
   T* dst;
 };
@@ -178,6 +180,18 @@ struct Updater<Filt> {
   }
 };
 
+template<class Acc=void, class... AccN>
+struct Resetter {
+  static void reset(Acc&& acc, AccN&& ... accn) {
+    acc.reset();
+    Resetter<AccN...>::reset(std::forward<AccN>(accn)...);
+  }
+};
+template<>
+struct Resetter<void> {
+  static void reset() {}
+};
+
 /** \class SeparableSubsampledConvolutionEngine
  * \brief Code for the separable subsampled convolution. This class is a
  * variadic template class, because it can handle multiple filtering for each
@@ -200,13 +214,14 @@ class SeparableSubsampledConvolutionEngine {
   /// The main method : perform Subsampled convolution on one row
   template<class... AccN>
   static int PerformSubsampledFilteringXRef(const T* in, int Nx,
-      AccN... accn) {
+      AccN&&... accn) {
 
     int Nx_is_odd = (Nx & 1);
     int NxOut = (Nx + Nx_is_odd)/2;
 
     // Loop over output image
     for (int ox=0; ox<NxOut; ox++) {
+      Resetter<AccN...>::reset(std::forward<AccN>(accn)...);
       // Loop over filter size, with periodic boundary conditions
       // TODO TN: this loop can actually be written as a compile time loop
       // #pragma unroll Filt::TapSize
@@ -230,7 +245,7 @@ class SeparableSubsampledConvolutionEngine {
         // Update each buffer with its respective filter
         Updater<Filtn...>::accumulate(fx, in[ix], std::forward<AccN>(accn)...);
       }
-      Updater<Filtn...>::write(ox,accn...);
+      Updater<Filtn...>::write(ox,std::forward<AccN>(accn)...);
     }
     return 1;
   }
