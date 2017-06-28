@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <numeric>
 #include <vector>
@@ -24,11 +25,6 @@ class CoeffContainer {
  public:
   /// Defaulted Constructor
   CoeffContainer()=default;
-
-  /// Allocating constructor
-  CoeffContainer(const std::vector<size_t>& size, size_t nlevel ) {
-    Initialize(size, nlevel);
-  }
 
   /// Defaulted Destructor
   virtual ~CoeffContainer()=default;
@@ -63,15 +59,20 @@ class CoeffContainer {
      * plus the size of the last approximation space
      * times the number of band if one uses dual tree scheme
      */
-   size_t nbSubband = DoUseDualTreeBand() ? std::pow(2,GetNbDimension()):1;
-   size_t totalSize = nbSubband * std::accumulate(m_scaleSize.cbegin()+1,
-      m_scaleSize.cend(),0u)+m_scaleSize.back();
+    size_t nbBand = DoUseDualTreeBand()?std::pow(2,GetNbDimension()):1;
+    size_t nbSubBand = std::pow(2,GetNbDimension())-1;
+    assert(m_scaleSize.size()>0);
+    size_t totalSize = nbBand * (
+    nbSubBand * std::accumulate(m_scaleSize.cbegin()+1,m_scaleSize.cend(),0u)+
+    m_scaleSize.back());
+
     // Allocate memory
     m_coeff.resize(totalSize);
+
     // Allocate temporary buffer
     if (m_level>1) {
-      m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(1)));
-      m_vptcoeff.push_back(std::make_unique<SubContainerT>(m_scaleSize.at(2)));
+      m_ptcoeff=std::make_unique<SubContainerT>(
+        nbBand*(m_scaleSize.at(1)+m_scaleSize.at(2)));
     }
   }
 
@@ -113,8 +114,18 @@ class CoeffContainer {
   }
 
   /// Return a pointer to a temporary buffer
-  std::vector<std::unique_ptr<SubContainerT>>& GetTmpBuffPtr() {
-    return m_vptcoeff;
+  T* GetTmpBuffPtr(size_t level, size_t index) {
+    if (m_level>1) {
+      // Layout is repeated nbBand folds, and contains every time
+      // scaSize[1]+scaleSize[2]
+      size_t bandOffset = m_scaleSize.at(1)+m_scaleSize.at(2);
+      // 
+      size_t levelOffset = (level%2)*m_scaleSize.at(1);
+      return m_ptcoeff->data()+bandOffset*index+levelOffset;
+    } else {
+      assert(false);
+      return nullptr;
+    }
   }
 
   /// Simple proxy for subcontainer begin iterator getter
@@ -136,7 +147,7 @@ class CoeffContainer {
   SubContainerT m_coeff;
 
   /// A temporary buffer used to compute DWT
-  std::vector<std::unique_ptr<SubContainerT>> m_vptcoeff;  
+  std::unique_ptr<SubContainerT> m_ptcoeff;  
 
   /// Scale depth of the wavelet decomposition
   size_t m_level;
@@ -161,8 +172,9 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
   CoeffContainer1D()=default;
 
   /// Allocating constructor
-  CoeffContainer1D(std::vector<size_t> size, int nlevel) :
-    CoeffContainer<T,SubContainerT>(size,nlevel) {}
+  CoeffContainer1D(std::vector<size_t> size, int nlevel) {
+    this->Initialize(size, nlevel);
+  }
 
   /// Defaulted Destructor
   virtual ~CoeffContainer1D()=default;
@@ -187,8 +199,9 @@ class DTCoeffContainer1D : public CoeffContainer1D<T,SubContainerT> {
   DTCoeffContainer1D()=default;
 
   /// Allocating constructor
-  DTCoeffContainer1D(std::vector<size_t> size, int nlevel) :
-    CoeffContainer1D<T,SubContainerT>(size,nlevel) {}
+  DTCoeffContainer1D(std::vector<size_t> size, int nlevel) {
+    this->Initialize(size, nlevel);
+  }
 
   /// Defaulted Destructor
   virtual ~DTCoeffContainer1D()=default;
