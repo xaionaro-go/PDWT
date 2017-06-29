@@ -702,7 +702,8 @@ const std::array<T,8> Filter<T,3,4,
   filterDB,filterDB::REVERSE_QSHIFT6_I_H>::Buff;
 
 template <typename T>
-using dtwAnto97QSHIFT6 = dtwFilter<Anto97_BiOrth<T>,
+using dtwAnto97QSHIFT6 = dtwFilter<
+         Anto97_BiOrth<T>,
          Anto97_BiOrth<T>,
          QSHIFT6_Orth<T>,
          REVERSE_QSHIFT6_Orth<T>>;

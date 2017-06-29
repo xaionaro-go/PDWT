@@ -149,15 +149,19 @@ using REVERSE_QSHIFT6_Orth_1D =
  * \author Thibault Notargiacomo
  */
 template<typename T, class CoeffContainerT, class DTWaveletSchemeT>
-class DTWavelet1D : public Wavelet1D<T,CoeffContainerT, DTWaveletSchemeT> {
+class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
  public:
   /// Constructor with zero initialization
   DTWavelet1D()=default;
   
   /// Constructor : Wavelet from image
   DTWavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
-      const std::string& wname, int level) : Wavelet1D<T,CoeffContainerT,
-      DTWaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {}
+      const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
+      DTWaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
+    size_t size = Nc*Nr*Ns;
+    this->m_coeff=std::make_unique<CoeffContainerT>(
+      std::vector<size_t>{size}, level);
+  }
 
   /// Default destructor
   virtual ~DTWavelet1D()=default;
@@ -190,20 +194,20 @@ class DTWavelet1D : public Wavelet1D<T,CoeffContainerT, DTWaveletSchemeT> {
           >::PerformSubsampledFilteringXRef(
         inlow,
         this->m_coeff->GetScaleShape(l).at(0),
-        outlowReal,
-        outlowImag,
-        this->m_coeff->GetHighSubspacePtr(l,0,0),
-        this->m_coeff->GetHighSubspacePtr(l,0,1));
+        Accumulator<T,T>(outlowReal),
+        Accumulator<T,T>(outlowImag),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
 
       //Update lowpass input and output, order is important here
       if (this->m_level==2) {
         inlowReal=outlowReal;
         inlowImag=outlowImag;
-        outlowReal=this->m_coeff->GetLowSubspacePtr(l+1,0);
-        outlowImag=this->m_coeff->GetLowSubspacePtr(l+1,1);
-      } else {
-        inlowReal=outlowReal;
-        inlowImag=outlowImag;
+        outlowReal=this->m_coeff->GetLowSubspacePtr(this->m_level,0);
+        outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
+      } else if (this->m_level>2) {
+        Accumulator<T,T>(inlowReal=outlowReal);
+        Accumulator<T,T>(inlowImag=outlowImag);
         outlowReal=this->m_coeff->GetTmpBuffPtr(1,0);
         outlowImag=this->m_coeff->GetTmpBuffPtr(1,1);
       }
@@ -218,54 +222,54 @@ class DTWavelet1D : public Wavelet1D<T,CoeffContainerT, DTWaveletSchemeT> {
           >::PerformSubsampledFilteringXRef(
         inlow,
         this->m_coeff->GetScaleShape(l).at(0),
-        outlowReal,
-        outlowImag,
-        this->m_coeff->GetHighSubspacePtr(l,0,0),
-        this->m_coeff->GetHighSubspacePtr(l,0,1));
+        Accumulator<T,T>(outlowReal),
+        Accumulator<T,T>(outlowImag),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
       //Update lowpass input and output, order is important here
-      if (this->m_level==1) {
-        //nothing to do
-      } else if (l==this->m_level-2) {
-        inlow=outlowReal;
-        outlowReal=this->m_coeff->GetLowSubspacePtr(l+1,0);
-        std::cout<<"Next scale will write to low subspace"<<std::endl;
-      } else if (l==0) {
-        inlow=outlowReal;
-        outlowReal=this->m_coeff->GetTmpBuffPtr(1,0);
+      if (l>=this->m_level-2) {
+        inlowReal=outlowReal;
+        inlowImag=outlowImag;
+        outlowReal=this->m_coeff->GetLowSubspacePtr(this->m_level,0);
+        outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
       } else {
-        std::swap(inlow,outlowReal);
+        std::swap(inlowReal,outlowReal);
+        std::swap(inlowImag,outlowImag);
       }
     }
     return 1;
   }
+
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
-    // At first step, input lowpass image is part of the wavelet tree
-    T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level-1);
-    // output is either in the image if we have already finished,
-    // or if number of level is odd. Otherwise, it is stored to a
-    //  temporary buffer for further reconstruction
-    T* outlow = (this->m_level%2==1) ? this->m_image :
-      this->m_coeff->GetTmpBuffPtr(1,0);
+    
+    // Last step: reconstruct image in the original space
+    T* inlowReal = this->m_coeff->GetLowSubspacePtr(this->m_level-1,0);
+    T* inlowImag = this->m_coeff->GetLowSubspacePtr(this->m_level-1,1);
+    T* outlow = this->m_image;
    
     for (int l=this->m_level; l>0; l--) {
       //#pragma omp parallel for
       SeparableUpsampledConvolutionEngine<T,
           typename DTWaveletSchemeT::i_l0r,
-          typename DTWaveletSchemeT::i_h0r
+          typename DTWaveletSchemeT::i_l0i,
+          typename DTWaveletSchemeT::i_h0r,
+          typename DTWaveletSchemeT::i_h0i
         >::PerformUpsampledFilteringXRef(
-          inlow,
-          this->m_coeff->GetHighSubspacePtr(l-1,0),
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
-          outlow);
+          outlow,
+          inlowReal,
+          inlowImag,
+          this->m_coeff->GetHighSubspacePtr(l-1,0,0),
+          this->m_coeff->GetHighSubspacePtr(l-1,0,1));
 
       //Update lowpass input and output
       if (l==this->m_level && l>1) {
-        inlow= (this->m_level%2==0) ? this->m_image :
-          this->m_coeff->GetTmpBuffPtr(1,0);
+        //inlowReal= (this->m_level%2==0) ? this->m_image :
+          //this->m_coeff->GetTmpBuffPtr(1,0);
        }
-       std::swap(inlow,outlow);
+       //std::swap(inlowReal,outlow);
     }
     return 1;
   }

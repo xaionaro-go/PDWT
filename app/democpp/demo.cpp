@@ -28,15 +28,24 @@ int main(int argc, char **argv) {
   // Define wavelet tranform
   //Daub2_1D<T> w(in.data(),in.size(),1,1,false,"Daub2",1);
   //Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",1);
-  REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),in.size(),1,1,false,"QSHIFT6",1);
+  //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),in.size(),1,1,false,"QSHIFT6",1);
+  dtwAnto97QSHIFT6_1D<T> w(in.data(),in.size(),1,1,false,"DTCWT",1);  
+   
   // print coeffs when initialized
+  std::cout<<"Coefficient after initialization (should be 0)"<<std::endl;
   std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
+  std::cout<<std::endl;
+
   // perform forward transform
   w.forward();
   //Delete previous image
   std::fill(in.begin(),in.end(),0);
+
   // print coeffs
+  std::cout<<"Coefficient after initialization (should be 0)"<<std::endl;
   std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
+  std::cout<<std::endl;
+
   // perform inverse transform
   w.backward(); 
   

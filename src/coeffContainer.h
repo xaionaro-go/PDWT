@@ -59,12 +59,19 @@ class CoeffContainer {
      * plus the size of the last approximation space
      * times the number of band if one uses dual tree scheme
      */
-    size_t nbBand = DoUseDualTreeBand()?std::pow(2,GetNbDimension()):1;
-    size_t nbSubBand = std::pow(2,GetNbDimension())-1;
+    m_nbSubBand = std::pow(2,GetNbDimension())-1;
+    m_nbBand = DoUseDualTreeBand()?std::pow(2,GetNbDimension()):1;
+    m_bandSize = m_nbSubBand * std::accumulate(m_scaleSize.cbegin()+1,
+      m_scaleSize.cend(),0u) + m_scaleSize.back();
     assert(m_scaleSize.size()>0);
-    size_t totalSize = nbBand * (
-    nbSubBand * std::accumulate(m_scaleSize.cbegin()+1,m_scaleSize.cend(),0u)+
-    m_scaleSize.back());
+
+    //std::cout <<"nbBand is "<<nbBand<<" nbSubBand is "<<nbSubBand<<std::endl;
+    //auto print = [](auto in) {std::cout<<" , " <<in;};
+    //std::cout<<"scaleSize is: ";
+    //std::for_each(m_scaleSize.cbegin(),m_scaleSize.cend(),print);
+    //std::cout<<std::endl;
+    size_t totalSize = m_nbBand * m_bandSize;
+    //std::cout<<"Total size is "<<totalSize<<"x"<<std::endl;
 
     // Allocate memory
     m_coeff.resize(totalSize);
@@ -72,7 +79,7 @@ class CoeffContainer {
     // Allocate temporary buffer
     if (m_level>1) {
       m_ptcoeff=std::make_unique<SubContainerT>(
-        nbBand*(m_scaleSize.at(1)+m_scaleSize.at(2)));
+        m_nbBand*(m_scaleSize.at(1)+m_scaleSize.at(2)));
     }
   }
 
@@ -85,7 +92,7 @@ class CoeffContainer {
   /// Returns a pointer to the Low frequency subspace for the given scale
   T* GetLowSubspacePtr(size_t scale, size_t band=0) {
     // Band offset, accounts for redundancy
-	size_t bandOffset = band*m_scaleSize.at(0);
+	size_t bandOffset = band*m_bandSize;
 	// For each band, we have (2^d)-1 high frequency subband + 1 low frequency
     // We decided to put the low frequency at the end in our layout
 	size_t nbHighFreqSubband = std::pow(2,GetNbDimension())-1;
@@ -100,7 +107,7 @@ class CoeffContainer {
   /// Return a pointer to the High frequency subspace for the given level
   T* GetHighSubspacePtr(size_t scale, size_t subband, size_t band=0) {
 	// Band offset, accounts for redundancy
-	size_t bandOffset = band*m_scaleSize.at(0);
+	size_t bandOffset = band*m_bandSize;
 	// For each band, we have (2^d)-1 high frequency subband + 1 low frequency
     // We decided to put the low frequency at the end in our layout
 	size_t nbHighFreqSubband = std::pow(2,GetNbDimension())-1;
@@ -110,6 +117,9 @@ class CoeffContainer {
 	// subband index accounts for filtering combination, ie ranges from 0 to
     // (2^d)-2
 	size_t subbandOffset = subband*m_scaleSize.at(scale+1);
+    //std::cout<<"Band offset is "<<bandOffset<<std::endl;
+    //std::cout<<"scaleOffset is "<<scaleOffset<<std::endl;
+    //std::cout<<"subband offset is "<<subbandOffset<<std::endl;
 	return  m_coeff.data()+bandOffset+scaleOffset+subbandOffset;
   }
 
@@ -136,6 +146,8 @@ class CoeffContainer {
   auto cbegin() const { return m_coeff.cbegin(); }
   /// Simple proxy for subcontainer const end iterator getter
   auto cend() const { return m_coeff.cend(); }
+  /// Get size of the underlying container
+  size_t size() const { return m_coeff.size(); };
 
   /// Returns the size of data for the given scale
   auto GetScaleShape(size_t scale) {
@@ -157,6 +169,18 @@ class CoeffContainer {
 
   /// Size of each level of coefficients
   std::vector<size_t> m_scaleSize;
+
+  /**
+  * Number of subband: only depends on the dimension of the data for
+  * separable wavelets
+  **/
+  size_t m_nbSubBand;
+  
+  /// Number of band in case of dual/quad/oct-tree wavelet
+  size_t m_nbBand;
+  
+  /// Size of each band in case of dual/quad/oct-tree wavelet
+  size_t m_bandSize; 
  };
 
 /** \class CoeffContainer1D
