@@ -176,12 +176,12 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
     // Lowpass output is either in the wv tree if we have already finished,
     // or it is stored to a temporary buffer for further decomposition
     T* outlowReal = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1,0) :
-      this->m_coeff->GetTmpBuffPtr(1,0);
+      this->m_coeff->GetTmpBuffPtr(0,0);
     //output size is size/2, so one has to get proper offset
     T* outlowImag = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1,1) :
-      this->m_coeff->GetTmpBuffPtr(1,1);
+      this->m_coeff->GetTmpBuffPtr(0,1);
 
-    // First stage may be different fron the other
+    // Divide the tree in two branch along the X direction
     int l=0;
     if (this->m_level>=1) {
       //STRONG TODO: use is_equal metaprogramming technique to check if filters
@@ -206,34 +206,46 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
         outlowReal=this->m_coeff->GetLowSubspacePtr(this->m_level,0);
         outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
       } else if (this->m_level>2) {
-        Accumulator<T,T>(inlowReal=outlowReal);
-        Accumulator<T,T>(inlowImag=outlowImag);
+        inlowReal=outlowReal;
+        inlowImag=outlowImag;
         outlowReal=this->m_coeff->GetTmpBuffPtr(1,0);
         outlowImag=this->m_coeff->GetTmpBuffPtr(1,1);
       }
     }
 
+    //Band 0: real X
     for (int l=1; l<this->m_level; l++) {
       SeparableSubsampledConvolutionEngine<T,
-          typename DTWaveletSchemeT::f_l0r,
-          typename DTWaveletSchemeT::f_l0i,
-          typename DTWaveletSchemeT::f_h0r,
-          typename DTWaveletSchemeT::f_h0i
+          typename DTWaveletSchemeT::f_lnr,
+          typename DTWaveletSchemeT::f_hnr
           >::PerformSubsampledFilteringXRef(
-        inlow,
+        inlowReal,
         this->m_coeff->GetScaleShape(l).at(0),
         Accumulator<T,T>(outlowReal),
-        Accumulator<T,T>(outlowImag),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)));
       //Update lowpass input and output, order is important here
       if (l>=this->m_level-2) {
         inlowReal=outlowReal;
-        inlowImag=outlowImag;
         outlowReal=this->m_coeff->GetLowSubspacePtr(this->m_level,0);
-        outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
       } else {
         std::swap(inlowReal,outlowReal);
+      }
+    }
+    //Band 1: imag X
+    for (int l=1; l<this->m_level; l++) {
+      SeparableSubsampledConvolutionEngine<T,
+          typename DTWaveletSchemeT::f_lni,
+          typename DTWaveletSchemeT::f_hni
+          >::PerformSubsampledFilteringXRef(
+        inlowImag,
+        this->m_coeff->GetScaleShape(l).at(0),
+        Accumulator<T,T>(outlowImag),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
+      //Update lowpass input and output, order is important here
+      if (l>=this->m_level-2) {
+        inlowImag=outlowImag;
+        outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
+      } else {
         std::swap(inlowImag,outlowImag);
       }
     }
@@ -242,12 +254,58 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
-    
-    // Last step: reconstruct image in the original space
+    // Band 0: real X
     T* inlowReal = this->m_coeff->GetLowSubspacePtr(this->m_level-1,0);
+    T* outlowReal= this->m_coeff->GetTmpBuffPtr(this->m_level,0);
+    for (int l=this->m_level; l>1; l--) {
+      //#pragma omp parallel for
+      SeparableUpsampledConvolutionEngine<T,
+          typename DTWaveletSchemeT::i_lnr,
+          typename DTWaveletSchemeT::i_hnr
+        >::PerformUpsampledFilteringXRef(
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l-1).at(0),
+          outlowReal,
+          inlowReal,
+          this->m_coeff->GetHighSubspacePtr(l-1,0,0));
+
+      //Update lowpass input and output
+      if (l==this->m_level) {
+        inlowReal=this->m_coeff->GetTmpBuffPtr(this->m_level-1,0);
+      }
+      std::swap(inlowReal,outlowReal);
+    }
+    auto print = [](auto in){std::cout<<in<<" , ";};
+    std::cout<<"Print low real: ";
+    std::for_each(inlowReal,inlowReal+5,print);
+    std::cout<<std::endl;
+
+   // Band 1: imag X
     T* inlowImag = this->m_coeff->GetLowSubspacePtr(this->m_level-1,1);
+    T* outlowImag= this->m_coeff->GetTmpBuffPtr(this->m_level,1);
+    for (int l=this->m_level; l>1; l--) {
+	  //#pragma omp parallel for
+	  SeparableUpsampledConvolutionEngine<T,
+		  typename DTWaveletSchemeT::i_lni,
+		  typename DTWaveletSchemeT::i_hni
+		>::PerformUpsampledFilteringXRef(
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l-1).at(0),
+		  outlowImag,
+		  inlowImag,
+		  this->m_coeff->GetHighSubspacePtr(l-1,0,1));
+	  //Update lowpass input and output
+      if (l==this->m_level) {
+        inlowImag=this->m_coeff->GetTmpBuffPtr(this->m_level-1,1);
+      }
+	  std::swap(inlowImag,outlowImag);
+	}
+    std::cout<<"Print low imag: ";
+    std::for_each(inlowImag,inlowImag+5,print);
+    std::cout<<std::endl;
+
+    // Merge both trees in the X direction
     T* outlow = this->m_image;
-   
     for (int l=this->m_level; l>0; l--) {
       //#pragma omp parallel for
       SeparableUpsampledConvolutionEngine<T,
@@ -263,13 +321,6 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
           inlowImag,
           this->m_coeff->GetHighSubspacePtr(l-1,0,0),
           this->m_coeff->GetHighSubspacePtr(l-1,0,1));
-
-      //Update lowpass input and output
-      if (l==this->m_level && l>1) {
-        //inlowReal= (this->m_level%2==0) ? this->m_image :
-          //this->m_coeff->GetTmpBuffPtr(1,0);
-       }
-       //std::swap(inlowReal,outlow);
     }
     return 1;
   }

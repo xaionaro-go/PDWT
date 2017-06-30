@@ -123,7 +123,9 @@ endif ()
 #############
 #  Testing  #
 #############
-enable_testing()
+if (TESTING_ENABLED)
+  enable_testing()
+endif ()
 
 ########################################
 ####        Doxygen Part            ####
@@ -161,5 +163,7 @@ GENERATE_CPPCHECK(SOURCEDIRS src app test
 add_subdirectory(app)
 add_subdirectory(binding)
 add_subdirectory(src)
-add_subdirectory(test)
 
+if (TESTING_ENABLED)
+  add_subdirectory(test)
+endif ()

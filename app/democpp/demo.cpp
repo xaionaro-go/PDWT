@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   auto print = [](auto& in){ std::cout<<in<<", "; };
 
   // Define input/output
-  std::vector<T> in(9);
+  std::vector<T> in(19);
   std::vector<T> out(in.size());
   std::iota(in.begin(), in.end(),0);
   //std::fill(in.begin(), in.end(), 2);
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
   //Daub2_1D<T> w(in.data(),in.size(),1,1,false,"Daub2",1);
   //Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),in.size(),1,1,false,"QSHIFT6",1);
-  dtwAnto97QSHIFT6_1D<T> w(in.data(),in.size(),1,1,false,"DTCWT",1);  
+  dtwAnto97QSHIFT6_1D<T> w(in.data(),in.size(),1,1,false,"DTCWT",3);  
    
   // print coeffs when initialized
   std::cout<<"Coefficient after initialization (should be 0)"<<std::endl;
