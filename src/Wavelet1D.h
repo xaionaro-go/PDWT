@@ -249,11 +249,17 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
         std::swap(inlowImag,outlowImag);
       }
     }
+    // map the set of filtered signals to the real DTCWT mixture
+    this->m_coeff->WaveletToCpx();
     return 1;
   }
 
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
+
+    // map the set of DTCWT coefficients to a simple set of filtered signals
+    this->m_coeff->CpxToWavelet();
+ 
     // Band 0: real X
     T* inlowReal = this->m_coeff->GetLowSubspacePtr(this->m_level-1,0);
     T* outlowReal= this->m_coeff->GetTmpBuffPtr(this->m_level,0);

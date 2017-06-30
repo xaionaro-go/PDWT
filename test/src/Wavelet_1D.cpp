@@ -65,6 +65,9 @@ using QSHIFT6_Orth_1DTestFctr = Wavelet1DTestFunctor<QSHIFT6_Orth_1D,T,L,S>;
 template<typename T, typename L, typename S>
 using REVERSE_QSHIFT6_Orth_1DTestFctr = 
   Wavelet1DTestFunctor<REVERSE_QSHIFT6_Orth_1D,T,L,S>;
+template<typename T, typename L, typename S>
+using dtwAnto97QSHIFT6_1DTestFctr =
+  Wavelet1DTestFunctor<dtwAnto97QSHIFT6_1D,T,L,S>;  
 
 int main(int argc, char* argv[])  {
 
@@ -83,6 +86,7 @@ int main(int argc, char* argv[])  {
     TestImp<Daub5_1DTestFctr>(T(), L(), S()) &&
     TestImp<Anto97_BiOrth_1DTestFctr>(T(), L(), S()) &&
     TestImp<QSHIFT6_Orth_1DTestFctr>(T(), L(), S()) &&
-    TestImp<REVERSE_QSHIFT6_Orth_1DTestFctr>(T(), L(), S())
+    TestImp<REVERSE_QSHIFT6_Orth_1DTestFctr>(T(), L(), S()) &&
+    TestImp<dtwAnto97QSHIFT6_1DTestFctr>(T(), L(), S()) 
     ? EXIT_SUCCESS : EXIT_FAILURE;
 }

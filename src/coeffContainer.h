@@ -12,6 +12,7 @@
 #include <vector>
 
 // Local
+#include "dualTreeLinearOp.h"
 
 /** \class CoeffContainer
  * \brief Generic interface that should be implemented by wavelet coefficient
@@ -232,6 +233,22 @@ class DTCoeffContainer1D : public CoeffContainer1D<T,SubContainerT> {
 
   /// Return wether we are using the dual tree scheme or not
   virtual bool DoUseDualTreeBand() const override { return true; };
+
+  /// Make the magical mixture of negative frequency cancelling signals
+  int WaveletToCpx() {
+    std::transform(this->m_coeff.begin(),this->m_coeff.end(),
+      this->m_coeff.begin(),
+      [](auto in) { return in*m_normalizationRatio; });
+    return 1;
+  }
+
+  /// Should be the exact inverse mapping of WaveletToCpx
+  int CpxToWavelet() { return WaveletToCpx(); };
+
+ protected:
+
+  static constexpr const T m_normalizationRatio = 1.0/std::sqrt(2);
+
 };
 
 /** \class CoeffContainer2D
@@ -294,4 +311,19 @@ class CoeffContainerCpx : public CoeffContainer<T,SubContainerT> {
   virtual ~CoeffContainerCpx()=default;
 };
 
+/*
+/// Make the magical mixture of negative frequency cancelling signals
+WaveletToCpx( T scaling ) {
+  // Set up zip iterator
+  auto begin = m_coeff.begin();
+  auto zippedBegin( boost::make_zip_iterator( boost::make_tuple(
+    begin,
+    begin + this->m_bandSize ) ) );
+  auto zippedEnd( boost::make_zip_iterator( boost::make_tuple(
+    begin + this->m_bandSize,
+    begin + 2*this->m_bandSize ) ) );
+  // Perform linear mapping
+  std::for_each( zippedBegin zippedEnd, WaveletToCpx1D<T>(
+    scaling/(2.0*std::sqrt(2.0) )) );
+*/
 #endif /* COEFFCONTAINER_H */
