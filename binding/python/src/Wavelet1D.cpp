@@ -17,26 +17,27 @@ namespace py = pybind11;
  * an existing c++ version
  */
 
+template<typename T>
 class Wavelet1DWrapper {
  public:
   Wavelet1DWrapper(int nbLevel=1, bool doCycleSpinning=false,
       const std::string &name="Daub4") : m_nbLevel(nbLevel), 
       m_doCycleSpinning(doCycleSpinning), m_name(name) {}
 
-  void Initialize(py::array_t<double> image) {
+  void Initialize(py::array_t<T> image) {
 
     auto buffer = image.request();
     if (buffer.ndim != 1) {
       throw std::runtime_error("Number of dimensions must be one");
     }
-    double* ptr = (double *) buffer.ptr;
+    T* ptr = (double *) buffer.ptr;
     size_t size = buffer.size;
 
     if (m_name=="Daub2") {
-      m_pWavelet = std::make_unique<Daub2_1D<double>>(
+      m_pWavelet = std::make_unique<Daub2_1D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
     } else if (m_name=="dtwAnto97QSHIFT6") {
-      m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_1D<double>>(
+      m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_1D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
       //
     } else {
@@ -52,9 +53,9 @@ class Wavelet1DWrapper {
 
 PYBIND11_PLUGIN(Wavelet1D) {
   py::module m("Wavelet1D", "pybind11 wavelet binding");
-  py::class_<Wavelet1DWrapper>(m, "Wavelet1D",py::dynamic_attr())
+  py::class_<Wavelet1DWrapper<float>>(m, "Wavelet1D",py::dynamic_attr())
   .def(py::init<int,bool,const std::string &>())
-  .def("Initialize", &Wavelet1DWrapper::Initialize);
+  .def("Initialize", &Wavelet1DWrapper<float>::Initialize);
   return m.ptr();
 }
 
