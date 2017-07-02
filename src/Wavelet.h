@@ -48,6 +48,16 @@ enum class w_state {
   W_THRESHOLD_ERROR
 };
 
+/** \struct WaveletWrapper
+ * \brief This class is only here to provide a non templated interface to
+ * all possible types of wavelet defined in this software
+ *
+ * \author Thibault Notargiacomo
+ */
+struct WaveletWrapper {
+  WaveletWrapper()=default;
+};
+
 /** \class Wavelet
  * \brief The wavelet class manage the lifecycle of the wavelet transform
  * coefficients.
@@ -55,7 +65,7 @@ enum class w_state {
  * \author Pierre Paleo
  */
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
-class Wavelet {
+class Wavelet :public WaveletWrapper {
  public:
   /// Constructor with zero initialization
   Wavelet() : m_image{nullptr}, m_coeff{nullptr}, m_doCycleSpinning{false},

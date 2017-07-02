@@ -165,5 +165,5 @@ add_subdirectory(binding)
 add_subdirectory(src)
 
 if (TESTING_ENABLED)
-  add_subdirectory(test)
+  add_subdirectory(test EXCLUDE_FROM_ALL)
 endif ()

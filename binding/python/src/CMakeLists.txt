@@ -16,7 +16,7 @@ endif ()
 #  Python binding code  #
 #########################
 set(sources
-  CoeffContainer1D.cpp
+#  CoeffContainer1D.cpp
   Wavelet1D.cpp
 #  Wavelet2D.cpp
 #  Wavelet3D.cpp
@@ -28,9 +28,12 @@ set(headers
 ####################
 #  Lib Dependancy  #
 ####################
+
 include_directories("${PRJ_ROOT_DIR}/src")
 
 ###############################
 #  Equivalent of add_library  #
 ###############################
 pybind11_add_module(${OUTPUT_NAME} ${sources})
+install(TARGETS ${OUTPUT_NAME}
+  LIBRARY DESTINATION ${RUNTIME_OUTPUT_DIRECTORY})
