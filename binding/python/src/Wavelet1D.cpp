@@ -30,7 +30,7 @@ class Wavelet1DWrapper {
     if (buffer.ndim != 1) {
       throw std::runtime_error("Number of dimensions must be one");
     }
-    T* ptr = (double *) buffer.ptr;
+    T* ptr = static_cast<T *>(buffer.ptr);
     size_t size = buffer.size;
 
     if (m_name=="Daub2") {
