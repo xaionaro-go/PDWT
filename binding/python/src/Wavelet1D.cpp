@@ -95,7 +95,8 @@ class Wavelet1DWrapper {
 
 PYBIND11_MODULE(pyPDWT, m) {
   m.doc() = "pyPDWT : pybind11 wavelet binding";
-  py::class_<Wavelet1DWrapper<float>> Wavelet1D(m, "Wavelet1D",py::dynamic_attr());
+  py::class_<Wavelet1DWrapper<float>> Wavelet1D(m, "Wavelet1D",
+    py::dynamic_attr());
   Wavelet1D
     .def(py::init<int,bool,const std::string &>())
     .def("Initialize", &Wavelet1DWrapper<float>::Initialize)

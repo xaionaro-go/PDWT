@@ -2,6 +2,6 @@ my_project:
   script:
     - mkdir build
     - cd build
-    - CC=gcc-7 CXX=g++-7 cmake -DTESTING_ENABLED=on ..  
+    - CC=gcc-7 CXX=g++-7 cmake -DTESTING_ENABLED=on -DWITH_PYTHON=on ..  
     - make -j4 install
     - make test
