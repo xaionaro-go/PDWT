@@ -25,10 +25,10 @@ class Wavelet1DWrapper {
       m_doCycleSpinning(doCycleSpinning), m_name(name) {}
 
   void Initialize(py::array_t<T> image) {
-
     auto buffer = image.request();
     if (buffer.ndim != 1) {
-      throw std::runtime_error("Number of dimensions must be one");
+      throw std::runtime_error("Wavelet1DWrapper::Initialize : "
+        "Number of dimensions must be one");
     }
     T* ptr = static_cast<T *>(buffer.ptr);
     size_t size = buffer.size;
@@ -39,23 +39,70 @@ class Wavelet1DWrapper {
     } else if (m_name=="dtwAnto97QSHIFT6") {
       m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_1D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
-      //
     } else {
-      assert(false);
+      throw std::runtime_error("Wavelet1DWrapper::Initialize : "
+        "Unsupported wavelet type");
+    }
+  }
+  void forward(py::array_t<T> image) {
+    if (m_pWavelet->forward()<0) {
+      throw std::runtime_error("Wavelet1DWrapper::forward : "
+        "Runtime error");
+    }
+  }
+  void backward(py::array_t<T> image) {
+    if (m_pWavelet->backward()<0) {
+      throw std::runtime_error("Wavelet1DWrapper::backward : "
+        "Runtime error");
+    }
+  }
+  void inverse(py::array_t<T> image) {
+    if (m_pWavelet->inverse()<0) {
+      throw std::runtime_error("Wavelet1DWrapper::inverse : "
+        "Runtime error");
+    }
+  }
+  void get_image(py::array_t<T> image) const {
+    auto buffer = image.request();
+    if (buffer.ndim != 1) {
+      throw std::runtime_error("Wavelet1DWrapper::get_image : "
+        "Number of dimensions must be one");
+    }
+    T* ptr = static_cast<T *>(buffer.ptr);
+    if (m_pWavelet->get_image(ptr)<0) {
+      throw std::runtime_error("Wavelet1DWrapper::get_image : "
+        "Runtime error");
+    }
+  }
+  void set_image(py::array_t<T> image) {
+    auto buffer = image.request();
+    if (buffer.ndim != 1) {
+      throw std::runtime_error("Wavelet1DWrapper::set_image : "
+        "Number of dimensions must be one");
+    }
+    T* ptr = static_cast<T *>(buffer.ptr);
+    if (m_pWavelet->set_image(ptr)<0) {
+      throw std::runtime_error("Wavelet1DWrapper::set_image : "
+        "Runtime error");
     }
   }
  protected:
   int m_nbLevel;
   bool m_doCycleSpinning;
   std::string m_name;
-  std::unique_ptr<WaveletWrapper> m_pWavelet;
+  std::unique_ptr<WaveletWrapper<T>> m_pWavelet;
 };
 
-PYBIND11_PLUGIN(Wavelet1D) {
-  py::module m("Wavelet1D", "pybind11 wavelet binding");
-  py::class_<Wavelet1DWrapper<float>>(m, "Wavelet1D",py::dynamic_attr())
-  .def(py::init<int,bool,const std::string &>())
-  .def("Initialize", &Wavelet1DWrapper<float>::Initialize);
-  return m.ptr();
+PYBIND11_MODULE(pyPDWT, m) {
+  m.doc() = "pyPDWT : pybind11 wavelet binding";
+  py::class_<Wavelet1DWrapper<float>> Wavelet1D(m, "Wavelet1D",py::dynamic_attr());
+  Wavelet1D
+    .def(py::init<int,bool,const std::string &>())
+    .def("Initialize", &Wavelet1DWrapper<float>::Initialize)
+    .def("forward", &Wavelet1DWrapper<float>::forward)
+    .def("backward", &Wavelet1DWrapper<float>::backward)
+    .def("inverse", &Wavelet1DWrapper<float>::inverse)
+    .def("get_image", &Wavelet1DWrapper<float>::get_image)
+    .def("set_image", &Wavelet1DWrapper<float>::set_image);
 }
 

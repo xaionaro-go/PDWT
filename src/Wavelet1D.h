@@ -37,7 +37,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual ~Wavelet1D()=default;
 
   /// Forward wavelet tranform
-  virtual int forward() {
+  virtual int forward() override {
     // At first step, input is simply input image
     T* inlow = this->m_image;
     // Lowpass output is either in the wv tree if we have already finished,
@@ -73,7 +73,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transform
-  virtual int backward() {
+  virtual int backward() override {
     // At first step, input lowpass image is part of the wavelet tree
     T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level-1);
     // In 1D, one has to keep in mind, that level 1 (last recontruction step)
@@ -115,8 +115,8 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
 
   /// Inverse of the wavelet tranform
-  virtual int inverse() {
-    return 1;
+  virtual int inverse() override {
+    return this->backward();
   }
 };
 

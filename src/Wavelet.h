@@ -54,8 +54,14 @@ enum class w_state {
  *
  * \author Thibault Notargiacomo
  */
+template<typename T>
 struct WaveletWrapper {
   WaveletWrapper()=default;
+  virtual int forward()=0;
+  virtual int backward()=0;
+  virtual int inverse()=0;
+  virtual int get_image(T* img) const =0;
+  virtual int set_image(T* img)=0;
 };
 
 /** \class Wavelet
@@ -65,7 +71,7 @@ struct WaveletWrapper {
  * \author Pierre Paleo
  */
 template<typename T, class CoeffContainerT, class WaveletSchemeT>
-class Wavelet :public WaveletWrapper {
+class Wavelet :public WaveletWrapper<T> {
  public:
   /// Constructor with zero initialization
   Wavelet() : m_image{nullptr}, m_coeff{nullptr}, m_doCycleSpinning{false},
@@ -83,31 +89,31 @@ class Wavelet :public WaveletWrapper {
     m_level = level;
   }
   /// Copy constructor deleted because of unique_ptr
-  Wavelet(const Wavelet& w)=delete; 
+  Wavelet(const Wavelet& w)=delete;
   /// Default destructor
   virtual ~Wavelet()=default;
-  
+
   /// Print wavelet transform informations
   virtual void print_informations() {
     std::cout<<"Informations"<<std::endl;
   }
 
   /// Forward wavelet tranform
-  virtual int forward() {
+  virtual int forward() override {
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transpose
-  virtual int backward() {
+  virtual int backward() override {
     return 1;
   }
   /// Inverse of the wavelet tranform
-  virtual int inverse() {
+  virtual int inverse() override {
     return 1;
   }
- 
+
   /// Soft thresholding: proximity operator for L1 norm
   //void soft_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
-  /// Hard thresholding: best k-term approximation for wavelets 
+  /// Hard thresholding: best k-term approximation for wavelets
   //void hard_threshold(T beta, int do_thresh_appcoeffs = 0, int normalize = 0);
   /// Wavelet shrinkage
   //void shrink(T beta, int do_thresh_appcoeffs = 1);
@@ -115,31 +121,32 @@ class Wavelet :public WaveletWrapper {
   //void proj_linf(T beta, int do_thresh_appcoeffs = 1);
   /// Circular shift
   //void circshift(int sr, int sc, int inplace = 1);
-  
+
 
   /// Compute the \f$ l-2 \f$ norm of the vector of coefficients
   //T norm2sq();
   /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
   //T norm1();
   /// Get image pointer
-  virtual void get_image(T* img) {
+  virtual int get_image(T* img) const override {
     std::copy(m_image,m_image+m_info.Nx*m_info.Ny*m_info.Nz,img);
+    return 1;
   }
   /// Return a reference to wavelet coefficients
   virtual CoeffContainerT& get_coeff() {
     return *m_coeff;
   }
   /// Set input image to be transformed in the wavelet domain
-  int virtual set_image(T* img) {
+  int virtual set_image(T* img) override {
     m_image=img;
-    return 0;
+    return 1;
   }
   /// Set coefficients to be reconstructed into an image
   int virtual set_coeff(CoeffContainerT* coeff) {
     m_coeff.reset(coeff);
     return 1;
   }
-  
+
   /// set filter for forward transform
   //int set_filters_forward(char* filtername, uint len, T* filter1, T* filter2,
   //    T* filter3 = NULL, T* filter4 = NULL);
