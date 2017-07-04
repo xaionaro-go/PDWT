@@ -44,19 +44,19 @@ class Wavelet1DWrapper {
         "Unsupported wavelet type");
     }
   }
-  void forward(py::array_t<T> image) {
+  void forward() {
     if (m_pWavelet->forward()<0) {
       throw std::runtime_error("Wavelet1DWrapper::forward : "
         "Runtime error");
     }
   }
-  void backward(py::array_t<T> image) {
+  void backward() {
     if (m_pWavelet->backward()<0) {
       throw std::runtime_error("Wavelet1DWrapper::backward : "
         "Runtime error");
     }
   }
-  void inverse(py::array_t<T> image) {
+  void inverse() {
     if (m_pWavelet->inverse()<0) {
       throw std::runtime_error("Wavelet1DWrapper::inverse : "
         "Runtime error");
