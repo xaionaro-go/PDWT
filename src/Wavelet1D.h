@@ -213,41 +213,47 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
       }
     }
 
-    //Band 0: real X
-    for (int l=1; l<this->m_level; l++) {
-      SeparableSubsampledConvolutionEngine<T,
-          typename DTWaveletSchemeT::f_lnr,
-          typename DTWaveletSchemeT::f_hnr
-          >::PerformSubsampledFilteringXRef(
-        inlowReal,
-        this->m_coeff->GetScaleShape(l).at(0),
-        Accumulator<T,T>(outlowReal),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)));
-      //Update lowpass input and output, order is important here
-      if (l>=this->m_level-2) {
-        inlowReal=outlowReal;
-        outlowReal=this->m_coeff->GetLowSubspacePtr(this->m_level,0);
-      } else {
-        std::swap(inlowReal,outlowReal);
-      }
-    }
-    //Band 1: imag X
-    for (int l=1; l<this->m_level; l++) {
-      SeparableSubsampledConvolutionEngine<T,
-          typename DTWaveletSchemeT::f_lni,
-          typename DTWaveletSchemeT::f_hni
-          >::PerformSubsampledFilteringXRef(
-        inlowImag,
-        this->m_coeff->GetScaleShape(l).at(0),
-        Accumulator<T,T>(outlowImag),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
-      //Update lowpass input and output, order is important here
-      if (l>=this->m_level-2) {
-        inlowImag=outlowImag;
-        outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
-      } else {
-        std::swap(inlowImag,outlowImag);
-      }
+	#pragma omp parallel
+	#pragma omp single nowait
+	{
+      #pragma omp task
+      //Band 0: real X
+	  for (int l=1; l<this->m_level; l++) {
+		SeparableSubsampledConvolutionEngine<T,
+			typename DTWaveletSchemeT::f_lnr,
+			typename DTWaveletSchemeT::f_hnr
+			>::PerformSubsampledFilteringXRef(
+		  inlowReal,
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  Accumulator<T,T>(outlowReal),
+		  Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)));
+		//Update lowpass input and output, order is important here
+		if (l>=this->m_level-2) {
+		  inlowReal=outlowReal;
+		  outlowReal=this->m_coeff->GetLowSubspacePtr(this->m_level,0);
+		} else {
+		  std::swap(inlowReal,outlowReal);
+		}
+	  }
+	  //Band 1: imag X
+	  #pragma omp task
+	  for (int l=1; l<this->m_level; l++) {
+		SeparableSubsampledConvolutionEngine<T,
+			typename DTWaveletSchemeT::f_lni,
+			typename DTWaveletSchemeT::f_hni
+			>::PerformSubsampledFilteringXRef(
+		  inlowImag,
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  Accumulator<T,T>(outlowImag),
+		  Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
+		//Update lowpass input and output, order is important here
+		if (l>=this->m_level-2) {
+		  inlowImag=outlowImag;
+		  outlowImag=this->m_coeff->GetLowSubspacePtr(this->m_level,1);
+		} else {
+		  std::swap(inlowImag,outlowImag);
+		}
+	  }
     }
     // map the set of filtered signals to the real DTCWT mixture
     this->m_coeff->WaveletToCpx();

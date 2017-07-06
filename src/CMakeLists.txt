@@ -63,7 +63,8 @@ endif ()
 target_link_libraries(${OUTPUT_NAME}
   ${cuda_deps}
   ${mpi_deps}
-  ${boost_deps})
+  ${boost_deps}
+  ${openmp_deps})
 set_property(TARGET ${OUTPUT_NAME}
   PROPERTY OUTPUT_NAME ${output_name})
 install(TARGETS ${OUTPUT_NAME}

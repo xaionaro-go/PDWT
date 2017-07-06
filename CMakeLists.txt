@@ -28,10 +28,19 @@ set(PRJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #################################
 
 #Compiler must support c++14
-if (UNIX)
-  add_definitions(${CMAKE_CXX_FLAGS} "-std=c++14")
-  add_definitions(${CMAKE_CXX_FLAGS_DEBUG} "-Wall -O0 -ggdb")
-  add_definitions(${CMAKE_CXX_FLAGS_RELEASE} "-O3 -mtune=native -march=native")
+if (CMAKE_COMPILER_IS_GNUCXX)
+  set(CXX_FLAGS -std=c++14)
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CXX_FLAGS ${CXX_FLAGS} -Wall -O0 -ggdb)
+  else ()
+    set(CXX_FLAGS ${CXX_FLAGS} -O3 -mtune=native -march=native )
+    FIND_PACKAGE(OpenMP)
+    if (OPENMP_FOUND)
+      set(CXX_FLAGS ${CXX_FLAGS} ${OpenMP_CXX_FLAGS})
+      set(openmp_deps gomp)
+    endif ()
+  endif ()
+  add_compile_options(${CXX_FLAGS})
 endif ()
 
 ##############################
