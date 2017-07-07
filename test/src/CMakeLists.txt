@@ -11,6 +11,7 @@ set(lib_deps pdwt)
 #  Build test  #
 ################
 add_lib_executable(Wavelet_1D ${lib_deps})
+add_lib_executable(Wavelet_2D ${lib_deps})
 
 if (CUDA_FOUND AND USE_CUDA)
   #add_cuda_lib_executable(cudalibtest1 ${lib_deps})
@@ -20,6 +21,7 @@ endif ()
 #  Unit test #
 ##############
 add_test(NAME Wavelet_1D COMMAND Wavelet_1D)
+add_test(NAME Wavelet_2D COMMAND Wavelet_2D)
 
 if (CUDA_FOUND AND USE_CUDA)
 #  add_test(NAME cudalibtest1 COMMAND cudalibtest1)

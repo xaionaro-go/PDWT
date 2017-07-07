@@ -78,10 +78,7 @@ class CoeffContainer {
     m_coeff.resize(totalSize);
 
     // Allocate temporary buffer
-    if (m_level>1) {
-      m_ptcoeff=std::make_unique<SubContainerT>(
-        m_nbBand*(m_scaleSize.at(1)+m_scaleSize.at(2)));
-    }
+    AllocateTmpBuffer();
   }
 
   /// Return the dimensionality of the container
@@ -125,19 +122,7 @@ class CoeffContainer {
   }
 
   /// Return a pointer to a temporary buffer
-  T* GetTmpBuffPtr(size_t level, size_t index) {
-    if (m_level>1) {
-      // Layout is repeated nbBand folds, and contains every time
-      // scaSize[1]+scaleSize[2]
-      size_t bandOffset = m_scaleSize.at(1)+m_scaleSize.at(2);
-      // 
-      size_t levelOffset = (level%2)*m_scaleSize.at(1);
-      return m_ptcoeff->data()+bandOffset*index+levelOffset;
-    } else {
-      assert(false);
-      return nullptr;
-    }
-  }
+  virtual T* GetTmpBuffPtr(size_t level, size_t index)=0;
 
   /// Simple proxy for subcontainer begin iterator getter
   auto begin() { return m_coeff.begin(); }
@@ -154,6 +139,10 @@ class CoeffContainer {
   auto GetScaleShape(size_t scale) {
     return m_scaleShape.at(scale);
   }
+
+ protected:
+  // Allocate temporary buffer
+  virtual void AllocateTmpBuffer()=0;
 
  protected:
   /// The pyramid containing Various stage of the DT
@@ -207,6 +196,29 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
+  /// Return a pointer to a temporary buffer
+  virtual T* GetTmpBuffPtr(size_t level, size_t index) override {
+    if (this->m_level>1) {
+      // Layout is repeated nbBand folds, and contains every time
+      // scaSize[1]+scaleSize[2]
+      size_t bandOffset = this->m_scaleSize.at(1)+this->m_scaleSize.at(2);
+      // 
+      size_t levelOffset = (level%2)*this->m_scaleSize.at(1);
+      return this->m_ptcoeff->data()+bandOffset*index+levelOffset;
+    } else {
+      assert(false);
+      return nullptr;
+    }
+  }
+
+ protected:
+  // Allocate temporary buffer
+  virtual void AllocateTmpBuffer() override {
+    if (this->m_level>1) {
+      this->m_ptcoeff=std::make_unique<SubContainerT>(
+        this->m_nbBand*(this->m_scaleSize.at(1)+this->m_scaleSize.at(2)));
+    }
+  }
  protected:
   static const size_t m_dimensions=1;
 };
@@ -246,9 +258,7 @@ class DTCoeffContainer1D : public CoeffContainer1D<T,SubContainerT> {
   int CpxToWavelet() { return WaveletToCpx(); };
 
  protected:
-
   static constexpr const T m_normalizationRatio = 1.0/std::sqrt(2);
-
 };
 
 /** \class CoeffContainer2D
@@ -268,6 +278,25 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
 
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const override { return m_dimensions; };
+
+  /// Return a pointer to a temporary buffer
+  virtual T* GetTmpBuffPtr(size_t level, size_t index) override {
+    // Layout is repeated nbBand folds, and contains every time
+    // scaSize[1]+scaleSize[2]
+    size_t bandOffset = this->m_scaleSize.at(1)+this->m_scaleSize.at(2);
+    // 
+    size_t levelOffset = (level%2)*this->m_scaleSize.at(1);
+    return this->m_ptcoeff->data()+bandOffset*index+levelOffset;
+  }
+
+ protected:
+  // Allocate temporary buffer
+  virtual void AllocateTmpBuffer() override {
+    if (this->m_level>1) {
+      this->m_ptcoeff=std::make_unique<SubContainerT>(
+        this->m_nbBand*(this->m_scaleSize.at(1)+this->m_scaleSize.at(2)));
+    }
+  }
 
  protected:
   static const size_t m_dimensions=2;
@@ -291,6 +320,17 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   /// Return the dimensionality of the container 
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
+  /// Return a pointer to a temporary buffer
+  virtual T* GetTmpBuffPtr(size_t level, size_t index) override {
+    assert(false);
+    return nullptr;
+  }
+
+ protected:
+  // Allocate temporary buffer
+  virtual void AllocateTmpBuffer() override {
+  }
+
  protected:
   static const size_t m_dimensions=3;
 };
@@ -300,7 +340,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
  * wavelet transform, for the generic case (arbitrary dimension)
  *
  * \author Thibault Notargiacomo
- */
+ *
 template<typename T, class SubContainerT>
 class CoeffContainerCpx : public CoeffContainer<T,SubContainerT> {
  public:
@@ -309,7 +349,7 @@ class CoeffContainerCpx : public CoeffContainer<T,SubContainerT> {
 
   /// Defaulted Destructor
   virtual ~CoeffContainerCpx()=default;
-};
+};*/
 
 /*
 /// Make the magical mixture of negative frequency cancelling signals
