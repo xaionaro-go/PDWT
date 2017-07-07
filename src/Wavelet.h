@@ -55,13 +55,14 @@ enum class w_state {
  * \author Thibault Notargiacomo
  */
 template<typename T>
-struct WaveletWrapper {
+class WaveletWrapper {
+ public:
   WaveletWrapper()=default;
   virtual int forward()=0;
   virtual int backward()=0;
   virtual int inverse()=0;
-  virtual int get_image(T* img) const =0;
   virtual int set_image(T* img)=0;
+//  virtual int get_coeff() const=0;
 };
 
 /** \class Wavelet
@@ -128,10 +129,10 @@ class Wavelet :public WaveletWrapper<T> {
   /// Compute the \f$ l-1 \f$ norm of the vector of coefficients
   //T norm1();
   /// Get image pointer
-  virtual int get_image(T* img) const override {
-    std::copy(m_image,m_image+m_info.Nx*m_info.Ny*m_info.Nz,img);
-    return 1;
-  }
+  //virtual int get_image(T* img) const override {
+  //  std::copy(m_image,m_image+m_info.Nx*m_info.Ny*m_info.Nz,img);
+  //  return 1;
+  //}
   /// Return a reference to wavelet coefficients
   virtual CoeffContainerT& get_coeff() {
     return *m_coeff;

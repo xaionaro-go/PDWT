@@ -62,18 +62,6 @@ class Wavelet1DWrapper {
         "Runtime error");
     }
   }
-  void get_image(py::array_t<T> image) const {
-    auto buffer = image.request();
-    if (buffer.ndim != 1) {
-      throw std::runtime_error("Wavelet1DWrapper::get_image : "
-        "Number of dimensions must be one");
-    }
-    T* ptr = static_cast<T *>(buffer.ptr);
-    if (m_pWavelet->get_image(ptr)<0) {
-      throw std::runtime_error("Wavelet1DWrapper::get_image : "
-        "Runtime error");
-    }
-  }
   void set_image(py::array_t<T> image) {
     auto buffer = image.request();
     if (buffer.ndim != 1) {
@@ -86,6 +74,19 @@ class Wavelet1DWrapper {
         "Runtime error");
     }
   }
+/*  py::array_t<T> get_coeff() const {
+    py::array_t<T>();
+    auto buffer = image.request();
+    if (buffer.ndim != 1) {
+      throw std::runtime_error("Wavelet1DWrapper::get_image : "
+        "Number of dimensions must be one");
+    }
+    T* ptr = static_cast<T*>(buffer.ptr);
+    if (m_pWavelet->get_image(ptr)<0) {
+      throw std::runtime_error("Wavelet1DWrapper::get_image : "
+        "Runtime error");
+    }
+  }*/
  protected:
   int m_nbLevel;
   bool m_doCycleSpinning;
@@ -103,7 +104,6 @@ PYBIND11_MODULE(pyPDWT, m) {
     .def("forward", &Wavelet1DWrapper<float>::forward)
     .def("backward", &Wavelet1DWrapper<float>::backward)
     .def("inverse", &Wavelet1DWrapper<float>::inverse)
-    .def("get_image", &Wavelet1DWrapper<float>::get_image)
     .def("set_image", &Wavelet1DWrapper<float>::set_image);
 }
 

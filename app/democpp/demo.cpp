@@ -17,7 +17,6 @@ int main(int argc, char **argv) {
 
   // Define input/output
   std::vector<T> in(19);
-  std::vector<T> out(in.size());
   std::iota(in.begin(), in.end(),0);
   //std::fill(in.begin(), in.end(), 2);
 
@@ -49,9 +48,8 @@ int main(int argc, char **argv) {
   // perform inverse transform
   w.backward(); 
   
-  w.get_image(out.data());
   std::cout<<"Output is: ";
-  std::for_each(out.cbegin(),out.cend(),print);
+  std::for_each(in.cbegin(),in.cend(),print);
 
 
   std::cout<<std::endl;

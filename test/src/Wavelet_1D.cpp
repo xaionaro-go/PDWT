@@ -28,19 +28,18 @@ struct Wavelet1DTestFunctor {
     std::vector<T> in(size);
     std::iota(in.begin(), in.end(),0);
     const std::vector<T> incopy(in.cbegin(),in.cend());
-    std::vector<T> out(in.size());
 
     // Define wavelet tranform
     C<T> w(in.data(),in.size(),1,1,false,"Test",level);
     // perform forward transform
     w.forward();
+    //Delete previous image
+    std::fill(in.begin(),in.end(),0);
     // perform inverse transform
     w.backward(); 
-    //get reconstruction 
-    w.get_image(out.data());
    
     //check reconstruction quality
-    return std::inner_product(incopy.cbegin(),incopy.cend(),out.cbegin(), true,
+    return std::inner_product(incopy.cbegin(),incopy.cend(),in.cbegin(), true,
       [](bool acc0, bool acc1) {
         return acc0&&acc1;
       },
