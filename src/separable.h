@@ -2,6 +2,7 @@
 #define SEPARABLE_H
 
 // STL
+#include<tuple>
 
 // Local
 #include "filters.h"
@@ -145,6 +146,9 @@ class Accumulator {
   void reset() {
     acc=0;
   }
+  void incrementDstPtr(size_t inc) {
+    dst+=inc;
+  }
 protected:
   U acc;
   T* dst;
@@ -192,6 +196,20 @@ struct Resetter<void> {
   static void reset() {}
 };
 
+template<typename Acc=void, typename... AccN>            
+struct DstPtrUpdater {
+  static void IncrementDestPtr(size_t inc, Acc acc, AccN&&... accn) {               
+    acc.incrementDstPtr(inc); 
+    DstPtrUpdater<AccN...>::add(std::forward<AccN>(accn)...);    
+  }              
+};               
+template<>       
+struct DstPtrUpdater<void> {              
+  static void IncrementDestPtr(size_t inc) {}         
+};
+
+
+
 /** \class SeparableSubsampledConvolutionEngine
  * \brief Code for the separable subsampled convolution. This class is a
  * variadic template class, because it can handle multiple filtering for each
@@ -224,7 +242,7 @@ class SeparableSubsampledConvolutionEngine {
       Resetter<AccN...>::reset(std::forward<AccN>(accn)...);
       // Loop over filter size, with periodic boundary conditions
       // TODO TN: this loop can actually be written as a compile time loop
-      // #pragma unroll Filt::TapSize
+      //#pragma unroll Filt::TapSize
       for (int fx=-MaxTapSizeLeft<Filtn...>::value;
           fx<=MaxTapSizeRight<Filtn...>::value; fx++) {
         int ix = ox*2 + fx;
@@ -288,18 +306,6 @@ class SeparableUpsampledConvolutionEngine {
 		  }
           acc+=EvenSubSampledAccumulator<T,int,int,Filtn...>::acc(
             fx, idx_x, inn...);
-          /*if ((fx>=-FiltLow::TapHalfSizeLeft)&&
-			 (fx<=FiltLow::TapHalfSizeRight)) {
-		   int fAddr = 2*(fx+FiltLow::TapHalfSizeLeft)+
-             FiltLow::EvenSubSampOffset;
-		   acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-		  }
-		  if ((fx>=-FiltHigh::TapHalfSizeLeft)&&
-			  (fx<=FiltHigh::TapHalfSizeRight)) {
-			int fAddr = 2*(fx+FiltHigh::TapHalfSizeLeft)+
-              FiltHigh::EvenSubSampOffset;
-			acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-		  }*/
 		}
       } else {
 	    //TODO TN Filter loop, can be turned into an explicit compile time loop
@@ -314,19 +320,6 @@ class SeparableUpsampledConvolutionEngine {
 		  }
 	      acc+=OddSubSampledAccumulator<T,int,int,Filtn...>::acc(
             fx, idx_x, inn...);
-	      // conditional update with respective filter
-		  /*if ((fx>=-FiltLow::TapHalfFloorSizeLeft)&&
-		      (fx<=FiltLow::TapHalfCeilSizeRight)) {
-	   	    int fAddr = 2*(fx+FiltLow::TapHalfFloorSizeLeft)+
-              FiltLow::OddSubSampOffset;
-            acc += inLow[idx_x] * FiltLow::Buff[fAddr];
-		  }
-		  if ((fx>=-FiltHigh::TapHalfFloorSizeLeft)&&
-			  (fx<=FiltHigh::TapHalfCeilSizeRight)) {
-	        int fAddr = 2*(fx+FiltHigh::TapHalfFloorSizeLeft)+
-              FiltHigh::OddSubSampOffset;
-		    acc += inHigh[idx_x] * FiltHigh::Buff[fAddr];
-		  }*/
 		}
 
       }
@@ -337,6 +330,53 @@ class SeparableUpsampledConvolutionEngine {
   }
 };
 
+/** \class SeparableSubsampledConvolutionEngine2D
+ * \brief Code for the separable subsampled convolution 2D. This class is a
+ * variadic template class, because it can handle multiple filtering for each
+ * main loop, assuming the filters have the same size
+ *
+ * \author Thibault Notargiacomo
+ */
+//TODO TN: replace second line by first one
+//template<typename T, class Filt, class... Filtn>
+template<typename T, class... Filtn>
+class SeparableSubsampledConvolutionEngine2D {
+ public:
+  /// Defaulted constructor
+  SeparableSubsampledConvolutionEngine2D()=default;
+  /// Default destructor
+  virtual ~SeparableSubsampledConvolutionEngine2D()=default;
+
+  /// The main method : perform Subsampled convolution on one column
+  template<typename... AccN>
+  static int PerformSubsampledFilteringYRef(const T* in, int Nx, int Ny,
+      AccN&&... accn) {
+    return 1;
+  }
+  /// The main method : perform Subsampled convolution on one row
+  template<typename... AccN>
+  static int PerformSubsampledFilteringXRef(const T* in, int Nx, int Ny,
+      AccN&&... accn) {
+    // We decided to use the tuple trick
+    // so that each loop index has its own copy of the accumulator and then
+    // can be properly parallelized through openMP for instance
+    auto tuple = std::make_tuple(accn...);
+
+    // Loop over output image along y direction
+    #pragma omp parallel for
+    for (int oy=0; oy<Ny; oy++) {
+      // First make a local iteration copy of the accumulator
+      std::tie(accn...) = tuple;
+      // Second, update the address of buffer
+      DstPtrUpdater<AccN...>::IncrementDestPtr(oy*Nx, accn...);
+      //Now, you can launch the X convolution
+      SeparableSubsampledConvolutionEngine<T, Filtn...
+        >::PerformSubSampledFilteringXRef(in+oy*Nx,Nx,
+        accn...);
+    }
+    return 1;
+  }
+};
 
 
 #endif //SEPARABLE_H

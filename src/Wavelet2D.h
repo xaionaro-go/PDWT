@@ -10,6 +10,7 @@
 // Local
 #include "coeffContainer.h"
 #include "filters.h"
+#include "separable.h"
 #include "vectorization/vectorization.h"
 
 
@@ -43,35 +44,51 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
      * order to mimic what may be done in overcomplete wavelet systems, where
      * data size grows along filtering steps
      */
-/*    T* inlow = this->m_image;
-    T* outlow = this->m_coeff->GetTmpBuffPtr(0,0);
-    T* inhigh = this->
+    T* inlow = this->m_image;
+    T* outlow = this->m_coeff->GetHalfTmpBuffPtr(0,0);
+    T* outhigh = this->m_coeff->GetHalfTmpBuffPtr(1,0);
     for (int l=0; l<this->m_level; l++) {
-      std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
-      std::cout<<"Writing High subspace pointer at scale "<<l<<std::endl;
       //Y filtering
-      SeparableSubsampledConvolutionEngine<T,
+      SeparableSubsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+          >::PerformSubsampledFilteringYRef(
+        inlow,
+        this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l).at(1),
+        Accumulator<T,T>(outlow),
+        Accumulator<T,T>(outhigh));
+
+      if (this->m_level==1) {
+        outlow=this->m_coeff->GetLowSubspacePtr(l);
+      } else {
+        outlow=this->m_coeff->GetOutLowTmpBuffPtr();
+      }
+
+      //Now perform X filtering on low
+      SeparableSubsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+          >::PerformSubsampledFilteringYRef(
+        outlow,
+        this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(1),
+        Accumulator<T,T>(outlow),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,1)));
+      //Now perform X filtering on high
+      SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
           >::PerformSubsampledFilteringXRef(
-        inlow,
+        outhigh,
         this->m_coeff->GetScaleShape(l).at(0),
-        Accumulator<T,T>(outlow),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0)));
+        this->m_coeff->GetScaleShape(l+1).at(1),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,2)),
+        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,3)));
+
       //Update lowpass input and output, order is important here
-      if (this->m_level==1) {
-        //nothing to do
-      } else if (l==this->m_level-2) {
-        inlow=outlow;
-        outlow=this->m_coeff->GetLowSubspacePtr(l+1);
-        std::cout<<"Next scale will write to low subspace"<<std::endl;
-      } else if (l==0) {
-        inlow=outlow;
-        outlow=this->m_coeff->GetTmpBuffPtr(l+1,0);
-      } else {
-        std::swap(inlow,outlow);
-      }
-    }*/
+      inlow=outlow;
+    }
 
 
     return 1;

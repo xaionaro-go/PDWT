@@ -279,14 +279,22 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
-  /// Return a pointer to a temporary buffer
-  virtual T* GetTmpBuffPtr(size_t level, size_t index) override {
-    // Layout is repeated nbBand folds, and contains every time
-    // scaSize[1]+scaleSize[2]
-    size_t bandOffset = this->m_scaleSize.at(1)+this->m_scaleSize.at(2);
-    // 
-    size_t levelOffset = (level%2)*this->m_scaleSize.at(1);
-    return this->m_ptcoeff->data()+bandOffset*index+levelOffset;
+  /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
+  virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
+    // Layout is  scaleSize[1]+scaleSize[1]+scaleSize[2]
+    size_t bandOffset = this->m_scaleSize.at(1)*2+this->m_scaleSize.at(2);
+    // subbandoffset
+    size_t subBandOffset = this->m_scaleSize.at(1);
+    return this->m_ptcoeff->data()+bandOffset*bandIdx+
+      subBandOffset*subBandIdx;
+  }
+  /// Return a pointer to a temporary buffer, for lowpass tmp storage
+  virtual T* GetOutLowTmpBuffPtr(size_t bandIdx) {
+    // Layout is  scaleSize[1]+scaleSize[1]+scaleSize[2]
+    size_t bandOffset = this->m_scaleSize.at(1)*2+this->m_scaleSize.at(2);
+    // subbandoffset
+    size_t subBandOffset = this->m_scaleSize.at(1);
+    return this->m_ptcoeff->data()+bandOffset*bandIdx+2*subBandOffset;
   }
 
  protected:
@@ -294,7 +302,7 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   virtual void AllocateTmpBuffer() override {
     if (this->m_level>1) {
       this->m_ptcoeff=std::make_unique<SubContainerT>(
-        this->m_nbBand*(this->m_scaleSize.at(1)+this->m_scaleSize.at(2)));
+        this->m_nbBand*(2*this->m_scaleSize.at(1)+this->m_scaleSize.at(2)));
     }
   }
 
