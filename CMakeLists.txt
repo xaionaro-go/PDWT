@@ -33,7 +33,9 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CXX_FLAGS ${CXX_FLAGS} -Wall -O0 -ggdb)
   else ()
-    set(CXX_FLAGS ${CXX_FLAGS} -O3 -mtune=native -march=native )
+    set(CXX_FLAGS ${CXX_FLAGS} -O3 -mtune=native -g -march=native )
+    #valgrind --tool=callgrind ./program
+    #kcachegrind callgrind.out.<pid>
     FIND_PACKAGE(OpenMP)
     if (OPENMP_FOUND)
       set(CXX_FLAGS ${CXX_FLAGS} ${OpenMP_CXX_FLAGS})
