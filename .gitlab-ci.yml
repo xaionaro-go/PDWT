@@ -1,5 +1,6 @@
 my_project:
   script:
+    - git submodule update --init --recursive
     - mkdir build
     - cd build
     - CC=gcc-7 CXX=g++-7 cmake -DTESTING_ENABLED=on -DWITH_PYTHON=on ..  
