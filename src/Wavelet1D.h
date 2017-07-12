@@ -265,56 +265,59 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 
     // map the set of DTCWT coefficients to a simple set of filtered signals
     this->m_coeff->CpxToWavelet();
- 
-    // Band 0: real X
+
     T* inlowReal = this->m_coeff->GetLowSubspacePtr(this->m_level-1,0);
-    T* outlowReal= this->m_coeff->GetTmpBuffPtr(this->m_level,0);
-    for (int l=this->m_level; l>1; l--) {
-      //#pragma omp parallel for
-      SeparableUpsampledConvolutionEngine<T,
-          typename DTWaveletSchemeT::i_lnr,
-          typename DTWaveletSchemeT::i_hnr
-        >::PerformUpsampledFilteringXRef(
-          this->m_coeff->GetScaleShape(l).at(0),
-          this->m_coeff->GetScaleShape(l-1).at(0),
-          outlowReal,
-          inlowReal,
-          this->m_coeff->GetHighSubspacePtr(l-1,0,0));
-
-      //Update lowpass input and output
-      if (l==this->m_level) {
-        inlowReal=this->m_coeff->GetTmpBuffPtr(this->m_level-1,0);
-      }
-      std::swap(inlowReal,outlowReal);
-    }
-    auto print = [](auto in){std::cout<<in<<" , ";};
-    std::cout<<"Print low real: ";
-    std::for_each(inlowReal,inlowReal+5,print);
-    std::cout<<std::endl;
-
-   // Band 1: imag X
     T* inlowImag = this->m_coeff->GetLowSubspacePtr(this->m_level-1,1);
-    T* outlowImag= this->m_coeff->GetTmpBuffPtr(this->m_level,1);
-    for (int l=this->m_level; l>1; l--) {
-	  //#pragma omp parallel for
-	  SeparableUpsampledConvolutionEngine<T,
-		  typename DTWaveletSchemeT::i_lni,
-		  typename DTWaveletSchemeT::i_hni
-		>::PerformUpsampledFilteringXRef(
-		  this->m_coeff->GetScaleShape(l).at(0),
-		  this->m_coeff->GetScaleShape(l-1).at(0),
-		  outlowImag,
-		  inlowImag,
-		  this->m_coeff->GetHighSubspacePtr(l-1,0,1));
-	  //Update lowpass input and output
-      if (l==this->m_level) {
-        inlowImag=this->m_coeff->GetTmpBuffPtr(this->m_level-1,1);
+
+    if (this->m_level>1) {
+      // Band 0: real X
+      T* outlowReal= this->m_coeff->GetTmpBuffPtr(this->m_level,0);
+      for (int l=this->m_level; l>1; l--) {
+        //#pragma omp parallel for
+        SeparableUpsampledConvolutionEngine<T,
+            typename DTWaveletSchemeT::i_lnr,
+            typename DTWaveletSchemeT::i_hnr
+          >::PerformUpsampledFilteringXRef(
+            this->m_coeff->GetScaleShape(l).at(0),
+            this->m_coeff->GetScaleShape(l-1).at(0),
+            outlowReal,
+            inlowReal,
+            this->m_coeff->GetHighSubspacePtr(l-1,0,0));
+
+        //Update lowpass input and output
+        if (l==this->m_level) {
+          inlowReal=this->m_coeff->GetTmpBuffPtr(this->m_level-1,0);
+        }
+        std::swap(inlowReal,outlowReal);
       }
-	  std::swap(inlowImag,outlowImag);
-	}
-    std::cout<<"Print low imag: ";
-    std::for_each(inlowImag,inlowImag+5,print);
-    std::cout<<std::endl;
+      //auto print = [](auto in){std::cout<<in<<" , ";};
+      //std::cout<<"Print low real: ";
+      //std::for_each(inlowReal,inlowReal+5,print);
+      //std::cout<<std::endl;
+
+      // Band 1: imag X
+      T* outlowImag= this->m_coeff->GetTmpBuffPtr(this->m_level,1);
+      for (int l=this->m_level; l>1; l--) {
+        //#pragma omp parallel for
+        SeparableUpsampledConvolutionEngine<T,
+            typename DTWaveletSchemeT::i_lni,
+            typename DTWaveletSchemeT::i_hni
+          >::PerformUpsampledFilteringXRef(
+            this->m_coeff->GetScaleShape(l).at(0),
+            this->m_coeff->GetScaleShape(l-1).at(0),
+            outlowImag,
+            inlowImag,
+            this->m_coeff->GetHighSubspacePtr(l-1,0,1));
+        //Update lowpass input and output
+        if (l==this->m_level) {
+          inlowImag=this->m_coeff->GetTmpBuffPtr(this->m_level-1,1);
+        }
+        std::swap(inlowImag,outlowImag);
+      }
+    }
+    //std::cout<<"Print low imag: ";
+    //std::for_each(inlowImag,inlowImag+5,print);
+    //std::cout<<std::endl;
 
     // Merge both trees in the X direction
     T* outlow = this->m_image;
