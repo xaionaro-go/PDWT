@@ -133,33 +133,38 @@ struct OddSubSampledAccumulator<T,I,J,void> {
   static constexpr T acc(I index) { return (T)0; }
 };
 
-template<typename T, typename U>
+template<typename T, typename U, typename V, typename I>
 class Accumulator {
  public:
-  Accumulator(T* ptr): acc(0), dst(ptr) {}
-  void accumulate(T val) {
-    acc+=val;
+  Accumulator(T* srcPtr, V* dstPtr, I srcStride=1, I dstStride=1):
+    m_acc(0), m_srcPtr(srcPtr), m_dstPtr(dstPtr),
+    m_srcStride(srcStride), m_dstStride(dstStride)  {}
+  void accumulate(I srcIdx, U filt) {
+    m_acc+=m_srcPtr[srcIdx*m_srcStride]*filt;
   }
-  void write(size_t idx) {
-    dst[idx]=acc;
+  void write(I dstIdx) {
+    m_dstPtr[dstIdx*m_dstStride]=m_acc;
   }
   void reset() {
-    acc=0;
+    m_acc=0;
   }
-  void incrementDstPtr(size_t inc) {
-    dst+=inc;
+  void incrementDstPtr(I inc) {
+    m_dstPtr+=inc;
   }
 protected:
-  U acc;
-  T* dst;
+  T* m_srcPtr;
+  U m_acc;
+  V* m_dstPtr;
+  I m_srcStride;
+  I m_dstStride;
 };
 
 template<class Filt, class... Filtn>
 struct Updater {
-  template<typename I, typename M, class Acc, class... AccN>
-  static void accumulate(I idx, M mult, Acc&& acc, AccN&& ... accn) {
-    Updater<Filt>::accumulate(idx, mult, std::forward<Acc>(acc));
-    Updater<Filtn...>::accumulate(idx, mult, std::forward<AccN>(accn)...);
+  template<typename I, class Acc, class... AccN>
+  static void accumulate(I filtIdx, I srcIdx, Acc&& acc, AccN&& ... accn) {
+    Updater<Filt>::accumulate(filtIdx, srcIdx, std::forward<Acc>(acc));
+    Updater<Filtn...>::accumulate(filtIdx, srcIdx,std::forward<AccN>(accn)...);
   }
   template<typename I, class Acc, class... AccN>
   static void write(I idx, Acc&& acc, AccN&& ... accn) {
@@ -172,10 +177,10 @@ struct Updater {
 /// Actually performs the accumulation
 template<class Filt>
 struct Updater<Filt> {
-  template<typename I, typename M, class Acc>
-  static void accumulate(I idx, M mult, Acc&& acc) {
-    if((idx>=-Filt::TapSizeLeft) && (idx<=Filt::TapSizeRight)) {
-      acc.accumulate(mult*Filt::Buff[Filt::TapSizeLeft+idx]);
+  template<typename I, class Acc>
+  static void accumulate(I filtIdx, I srcIdx, Acc&& acc) {
+    if((filtIdx>=-Filt::TapSizeLeft) && (filtIdx<=Filt::TapSizeRight)) {
+      acc.accumulate(srcIdx,Filt::Buff[Filt::TapSizeLeft+filtIdx]);
     }
   }
   template<typename I, class Acc>
@@ -200,7 +205,7 @@ template<typename Acc=void, typename... AccN>
 struct DstPtrUpdater {
   static void IncrementDestPtr(size_t inc, Acc acc, AccN&&... accn) {               
     acc.incrementDstPtr(inc); 
-    DstPtrUpdater<AccN...>::add(std::forward<AccN>(accn)...);    
+    DstPtrUpdater<AccN...>::IncrementDestPtr(inc, std::forward<AccN>(accn)...);    
   }              
 };               
 template<>       
@@ -231,7 +236,7 @@ class SeparableSubsampledConvolutionEngine {
 
   /// The main method : perform Subsampled convolution on one row
   template<class... AccN>
-  static int PerformSubsampledFilteringXRef(const T* in, int Nx,
+  static int PerformSubsampledFilteringXRef(int Nx,
       AccN&&... accn) {
 
     int Nx_is_odd = (Nx & 1);
@@ -261,7 +266,7 @@ class SeparableSubsampledConvolutionEngine {
           }
         }
         // Update each buffer with its respective filter
-        Updater<Filtn...>::accumulate(fx, in[ix], std::forward<AccN>(accn)...);
+        Updater<Filtn...>::accumulate(fx, ix, std::forward<AccN>(accn)...);
       }
       Updater<Filtn...>::write(ox,std::forward<AccN>(accn)...);
     }
@@ -349,13 +354,13 @@ class SeparableSubsampledConvolutionEngine2D {
 
   /// The main method : perform Subsampled convolution on one column
   template<typename... AccN>
-  static int PerformSubsampledFilteringYRef(const T* in, int Nx, int Ny,
-      AccN&&... accn) {
+  static int PerformSubsampledFilteringStridedRef(const T* in, int Nx,
+    int stride,  AccN&&... accn) {
     return 1;
   }
   /// The main method : perform Subsampled convolution on one row
   template<typename... AccN>
-  static int PerformSubsampledFilteringXRef(const T* in, int Nx, int Ny,
+  static int PerformSubsampledFilteringYRef(const T* in, int Nx, int Ny,
       AccN&&... accn) {
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then

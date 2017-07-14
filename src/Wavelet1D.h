@@ -52,10 +52,9 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
           >::PerformSubsampledFilteringXRef(
-        inlow,
         this->m_coeff->GetScaleShape(l).at(0),
-        Accumulator<T,T>(outlow),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0)));
+        Accumulator<T,T,T,int>(inlow, outlow),
+        Accumulator<T,T,T,int>(inlow, this->m_coeff->GetHighSubspacePtr(l,0)));
       //Update lowpass input and output, order is important here
       if (this->m_level==1) {
         //nothing to do
@@ -192,12 +191,13 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
           typename DTWaveletSchemeT::f_h0r,
           typename DTWaveletSchemeT::f_h0i
           >::PerformSubsampledFilteringXRef(
-        inlow,
         this->m_coeff->GetScaleShape(l).at(0),
-        Accumulator<T,T>(outlowReal),
-        Accumulator<T,T>(outlowImag),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)),
-        Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
+        Accumulator<T,T,T,int>(inlow, outlowReal),
+        Accumulator<T,T,T,int>(inlow, outlowImag),
+        Accumulator<T,T,T,int>(inlow,
+          this->m_coeff->GetHighSubspacePtr(l,0,0)),
+        Accumulator<T,T,T,int>(inlow,
+          this->m_coeff->GetHighSubspacePtr(l,0,1)));
 
       //Update lowpass input and output, order is important here
       if (this->m_level==2) {
@@ -223,10 +223,11 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 			typename DTWaveletSchemeT::f_lnr,
 			typename DTWaveletSchemeT::f_hnr
 			>::PerformSubsampledFilteringXRef(
-		  inlowReal,
 		  this->m_coeff->GetScaleShape(l).at(0),
-		  Accumulator<T,T>(outlowReal),
-		  Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,0)));
+		  Accumulator<T,T,T,int>(inlowReal,
+            outlowReal),
+		  Accumulator<T,T,T,int>(inlowReal,
+            this->m_coeff->GetHighSubspacePtr(l,0,0)));
 		//Update lowpass input and output, order is important here
 		if (l>=this->m_level-2) {
 		  inlowReal=outlowReal;
@@ -242,10 +243,11 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 			typename DTWaveletSchemeT::f_lni,
 			typename DTWaveletSchemeT::f_hni
 			>::PerformSubsampledFilteringXRef(
-		  inlowImag,
 		  this->m_coeff->GetScaleShape(l).at(0),
-		  Accumulator<T,T>(outlowImag),
-		  Accumulator<T,T>(this->m_coeff->GetHighSubspacePtr(l,0,1)));
+		  Accumulator<T,T,T,int>(inlowImag,
+            outlowImag),
+		  Accumulator<T,T,T,int>(inlowImag,
+            this->m_coeff->GetHighSubspacePtr(l,0,1)));
 		//Update lowpass input and output, order is important here
 		if (l>=this->m_level-2) {
 		  inlowImag=outlowImag;
