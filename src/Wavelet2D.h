@@ -75,7 +75,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
-          >::PerformSubsampledFilteringYRef(
+          >::PerformSubsampledFilteringXRef(
         this->m_coeff->GetScaleShape(l).at(0),
         this->m_coeff->GetScaleShape(l+1).at(1),
         Accumulator<T,T,T,int>(inlowY, outlow),

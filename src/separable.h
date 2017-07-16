@@ -368,10 +368,28 @@ class SeparableSubsampledConvolutionEngine2D {
 
   /// The main method : perform Subsampled convolution on all columns
   template<typename... AccN>
-  static int PerformSubsampledFilteringYRef(int Nx, int stride,
+  static int PerformSubsampledFilteringYRef(int Nx, int Ny,
       AccN&&... accn) {
+    // We decided to use the tuple trick
+    // so that each loop index has its own copy of the accumulator and then
+    // can be properly parallelized through openMP for instance
+    auto tuple = std::make_tuple(accn...);
+
+    // Loop over output image along y direction
+    #pragma omp parallel for
+    for (int ox=0; ox<Nx; ox++) {
+      // First make a local iteration copy of the accumulator
+      std::tie(accn...) = tuple;
+      // Second, update the address of buffer
+      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(ox, ox,
+        std::forward<AccN>(accn)...);
+      //Now, you can launch the X convolution
+      SeparableSubsampledConvolutionEngine<T, Filtn...
+        >::PerformSubsampledFilteringXRef(Ny, std::forward<AccN>(accn)...);
+    }
     return 1;
   }
+
   /// The main method : perform Subsampled convolution on all rows
   template<typename... AccN>
   static int PerformSubsampledFilteringXRef( int Nx, int Ny,
@@ -387,7 +405,7 @@ class SeparableSubsampledConvolutionEngine2D {
       // First make a local iteration copy of the accumulator
       std::tie(accn...) = tuple;
       // Second, update the address of buffer
-      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(oy, oy,
+      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtr(oy, oy,
         std::forward<AccN>(accn)...);
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
