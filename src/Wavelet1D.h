@@ -43,7 +43,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     // Lowpass output is either in the wv tree if we have already finished,
     // or it is stored to a temporary buffer for further decomposition
     T* outlow = (this->m_level<2) ? this->m_coeff->GetLowSubspacePtr(1) :
-      this->m_coeff->GetTmpBuffPtr(0,0);
+      this->m_coeff->GetTmpBuffPtr(0);
     for (int l=0; l<this->m_level; l++) {
       std::cout<<"Size is "<<this->m_coeff->GetScaleShape(l).at(0)<<std::endl;
       std::cout<<"Writing High subspace pointer at scale "<<l<<std::endl;
@@ -64,7 +64,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         std::cout<<"Next scale will write to low subspace"<<std::endl;
       } else if (l==0) {
         inlow=outlow;
-        outlow=this->m_coeff->GetTmpBuffPtr(l+1,0);
+        outlow=this->m_coeff->GetTmpBuffPtr(l+1);
       } else {
         std::swap(inlow,outlow);
       }
@@ -79,15 +79,15 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     // the input low image has to be of size image/2.
     // this means that, at start, odd level must use the biggest tmp buff
     T* outlow =  this->m_level > 1 ? 
-      this->m_coeff->GetTmpBuffPtr(this->m_level,0) : this->m_image;
+      this->m_coeff->GetTmpBuffPtr(this->m_level) : this->m_image;
 
     for (int l=this->m_level; l>0; l--) {
-      std::cout<<"Inverse, taking as input 2 subspaces of size "<<
-        this->m_coeff->GetScaleShape(l).at(0)<<" In order to form a new"<<
-        " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
+      //std::cout<<"Inverse, taking as input 2 subspaces of size "<<
+      //  this->m_coeff->GetScaleShape(l).at(0)<<" In order to form a new"<<
+      //  " image of size "<<this->m_coeff->GetScaleShape(l-1).at(0)<<std::endl;
       //std::cout<<"BufSize is "<<this->m_coeff->GetTmpBuffPtr().at(0)->size()
       //  <<std::endl;
-      std::cout<<"Current scale is: at scale "<<l<<std::endl;
+      //std::cout<<"Current scale is: at scale "<<l<<std::endl;
       //#pragma omp parallel for
       SeparableUpsampledConvolutionEngine<T,
           typename WaveletSchemeT::i_l,
@@ -105,7 +105,7 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         outlow = this->m_image;
        } else if (l==this->m_level) {
          inlow = outlow;
-         outlow = this->m_coeff->GetTmpBuffPtr(this->m_level-1,0);
+         outlow = this->m_coeff->GetTmpBuffPtr(this->m_level-1);
        } else {
          std::swap(inlow,outlow);
        }
@@ -358,7 +358,7 @@ template<typename T>
 using dtwAnto97QSHIFT6_1D = 
   DTWavelet1D<T,PackedDTContainer1D<T>,dtwAnto97QSHIFT6<T>>;
 
-/** \struct All1DWavelet
+/** \struct DB1DWt
  * \brief Utility struct that allow to instanciate all 1D wavelets at once
  *
  * \author Thibault Notargiacomo

@@ -16,13 +16,14 @@ endif ()
 #  Python binding code  #
 #########################
 set(sources
-#  CoeffContainer1D.cpp
-  Wavelet1D.cpp
-#  Wavelet2D.cpp
-#  Wavelet3D.cpp
+  Wavelet.cpp
 )
 
 set(headers
+#  CoeffContainerBind1D.cpp
+  WaveletBind1D.h
+  WaveletBind2D.h
+#  WaveletBind3D.h
 )
 
 ####################

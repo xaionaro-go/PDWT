@@ -148,10 +148,15 @@ class Accumulator {
   void reset() {
     m_acc=0;
   }
-  void incrementDstPtr(I inc) {
-    m_dstPtr+=inc;
+  void incrementSrcDstPtr(I srcInc, I dstInc) {
+    m_srcPtr+=srcInc;
+    m_dstPtr+=dstInc;
   }
-protected:
+  void incrementSrcDstPtrStrided(I srcInc, I dstInc) {
+    m_srcPtr+=srcInc*m_srcStride;
+    m_dstPtr+=dstInc*m_dstStride;
+  }
+ protected:
   T* m_srcPtr;
   U m_acc;
   V* m_dstPtr;
@@ -201,16 +206,25 @@ struct Resetter<void> {
   static void reset() {}
 };
 
-template<typename Acc=void, typename... AccN>            
-struct DstPtrUpdater {
-  static void IncrementDestPtr(size_t inc, Acc acc, AccN&&... accn) {               
-    acc.incrementDstPtr(inc); 
-    DstPtrUpdater<AccN...>::IncrementDestPtr(inc, std::forward<AccN>(accn)...);    
-  }              
-};               
-template<>       
-struct DstPtrUpdater<void> {              
-  static void IncrementDestPtr(size_t inc) {}         
+template<typename Acc=void, typename... AccN>
+struct SrcDstPtrUpdater {
+  static void IncrementSrcDstPtr(size_t srcInc, size_t dstInc,
+      Acc&& acc, AccN&&... accn) {
+    acc.incrementSrcDstPtr(srcInc, dstInc);
+    SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtr(srcInc, dstInc,
+      std::forward<AccN>(accn)...);
+  }
+  static void IncrementSrcDstPtrStrided(size_t srcInc, size_t dstInc,
+      Acc&& acc, AccN&&... accn) {
+    acc.incrementSrcDstPtrStrided(srcInc, dstInc);
+    SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(srcInc, dstInc,
+      std::forward<AccN>(accn)...);
+  }
+};
+template<>
+struct SrcDstPtrUpdater<void> {
+  static void IncrementSrcDstPtr(size_t srcInc, size_t dstInc) {}
+  static void IncrementSrcDstPtrStrided(size_t srcInc, size_t dstInc) {}
 };
 
 
@@ -352,15 +366,15 @@ class SeparableSubsampledConvolutionEngine2D {
   /// Default destructor
   virtual ~SeparableSubsampledConvolutionEngine2D()=default;
 
-  /// The main method : perform Subsampled convolution on one column
+  /// The main method : perform Subsampled convolution on all columns
   template<typename... AccN>
-  static int PerformSubsampledFilteringStridedRef(const T* in, int Nx,
-    int stride,  AccN&&... accn) {
+  static int PerformSubsampledFilteringYRef(int Nx, int stride,
+      AccN&&... accn) {
     return 1;
   }
-  /// The main method : perform Subsampled convolution on one row
+  /// The main method : perform Subsampled convolution on all rows
   template<typename... AccN>
-  static int PerformSubsampledFilteringYRef(const T* in, int Nx, int Ny,
+  static int PerformSubsampledFilteringXRef( int Nx, int Ny,
       AccN&&... accn) {
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then
@@ -373,11 +387,11 @@ class SeparableSubsampledConvolutionEngine2D {
       // First make a local iteration copy of the accumulator
       std::tie(accn...) = tuple;
       // Second, update the address of buffer
-      DstPtrUpdater<AccN...>::IncrementDestPtr(oy*Nx, accn...);
+      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(oy, oy,
+        std::forward<AccN>(accn)...);
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
-        >::PerformSubSampledFilteringXRef(in+oy*Nx,Nx,
-        accn...);
+        >::PerformSubsampledFilteringXRef(Nx, std::forward<AccN>(accn)...);
     }
     return 1;
   }

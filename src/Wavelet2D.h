@@ -38,15 +38,15 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 
   /// Forward wavelet tranform
   virtual int forward() {
-    /*
+    /**
      * At first step, input is simply input image
      * We chose to filter the most memory friendly direction at the end in
      * order to mimic what may be done in overcomplete wavelet systems, where
      * data size grows along filtering steps
      */
     T* inlow = this->m_image;
-    T* outlow = this->m_coeff->GetHalfTmpBuffPtr(0,0);
-    T* outhigh = this->m_coeff->GetHalfTmpBuffPtr(1,0);
+    T* outlow = this->m_coeff->GetHalfTmpBuffPtr(0);
+    T* outhigh = this->m_coeff->GetHalfTmpBuffPtr(1);
     for (int l=0; l<this->m_level; l++) {
       //Y filtering
       SeparableSubsampledConvolutionEngine2D<T,
@@ -55,8 +55,15 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           >::PerformSubsampledFilteringYRef(
         this->m_coeff->GetScaleShape(l).at(0),
         this->m_coeff->GetScaleShape(l).at(1),
-        Accumulator<T,T,T,int>(outlow, inlow),
-        Accumulator<T,T,T,int>(outhigh, inlow));
+        Accumulator<T,T,T,int>(inlow, outlow,
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l+1).at(0)),
+        Accumulator<T,T,T,int>(inlow, outhigh,
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l+1).at(0)));
+
+      T* inlowY = outlow;
+      T* inhighY = outhigh;
 
       if (this->m_level==1) {
         outlow=this->m_coeff->GetLowSubspacePtr(l);
@@ -71,8 +78,9 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           >::PerformSubsampledFilteringYRef(
         this->m_coeff->GetScaleShape(l).at(0),
         this->m_coeff->GetScaleShape(l+1).at(1),
-        Accumulator<T,T,T,int>(outlow, outlow),//TODO TN
-        Accumulator<T,T,T,int>(this->m_coeff->GetHighSubspacePtr(l,1), outlow));
+        Accumulator<T,T,T,int>(inlowY, outlow),
+        Accumulator<T,T,T,int>(inlowY,
+          this->m_coeff->GetHighSubspacePtr(l,1)));
       //Now perform X filtering on high
       SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
@@ -80,16 +88,14 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           >::PerformSubsampledFilteringXRef(
         this->m_coeff->GetScaleShape(l).at(0),
         this->m_coeff->GetScaleShape(l+1).at(1),
-        Accumulator<T,T,T,int>(this->m_coeff->GetHighSubspacePtr(l,2),
-          outhigh),
-        Accumulator<T,T,T,int>(this->m_coeff->GetHighSubspacePtr(l,3),
-          outhigh));
+        Accumulator<T,T,T,int>(inhighY,
+          this->m_coeff->GetHighSubspacePtr(l,2)),
+        Accumulator<T,T,T,int>(inhighY,
+          this->m_coeff->GetHighSubspacePtr(l,3)));
 
       //Update lowpass input and output, order is important here
       inlow=outlow;
     }
-
-
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transpose
@@ -110,6 +116,25 @@ using PackedContainer2D =
 // Aliasing ugly types into more simple ones
 template<typename T>
 using Daub2_2D = Wavelet2D<T,PackedContainer2D<T>,Daub2<T>>;
+template<typename T>
+using Daub3_2D = Wavelet2D<T,PackedContainer2D<T>,Daub3<T>>;
+template<typename T>
+using Daub4_2D = Wavelet2D<T,PackedContainer2D<T>,Daub4<T>>;
+template<typename T>
+using Daub5_2D = Wavelet2D<T,PackedContainer2D<T>,Daub5<T>>;
+template<typename T>
+using Anto97_BiOrth_2D = Wavelet2D<T,PackedContainer2D<T>,Anto97_BiOrth<T>>;
+template<typename T>
+using QSHIFT6_Orth_2D = Wavelet2D<T,PackedContainer2D<T>,QSHIFT6_Orth<T>>;
+template<typename T>
+using REVERSE_QSHIFT6_Orth_2D = 
+  Wavelet2D<T,PackedContainer2D<T>,REVERSE_QSHIFT6_Orth<T>>;
+
+
+// Aliasing ugly types into more simple ones
+//template<typename T>
+//using dtwAnto97QSHIFT6_2D = 
+//  DTWavelet2D<T,PackedDTContainer2D<T>,dtwAnto97QSHIFT6<T>>;
 
 /** \struct DB2DWt
  * \brief Utility struct that allow to instanciate all 2D wavelets at once
@@ -119,6 +144,13 @@ using Daub2_2D = Wavelet2D<T,PackedContainer2D<T>,Daub2<T>>;
 template<typename T>
 struct DB2DWt {
  Daub2_2D<T> daub2_2D;
+ Daub3_2D<T> daub3_2D;
+ Daub4_2D<T> daub4_2D;
+ Daub5_2D<T> daub5_2D;
+ Anto97_BiOrth_2D<T> anto97_BiOrth_2D;
+ QSHIFT6_Orth_2D<T> QShift6_Orth_2D;
+ REVERSE_QSHIFT6_Orth_2D<T> Reverse_Qshift6_Orth_2D;
+// dtwAnto97QSHIFT6_2D<T> dtwAnto97QShift6_2D; 
 };
 
 #endif //WAVELET2D_H

@@ -197,14 +197,22 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
   /// Return a pointer to a temporary buffer
-  virtual T* GetTmpBuffPtr(size_t level, size_t index) override {
+  virtual T* GetTmpBuffPtr(size_t level, size_t bandIdx=0) override {
     if (this->m_level>1) {
       // Layout is repeated nbBand folds, and contains every time
       // scaSize[1]+scaleSize[2]
       size_t bandOffset = this->m_scaleSize.at(1)+this->m_scaleSize.at(2);
-      // 
+      /**
+       * Temp buffers are designed such that there are successive swap, and
+       * we have the following behaviour:
+       * For forward transform:
+       * When starting at level 0, we need a temp buffer of size scalesize[1]
+       * For backward transform:
+       * when arriving at level 2, we can put the reconstruction of level 1 in
+       * a temporary buffer of size scalesize[1]
+       */
       size_t levelOffset = (level%2)*this->m_scaleSize.at(1);
-      return this->m_ptcoeff->data()+bandOffset*index+levelOffset;
+      return this->m_ptcoeff->data()+bandOffset*bandIdx+levelOffset;
     } else {
       assert(false);
       return nullptr;
@@ -273,6 +281,11 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   /// Defaulted Constructor
   CoeffContainer2D()=default;
 
+  /// Allocating constructor
+  CoeffContainer2D(std::vector<size_t> size, int nlevel) {
+    this->Initialize(size, nlevel);
+  }
+
   /// Defaulted Destructor
   virtual ~CoeffContainer2D()=default;
 
@@ -281,20 +294,37 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
 
   /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
   virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
-    // Layout is  scaleSize[1]+scaleSize[1]+scaleSize[2]
+    // Layout is  2*scaleSize[1]+scaleSize[2]
     size_t bandOffset = this->m_scaleSize.at(1)*2+this->m_scaleSize.at(2);
     // subbandoffset
     size_t subBandOffset = this->m_scaleSize.at(1);
     return this->m_ptcoeff->data()+bandOffset*bandIdx+
       subBandOffset*subBandIdx;
   }
-  /// Return a pointer to a temporary buffer, for lowpass tmp storage
-  virtual T* GetOutLowTmpBuffPtr(size_t bandIdx) {
-    // Layout is  scaleSize[1]+scaleSize[1]+scaleSize[2]
+
+  /**
+   * Return a pointer to a temporary buffer, for lowpass tmp storage
+   * The rationale behind this choice is the following:
+   * For forward transform:
+   * Y filtering: Worker has to write lowpass at first slot and highpass at
+   * second slot
+   * X filtering: Worker has to write lowpass at OutLowTmpBuffer and Highpass
+   * to wavelt tree, while reading both slot1 and slot2 fron tmp
+   * For backward transform:
+   * 
+   */
+  virtual T* GetOutLowTmpBuffPtr(size_t bandIdx=0) {
+    // Layout is  2*scaleSize[1]+scaleSize[2]
     size_t bandOffset = this->m_scaleSize.at(1)*2+this->m_scaleSize.at(2);
-    // subbandoffset
-    size_t subBandOffset = this->m_scaleSize.at(1);
-    return this->m_ptcoeff->data()+bandOffset*bandIdx+2*subBandOffset;
+    // lowPassoffset
+    size_t lowPassOffset = 2*this->m_scaleSize.at(1);
+    return this->m_ptcoeff->data()+bandOffset*bandIdx+lowPassOffset;
+  }
+
+  /// Return a pointer to a temporary buffer
+  //TODO TN: a refaire
+  virtual T* GetTmpBuffPtr(size_t level, size_t index) {
+    return GetHalfTmpBuffPtr(0,index);
   }
 
  protected:

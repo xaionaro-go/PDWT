@@ -1,76 +1,72 @@
 // STL
 #include <cassert>
 
-// Pybind11
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-
 // Local
 #include "filters.h"
-#include "Wavelet1D.h"
+#include "Wavelet2D.h"
 
 namespace py = pybind11;
 
 /**
- * One may be interested in taking a look at Wavelet1D.cpp in the src
+ * One may be interested in taking a look at Wavelet2D.cpp in the src
  * directory in order to instanciate the chosen wavelet transform with
  * an existing c++ version
  */
 
 template<typename T>
-class Wavelet1DWrapper {
+class Wavelet2DWrapper {
  public:
-  Wavelet1DWrapper(int nbLevel=1, bool doCycleSpinning=false,
+  Wavelet2DWrapper(int nbLevel=1, bool doCycleSpinning=false,
       const std::string &name="Daub4") : m_nbLevel(nbLevel), 
       m_doCycleSpinning(doCycleSpinning), m_name(name) {}
 
   void Initialize(py::array_t<T> image) {
     auto buffer = image.request();
-    if (buffer.ndim != 1) {
-      throw std::runtime_error("Wavelet1DWrapper::Initialize : "
+    if (buffer.ndim != 2) {
+      throw std::runtime_error("Wavelet2DWrapper::Initialize : "
         "Number of dimensions must be one");
     }
     T* ptr = static_cast<T *>(buffer.ptr);
     size_t size = buffer.size;
 
     if (m_name=="Daub2") {
-      m_pWavelet = std::make_unique<Daub2_1D<T>>(
+      m_pWavelet = std::make_unique<Daub2_2D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
-    } else if (m_name=="dtwAnto97QSHIFT6") {
-      m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_1D<T>>(
+    } /* else if (m_name=="dtwAnto97QSHIFT6") {
+       m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_2D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
-    } else {
-      throw std::runtime_error("Wavelet1DWrapper::Initialize : "
+    }*/ else {
+      throw std::runtime_error("Wavelet2DWrapper::Initialize : "
         "Unsupported wavelet type");
     }
   }
   void forward() {
     if (m_pWavelet->forward()<0) {
-      throw std::runtime_error("Wavelet1DWrapper::forward : "
+      throw std::runtime_error("Wavelet2DWrapper::forward : "
         "Runtime error");
     }
   }
   void backward() {
     if (m_pWavelet->backward()<0) {
-      throw std::runtime_error("Wavelet1DWrapper::backward : "
+      throw std::runtime_error("Wavelet2DWrapper::backward : "
         "Runtime error");
     }
   }
   void inverse() {
     if (m_pWavelet->inverse()<0) {
-      throw std::runtime_error("Wavelet1DWrapper::inverse : "
+      throw std::runtime_error("Wavelet2DWrapper::inverse : "
         "Runtime error");
     }
   }
   void set_image(py::array_t<T> image) {
     auto buffer = image.request();
     if (buffer.ndim != 1) {
-      throw std::runtime_error("Wavelet1DWrapper::set_image : "
+      throw std::runtime_error("Wavelet2DWrapper::set_image : "
         "Number of dimensions must be one");
     }
     T* ptr = static_cast<T *>(buffer.ptr);
     if (m_pWavelet->set_image(ptr)<0) {
-      throw std::runtime_error("Wavelet1DWrapper::set_image : "
+      throw std::runtime_error("Wavelet2DWrapper::set_image : "
         "Runtime error");
     }
   }
@@ -78,12 +74,12 @@ class Wavelet1DWrapper {
     py::array_t<T>();
     auto buffer = image.request();
     if (buffer.ndim != 1) {
-      throw std::runtime_error("Wavelet1DWrapper::get_image : "
+      throw std::runtime_error("Wavelet2DWrapper::get_image : "
         "Number of dimensions must be one");
     }
     T* ptr = static_cast<T*>(buffer.ptr);
     if (m_pWavelet->get_image(ptr)<0) {
-      throw std::runtime_error("Wavelet1DWrapper::get_image : "
+      throw std::runtime_error("Wavelet2DWrapper::get_image : "
         "Runtime error");
     }
   }*/
@@ -93,17 +89,4 @@ class Wavelet1DWrapper {
   std::string m_name;
   std::unique_ptr<WaveletWrapper<T>> m_pWavelet;
 };
-
-PYBIND11_MODULE(pyPDWT, m) {
-  m.doc() = "pyPDWT : pybind11 wavelet binding";
-  py::class_<Wavelet1DWrapper<float>> Wavelet1D(m, "Wavelet1D",
-    py::dynamic_attr());
-  Wavelet1D
-    .def(py::init<int,bool,const std::string &>())
-    .def("Initialize", &Wavelet1DWrapper<float>::Initialize)
-    .def("forward", &Wavelet1DWrapper<float>::forward)
-    .def("backward", &Wavelet1DWrapper<float>::backward)
-    .def("inverse", &Wavelet1DWrapper<float>::inverse)
-    .def("set_image", &Wavelet1DWrapper<float>::set_image);
-}
 
