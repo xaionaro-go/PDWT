@@ -139,9 +139,11 @@ class Accumulator {
   Accumulator(T* srcPtr, V* dstPtr, I srcStride=1, I dstStride=1):
     m_acc(0), m_srcPtr(srcPtr), m_dstPtr(dstPtr),
     m_srcStride(srcStride), m_dstStride(dstStride)  {}
+
   void accumulate(I srcIdx, U filt) {
     m_acc+=m_srcPtr[srcIdx*m_srcStride]*filt;
   }
+  
   void write(I dstIdx) {
     m_dstPtr[dstIdx*m_dstStride]=m_acc;
   }
@@ -160,6 +162,42 @@ class Accumulator {
   T* m_srcPtr;
   U m_acc;
   V* m_dstPtr;
+  I m_srcStride;
+  I m_dstStride;
+};
+
+template<typename T, typename U, typename I, typename J, class... Filtn>
+class SubsampledAccumulator {
+  SubsampledAccumulator(T* dstPtr, I srcStride=1, I dstStride=1):
+    m_dstPtr(dstPtr), m_acc(0), m_srcStride(srcStride),
+    m_dstStride(dstStride)  {}
+
+  template<class... InN>
+  void EvenSubsampledAccumulate(I filtIdx, J inIdx, const InN... inn) {
+    m_acc+=EvenSubsampledAccumulator<T,I,J,Filtn...>::acc(
+      filtIdx, inIdx*m_srcStride, inn...);
+  }
+  template<class... InN>
+  void OddSubsampledAccumulate(I filtIdx, J inIdx, const InN... inn) {
+    m_acc+=OddSubsampledAccumulator<T,I,J,Filtn...>::acc(
+      filtIdx, inIdx*m_srcStride, inn...);
+  }
+  void write(I dstIdx) {
+    m_dstPtr[dstIdx*m_dstStride]=m_acc;
+  }
+  void reset() {
+    m_acc=0;
+  }
+  void incrementDstPtr(I dstInc) {
+    m_dstPtr+=dstInc;
+  }
+  void incrementSrcDstPtrStrided(I dstInc) {
+    m_dstPtr+=dstInc*m_dstStride;
+  }
+ 
+ protected:
+  T* m_dstPtr;
+  U m_acc;
   I m_srcStride;
   I m_dstStride;
 };
@@ -233,17 +271,10 @@ struct SimpleUpdater {
     in += inc;
     SimpleUpdater<InN...>::Increment(inc, std::forward<InN>(inn)...);
   }
-  static void IncrementStrided(size_t inc, size_t stride,
-      In&& in, InN&&... inn) {
-    in += inc*stride;
-    SimpleUpdater<InN...>::IncrementStrided(inc, stride,
-      std::forward<InN>(inn)...);
-  }
 };
 template<>
 struct SimpleUpdater<void> {
   static void Increment(size_t inc) {}
-  static void IncrementStrided(size_t inc, size_t stride) {}
 };
 
 
@@ -399,7 +430,7 @@ class SeparableSubsampledConvolutionEngine2D {
       // First make a local iteration copy of the accumulator
       std::tie(accn...) = tuple;
       // Second, update the address of buffer
-      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(ox, ox,
+      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtr(ox, ox,
         std::forward<AccN>(accn)...);
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
@@ -423,7 +454,7 @@ class SeparableSubsampledConvolutionEngine2D {
       // First make a local iteration copy of the accumulator
       std::tie(accn...) = tuple;
       // Second, update the address of buffer
-      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtr(oy, oy,
+      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(oy, oy,
         std::forward<AccN>(accn)...);
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
@@ -469,7 +500,29 @@ class SeparableUpsampledConvolutionEngine2D {
     }
     return 1;
   }
-};
+  /// The main method : perform Subsampled convolution on all rows
+  template<typename... InN>
+  static int PerformUpsampledFilteringYRef( int NxIn, int NxOut,
+    int NyIn, int NyOut, T* out, InN&&... inn) {
+    // We decided to use the tuple trick
+    // so that each loop index has its own copy of the accumulator and then
+    // can be properly parallelized through openMP for instance
+    auto tuple = std::make_tuple(inn...);
+
+    // Loop over output image along X direction, only Y direction will expand
+    #pragma omp parallel for
+    for (int ox=0; ox<NxOut; ox++) {
+      // First make a local iteration copy of the accumulator
+      std::tie(inn...) = tuple;
+      // Second, update the address of buffer
+      SimpleUpdater<InN...>::Increment(ox, std::forward<InN>(inn)...);
+      //Now, you can launch the X convolution
+      SeparableUpsampledConvolutionEngine<T,Filtn...
+          >::PerformUpsampledFilteringXRef(NyIn, NyOut,
+        out+ox, inn...);
+    }
+    return 1;
+  }};
 
 
 #endif //SEPARABLE_H

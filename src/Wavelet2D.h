@@ -124,8 +124,8 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l).at(1),
           this->m_coeff->GetScaleShape(l-1).at(1),
           this->m_coeff->GetHalfTmpBuffPtr(1),
-          this->m_coeff->GetLowSubspacePtr(l-1),
-          this->m_coeff->GetHighSubspacePtr(l-1,1));
+          this->m_coeff->GetHighSubspacePtr(l-1,2),
+          this->m_coeff->GetHighSubspacePtr(l-1,3));
 
       //Update output buffer destination
       T* outlow;
@@ -134,6 +134,19 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       } else {
         outlow=this->m_coeff->GetLowSubspacePtr(l);
       }
+
+      // Invert Y lowpass/highpass filtering
+      SeparableUpsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::i_l,
+          typename WaveletSchemeT::i_h
+        >::PerformUpsampledFilteringYRef(
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l-1).at(0),
+          this->m_coeff->GetScaleShape(l).at(1),
+          this->m_coeff->GetScaleShape(l-1).at(1),
+          outlow,
+          this->m_coeff->GetHalfTmpBuffPtr(0),
+          this->m_coeff->GetHalfTmpBuffPtr(1));
     }
     return 1;
   }
