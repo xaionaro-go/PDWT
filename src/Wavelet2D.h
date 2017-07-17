@@ -98,8 +98,32 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     }
     return 1;
   }
-  /// Backward wavelet transform: transpose of the forward transpose
+  /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
+/*    for (int l=this->m_level; l>0; l--) {
+      // At first step, one has to invert the X filtering, for both low and
+      // high frequency filtered data
+      SeparableUpsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::i_l,
+          typename WaveletSchemeT::i_h
+        >::PerformUpsampledFilteringXRef(
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l-1).at(0),
+          outlow,
+          inlow,
+          this->m_coeff->GetHighSubspacePtr(l-1,0));
+
+      //Update lowpass input and output
+      if (l<=2) {
+        inlow = outlow;
+        outlow = this->m_image;
+       } else if (l==this->m_level) {
+         inlow = outlow;
+         outlow = this->m_coeff->GetTmpBuffPtr(this->m_level-1);
+       } else {
+         std::swap(inlow,outlow);
+       }
+    }*/
     return 1;
   }
   /// Inverse of the wavelet tranform
