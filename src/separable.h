@@ -82,15 +82,15 @@ struct MaxTapHalfCeilSizeRight<void> {
 };
 
 template<typename T, typename I, typename J, class Filt, class... Filtn>
-struct EvenSubSampledAccumulator {
+struct EvenSubsampledAccumulator {
   template<class In, class... InN>
   static constexpr T acc(I filtIdx, J inIdx, const In in, const InN... inn) {
-   return EvenSubSampledAccumulator<T,I,J,Filt>::acc(filtIdx, inIdx, in)+
-     EvenSubSampledAccumulator<T,I,J,Filtn...>::acc(filtIdx, inIdx, inn...);
+   return EvenSubsampledAccumulator<T,I,J,Filt>::acc(filtIdx, inIdx, in)+
+     EvenSubsampledAccumulator<T,I,J,Filtn...>::acc(filtIdx, inIdx, inn...);
   }
 };
 template<typename T, typename I, typename J, class Filt>
-struct EvenSubSampledAccumulator<T,I,J,Filt> {
+struct EvenSubsampledAccumulator<T,I,J,Filt> {
  template<class In>
  static constexpr T acc(I filtIdx, J inIdx, In in) {
     if ((filtIdx>=-Filt::TapHalfSizeLeft)&&(filtIdx<=Filt::TapHalfSizeRight)) {
@@ -102,21 +102,21 @@ struct EvenSubSampledAccumulator<T,I,J,Filt> {
   }
 };
 template<typename T, typename I, typename J>
-struct EvenSubSampledAccumulator<T,I,J,void> {
+struct EvenSubsampledAccumulator<T,I,J,void> {
  static constexpr T acc(I index) { return (T)0; }
 };
 
 template<typename T, typename I, typename J, class Filt, class... Filtn>
-struct OddSubSampledAccumulator {
+struct OddSubsampledAccumulator {
  template<class In, class... InN>
  static constexpr T acc (I filtIdx, J inIdx, In in, InN... inn) {
-    return  OddSubSampledAccumulator<T,I,J,Filt>::acc(filtIdx, inIdx, in) +
-      OddSubSampledAccumulator<T,I,J,Filtn...>::acc(filtIdx, inIdx, inn...);
+    return  OddSubsampledAccumulator<T,I,J,Filt>::acc(filtIdx, inIdx, in) +
+      OddSubsampledAccumulator<T,I,J,Filtn...>::acc(filtIdx, inIdx, inn...);
    }
 };
 
 template<typename T, typename I, typename J, class Filt>
-struct OddSubSampledAccumulator<T,I,J,Filt> {
+struct OddSubsampledAccumulator<T,I,J,Filt> {
  template<class In>
  static constexpr T acc(I filtIdx, J inIdx, In in) {
     if ((filtIdx>=-Filt::TapHalfFloorSizeLeft)&&
@@ -129,7 +129,7 @@ struct OddSubSampledAccumulator<T,I,J,Filt> {
   }
 };
 template<typename T, typename I, typename J>
-struct OddSubSampledAccumulator<T,I,J,void> {
+struct OddSubsampledAccumulator<T,I,J,void> {
   static constexpr T acc(I index) { return (T)0; }
 };
 
@@ -227,6 +227,24 @@ struct SrcDstPtrUpdater<void> {
   static void IncrementSrcDstPtrStrided(size_t srcInc, size_t dstInc) {}
 };
 
+template<typename In=void, typename... InN>
+struct SimpleUpdater {
+  static void Increment(size_t inc, In&& in, InN&&... inn) {
+    in += inc;
+    SimpleUpdater<InN...>::Increment(inc, std::forward<InN>(inn)...);
+  }
+  static void IncrementStrided(size_t inc, size_t stride,
+      In&& in, InN&&... inn) {
+    in += inc*stride;
+    SimpleUpdater<InN...>::IncrementStrided(inc, stride,
+      std::forward<InN>(inn)...);
+  }
+};
+template<>
+struct SimpleUpdater<void> {
+  static void Increment(size_t inc) {}
+  static void IncrementStrided(size_t inc, size_t stride) {}
+};
 
 
 /** \class SeparableSubsampledConvolutionEngine
@@ -323,7 +341,7 @@ class SeparableUpsampledConvolutionEngine {
 		  if (idx_x>max_x) {
 			idx_x -= NxIn;
 		  }
-          acc+=EvenSubSampledAccumulator<T,int,int,Filtn...>::acc(
+          acc+=EvenSubsampledAccumulator<T,int,int,Filtn...>::acc(
             fx, idx_x, inn...);
 		}
       } else {
@@ -337,7 +355,7 @@ class SeparableUpsampledConvolutionEngine {
 		  if (idx_x>max_x) {
 			idx_x -= NxIn;
 		  }
-	      acc+=OddSubSampledAccumulator<T,int,int,Filtn...>::acc(
+	      acc+=OddSubsampledAccumulator<T,int,int,Filtn...>::acc(
             fx, idx_x, inn...);
 		}
 
@@ -398,7 +416,7 @@ class SeparableSubsampledConvolutionEngine2D {
     // so that each loop index has its own copy of the accumulator and then
     // can be properly parallelized through openMP for instance
     auto tuple = std::make_tuple(accn...);
-
+ 
     // Loop over output image along y direction
     #pragma omp parallel for
     for (int oy=0; oy<Ny; oy++) {
@@ -410,6 +428,44 @@ class SeparableSubsampledConvolutionEngine2D {
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
         >::PerformSubsampledFilteringXRef(Nx, std::forward<AccN>(accn)...);
+    }
+    return 1;
+  }
+};
+
+/** \class SeparableUpsampledConvolutionEngine2D
+ * \brief Code for the separable upsampled convolution.
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class... Filtn>
+class SeparableUpsampledConvolutionEngine2D {
+ public:
+  /// Defaulted constructor
+  SeparableUpsampledConvolutionEngine2D()=default;
+  /// Default destructor
+  virtual ~SeparableUpsampledConvolutionEngine2D()=default;
+
+  /// The main method : perform Subsampled convolution on all rows
+  template<typename... InN>
+  static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
+    int NyIn, int NyOut, T* out, InN&&... inn) {
+    // We decided to use the tuple trick
+    // so that each loop index has its own copy of the accumulator and then
+    // can be properly parallelized through openMP for instance
+    auto tuple = std::make_tuple(inn...);
+
+    // Loop over output image along y direction, only X direction will expand
+    #pragma omp parallel for
+    for (int oy=0; oy<NyIn; oy++) {
+      // First make a local iteration copy of the accumulator
+      std::tie(inn...) = tuple;
+      // Second, update the address of buffer
+      SimpleUpdater<InN...>::Increment(oy*NxIn, std::forward<InN>(inn)...);
+      //Now, you can launch the X convolution
+      SeparableUpsampledConvolutionEngine<T,Filtn...
+          >::PerformUpsampledFilteringXRef(NxIn, NxOut,
+        out+oy*NxOut, inn...);
     }
     return 1;
   }

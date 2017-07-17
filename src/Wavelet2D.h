@@ -71,7 +71,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         outlow=this->m_coeff->GetOutLowTmpBuffPtr();
       }
 
-      //Now perform X filtering on low
+      //Now perform X filtering on lowpass Y
       SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
@@ -81,7 +81,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         Accumulator<T,T,T,int>(inlowY, outlow),
         Accumulator<T,T,T,int>(inlowY,
           this->m_coeff->GetHighSubspacePtr(l,1)));
-      //Now perform X filtering on high
+      //Now perform X filtering on highpass Y
       SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
@@ -100,30 +100,41 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
-/*    for (int l=this->m_level; l>0; l--) {
-      // At first step, one has to invert the X filtering, for both low and
-      // high frequency filtered data
+    for (int l=this->m_level; l>0; l--) {
+      // Invert X lowpass/highpass filtering for lowpass Y
       SeparableUpsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringXRef(
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
-          outlow,
-          inlow,
-          this->m_coeff->GetHighSubspacePtr(l-1,0));
+          this->m_coeff->GetScaleShape(l).at(1),
+          this->m_coeff->GetScaleShape(l-1).at(1),
+          this->m_coeff->GetHalfTmpBuffPtr(0),
+          this->m_coeff->GetLowSubspacePtr(l-1),
+          this->m_coeff->GetHighSubspacePtr(l-1,1));
 
-      //Update lowpass input and output
-      if (l<=2) {
-        inlow = outlow;
-        outlow = this->m_image;
-       } else if (l==this->m_level) {
-         inlow = outlow;
-         outlow = this->m_coeff->GetTmpBuffPtr(this->m_level-1);
-       } else {
-         std::swap(inlow,outlow);
-       }
-    }*/
+      // Invert X lowpass/highpass filtering for highpass Y
+      SeparableUpsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::i_l,
+          typename WaveletSchemeT::i_h
+        >::PerformUpsampledFilteringXRef(
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l-1).at(0),
+          this->m_coeff->GetScaleShape(l).at(1),
+          this->m_coeff->GetScaleShape(l-1).at(1),
+          this->m_coeff->GetHalfTmpBuffPtr(1),
+          this->m_coeff->GetLowSubspacePtr(l-1),
+          this->m_coeff->GetHighSubspacePtr(l-1,1));
+
+      //Update output buffer destination
+      T* outlow;
+      if (l<=1) {
+        outlow=this->m_image;
+      } else {
+        outlow=this->m_coeff->GetLowSubspacePtr(l);
+      }
+    }
     return 1;
   }
   /// Inverse of the wavelet tranform
