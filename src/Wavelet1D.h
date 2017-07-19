@@ -95,7 +95,9 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         >::PerformUpsampledFilteringXRef(
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
-          outlow,
+          SubsampledAccumulator<T,T,int,int,
+              typename WaveletSchemeT::i_l,
+              typename WaveletSchemeT::i_h>(outlow),
           inlow,
           this->m_coeff->GetHighSubspacePtr(l-1,0));
 
@@ -282,7 +284,9 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
           >::PerformUpsampledFilteringXRef(
             this->m_coeff->GetScaleShape(l).at(0),
             this->m_coeff->GetScaleShape(l-1).at(0),
-            outlowReal,
+            SubsampledAccumulator<T,T,int,int,
+              typename DTWaveletSchemeT::i_lnr,
+              typename DTWaveletSchemeT::i_hnr>(outlowReal),
             inlowReal,
             this->m_coeff->GetHighSubspacePtr(l-1,0,0));
 
@@ -307,7 +311,9 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
           >::PerformUpsampledFilteringXRef(
             this->m_coeff->GetScaleShape(l).at(0),
             this->m_coeff->GetScaleShape(l-1).at(0),
-            outlowImag,
+            SubsampledAccumulator<T,T,int,int,
+              typename DTWaveletSchemeT::i_lni,
+              typename DTWaveletSchemeT::i_hni>(outlowImag),
             inlowImag,
             this->m_coeff->GetHighSubspacePtr(l-1,0,1));
         //Update lowpass input and output
@@ -333,7 +339,11 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
         >::PerformUpsampledFilteringXRef(
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
-          outlow,
+            SubsampledAccumulator<T,T,int,int,
+              typename DTWaveletSchemeT::i_l0r,
+              typename DTWaveletSchemeT::i_l0i,
+              typename DTWaveletSchemeT::i_h0r,
+              typename DTWaveletSchemeT::i_h0i>(outlow),
           inlowReal,
           inlowImag,
           this->m_coeff->GetHighSubspacePtr(l-1,0,0),

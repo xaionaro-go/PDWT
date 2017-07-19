@@ -102,7 +102,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   virtual int backward() {
     for (int l=this->m_level; l>0; l--) {
       // Invert X lowpass/highpass filtering for lowpass Y
-      SeparableUpsampledConvolutionEngine2D<T,
+/*      SeparableUpsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringXRef(
@@ -110,7 +110,10 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
           this->m_coeff->GetScaleShape(l-1).at(1),
-          this->m_coeff->GetHalfTmpBuffPtr(0),
+          SubsampledAccumulator<T,T,int,int,
+              typename WaveletSchemeT::i_l,
+              typename WaveletSchemeT::i_h>(
+            this->m_coeff->GetHalfTmpBuffPtr(0)),
           this->m_coeff->GetLowSubspacePtr(l-1),
           this->m_coeff->GetHighSubspacePtr(l-1,1));
 
@@ -123,7 +126,10 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
           this->m_coeff->GetScaleShape(l-1).at(1),
-          this->m_coeff->GetHalfTmpBuffPtr(1),
+          SubsampledAccumulator<T,T,int,int,
+              typename WaveletSchemeT::i_l,
+              typename WaveletSchemeT::i_h>(
+          this->m_coeff->GetHalfTmpBuffPtr(1)),
           this->m_coeff->GetHighSubspacePtr(l-1,2),
           this->m_coeff->GetHighSubspacePtr(l-1,3));
 
@@ -144,9 +150,11 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
           this->m_coeff->GetScaleShape(l-1).at(1),
-          outlow,
-          this->m_coeff->GetHalfTmpBuffPtr(0),
-          this->m_coeff->GetHalfTmpBuffPtr(1));
+          SubsampledAccumulator<T,T,int,int,
+              typename WaveletSchemeT::i_l,
+              typename WaveletSchemeT::i_h>(outlow),
+            this->m_coeff->GetHalfTmpBuffPtr(0),
+            this->m_coeff->GetHalfTmpBuffPtr(1));*/
     }
     return 1;
   }
