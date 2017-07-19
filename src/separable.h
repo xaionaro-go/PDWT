@@ -493,9 +493,12 @@ class SeparableUpsampledConvolutionEngine2D {
       // Second, update the address of buffer
       SimpleUpdater<InN...>::Increment(oy*NxIn, std::forward<InN>(inn)...);
       //Now, you can launch the X convolution
-/*      SeparableUpsampledConvolutionEngine<T,Filtn...
-          >::PerformUpsampledFilteringXRef(NxIn, NxOut,
-        out+oy*NxOut, inn...);*/
+      SeparableUpsampledConvolutionEngine<T,Filtn...
+          >::PerformUpsampledFilteringXRef(
+        NxIn,
+        NxOut,
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+oy*NxOut),
+        inn...);
     }
     return 1;
   }
@@ -516,9 +519,12 @@ class SeparableUpsampledConvolutionEngine2D {
       // Second, update the address of buffer
       SimpleUpdater<InN...>::Increment(ox, std::forward<InN>(inn)...);
       //Now, you can launch the X convolution
-/*      SeparableUpsampledConvolutionEngine<T,Filtn...
-          >::PerformUpsampledFilteringXRef(NyIn, NyOut,
-        out+ox, inn...);*/
+      SeparableUpsampledConvolutionEngine<T,Filtn...
+          >::PerformUpsampledFilteringXRef(
+        NyIn,
+        NyOut,
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxIn,NxOut),
+        inn...);
     }
     return 1;
   }};
