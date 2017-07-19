@@ -16,21 +16,23 @@ template<
   template<typename> class C,
   typename T,//data type
   typename L,//nb of level
-  typename S>//Size of input data
+  typename SX,//Size of output data
+  typename SY>//Size of input data
 struct Wavelet2DTestFunctor {
   static bool test() {
 
     //more practical
-/*  constexpr const int level = L::value;
-    constexpr const int size = S::value;
+    constexpr const int level = L::value;
+    constexpr const int sizeX = SX::value;
+    constexpr const int sizeY = SY::value;
 
     // Define input/output
-    std::vector<T> in(size);
+    std::vector<T> in(sizeX*sizeY);
     std::iota(in.begin(), in.end(),0);
     const std::vector<T> incopy(in.cbegin(),in.cend());
 
     // Define wavelet tranform
-    C<T> w(in.data(),in.size(),1,1,false,"Test",level);
+    C<T> w(in.data(),sizeX,sizeY,1,false,"Test",level);
     // perform forward transform
     w.forward();
     //Delete previous image
@@ -45,30 +47,32 @@ struct Wavelet2DTestFunctor {
       },
       [](T a, T b) {
         return std::abs(a-b) < 1;
-      });*/
+      });
     return true;
   }
 };
 
-/*template<typename T, typename L, typename S>
-using Daub2_2DTestFctr = Wavelet2DTestFunctor<Daub2_2D,T,L,S>;
-template<typename T, typename L, typename S>
-using Daub3_2DTestFctr = Wavelet2DTestFunctor<Daub3_2D,T,L,S>;
-template<typename T, typename L, typename S>
-using Daub4_2DTestFctr = Wavelet2DTestFunctor<Daub4_2D,T,L,S>;
-template<typename T, typename L, typename S>
-using Daub5_2DTestFctr = Wavelet2DTestFunctor<Daub5_2D,T,L,S>;
-template<typename T, typename L, typename S>
-using Anto97_BiOrth_2DTestFctr = Wavelet2DTestFunctor<Anto97_BiOrth_2D,T,L,S>;
-template<typename T, typename L, typename S>
-using QSHIFT6_Orth_2DTestFctr = Wavelet2DTestFunctor<QSHIFT6_Orth_2D,T,L,S>;
-template<typename T, typename L, typename S>
+template<typename T, typename L, typename SX, typename SY>
+using Daub2_2DTestFctr = Wavelet2DTestFunctor<Daub2_2D,T,L,SX,SY>;
+template<typename T, typename L, typename SX, typename SY>
+using Daub3_2DTestFctr = Wavelet2DTestFunctor<Daub3_2D,T,L,SX,SY>;
+template<typename T, typename L, typename SX, typename SY>
+using Daub4_2DTestFctr = Wavelet2DTestFunctor<Daub4_2D,T,L,SX,SY>;
+template<typename T, typename L, typename SX, typename SY>
+using Daub5_2DTestFctr = Wavelet2DTestFunctor<Daub5_2D,T,L,SX,SY>;
+template<typename T, typename L, typename SX, typename SY>
+using Anto97_BiOrth_2DTestFctr = Wavelet2DTestFunctor<
+  Anto97_BiOrth_2D,T,L,SX,SY>;
+template<typename T, typename L, typename SX, typename SY>
+using QSHIFT6_Orth_2DTestFctr = Wavelet2DTestFunctor<
+  QSHIFT6_Orth_2D,T,L,SX,SY>;
+template<typename T, typename L, typename SX, typename SY>
 using REVERSE_QSHIFT6_Orth_2DTestFctr = 
-  Wavelet2DTestFunctor<REVERSE_QSHIFT6_Orth_2D,T,L,S>;
-template<typename T, typename L, typename S>
-using dtwAnto97QSHIFT6_2DTestFctr =
-  Wavelet2DTestFunctor<dtwAnto97QSHIFT6_2D,T,L,S>;  
-*/
+  Wavelet2DTestFunctor<REVERSE_QSHIFT6_Orth_2D,T,L,SX,SY>;
+//template<typename T, typename L, typename SX, typename SY>
+//using dtwAnto97QSHIFT6_2DTestFctr =
+//  Wavelet2DTestFunctor<dtwAnto97QSHIFT6_2D,T,L,SX,SY>;  
+
 
 int main(int argc, char* argv[])  {
 
@@ -81,14 +85,14 @@ int main(int argc, char* argv[])  {
   //We challenge the template test functor over the
   //cartesian product of the type sets T,L,S
   return 
-/*  TestImp<Daub2_2DTestFctr>(T(), L(), S()) &&
-    TestImp<Daub3_2DTestFctr>(T(), L(), S()) &&
-    TestImp<Daub4_2DTestFctr>(T(), L(), S()) &&
-    TestImp<Daub5_2DTestFctr>(T(), L(), S()) &&
-    TestImp<Anto97_BiOrth_2DTestFctr>(T(), L(), S()) &&
-    TestImp<QSHIFT6_Orth_2DTestFctr>(T(), L(), S()) &&
-    TestImp<REVERSE_QSHIFT6_Orth_2DTestFctr>(T(), L(), S()) &&
-    TestImp<dtwAnto97QSHIFT6_2DTestFctr>(T(), L(), S()) 
-    ? EXIT_SUCCESS : EXIT_FAILURE;*/
+    TestImp<Daub2_2DTestFctr>(T(), L(), S(), S()) &&
+    TestImp<Daub3_2DTestFctr>(T(), L(), S(), S()) &&
+    TestImp<Daub4_2DTestFctr>(T(), L(), S(), S()) &&
+    TestImp<Daub5_2DTestFctr>(T(), L(), S(), S()) &&
+    TestImp<Anto97_BiOrth_2DTestFctr>(T(), L(), S(), S()) &&
+    TestImp<QSHIFT6_Orth_2DTestFctr>(T(), L(), S(), S()) &&
+    TestImp<REVERSE_QSHIFT6_Orth_2DTestFctr>(T(), L(), S(), S())
+//    TestImp<dtwAnto97QSHIFT6_2DTestFctr>(T(), L(), S(), S()) 
+    ? EXIT_SUCCESS : EXIT_FAILURE;
     EXIT_SUCCESS;
 }
