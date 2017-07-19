@@ -29,9 +29,8 @@ class Wavelet1D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   Wavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
       WaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
-    size_t size = Nc*Nr*Ns;
     this->m_coeff=std::make_unique<CoeffContainerT>(
-      std::vector<size_t>{size}, level);
+      std::vector<size_t>{Nc}, level);
   }
   /// Default destructor
   virtual ~Wavelet1D()=default;

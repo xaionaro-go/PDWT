@@ -40,7 +40,7 @@ class CoeffContainer {
    *
    * \return void 
    */
-  virtual void Initialize(const std::vector<size_t>& shape, size_t nlevel,
+  virtual void InitializeSizes(const std::vector<size_t>& shape, size_t nlevel,
       T value = 0) {
     m_level = nlevel;
     std::vector<size_t> curShape{shape};
@@ -53,6 +53,9 @@ class CoeffContainer {
       assert(levelSize>0);
       m_scaleSize.emplace_back(levelSize);
       m_scaleShape.emplace_back(curShape);
+      for(auto a : curShape) {
+        std::cout<<"At scale "<<i<<" shape is "<<a<<std::endl;
+      }
       std::transform(sb,se,sb,divider);
     }
     /** Compute total size in the coeff space.
@@ -71,14 +74,7 @@ class CoeffContainer {
     //std::cout<<"scaleSize is: ";
     //std::for_each(m_scaleSize.cbegin(),m_scaleSize.cend(),print);
     //std::cout<<std::endl;
-    size_t totalSize = m_nbBand * m_bandSize;
     //std::cout<<"Total size is "<<totalSize<<"x"<<std::endl;
-
-    // Allocate memory
-    m_coeff.resize(totalSize);
-
-    // Allocate temporary buffer
-    AllocateTmpBuffer();
   }
 
   /// Return the dimensionality of the container
@@ -141,6 +137,12 @@ class CoeffContainer {
   }
 
  protected:
+  // Allocate main memory
+  virtual void AllocateMainBuffer() {
+    size_t totalSize = m_nbBand * m_bandSize;
+    m_coeff.resize(totalSize);
+  }
+
   // Allocate temporary buffer
   virtual void AllocateTmpBuffer()=0;
 
@@ -187,7 +189,11 @@ class CoeffContainer1D : public CoeffContainer<T,SubContainerT> {
 
   /// Allocating constructor
   CoeffContainer1D(std::vector<size_t> size, int nlevel) {
-    this->Initialize(size, nlevel);
+    this->InitializeSizes(size, nlevel);
+    // Allocate memory
+    this->AllocateMainBuffer();
+    // Allocate temporary buffer
+    this->AllocateTmpBuffer();
   }
 
   /// Defaulted Destructor
@@ -245,7 +251,11 @@ class DTCoeffContainer1D : public CoeffContainer1D<T,SubContainerT> {
 
   /// Allocating constructor
   DTCoeffContainer1D(std::vector<size_t> size, int nlevel) {
-    this->Initialize(size, nlevel);
+    this->InitializeSizes(size, nlevel);
+    // Allocate memory
+    this->AllocateMainBuffer();
+    // Allocate temporary buffer
+    this->AllocateTmpBuffer();
   }
 
   /// Defaulted Destructor
@@ -283,7 +293,25 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
 
   /// Allocating constructor
   CoeffContainer2D(std::vector<size_t> size, int nlevel) {
-    this->Initialize(size, nlevel);
+    this->InitializeSizes(size, nlevel);
+    /**
+     * tmp buffer should be able to store output of single Y filtering,
+     * size is initiale size where only second dimension has been divided
+     * by 2
+     */
+    auto divider = [](size_t in) {return (in+(in&1))/2;};
+    m_tmpSingleBuffSize=this->m_scaleShape.at(0).at(0)*
+      divider(this->m_scaleShape.at(0).at(1));
+    std::cout<<"tmpsingle buffer size is "<<m_tmpSingleBuffSize<<std::endl;
+    if (this->m_level>1) {
+      m_tmpBuffBandOffset=m_tmpSingleBuffSize*2+this->m_scaleSize.at(2);
+    } else {
+      m_tmpBuffBandOffset=m_tmpSingleBuffSize*2;
+    }
+    // Allocate memory
+    this->AllocateMainBuffer();
+    // Allocate temporary buffer
+    this->AllocateTmpBuffer();
   }
 
   /// Defaulted Destructor
@@ -295,10 +323,9 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
   virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
     // Layout is  2*scaleSize[1]+scaleSize[2]
-    size_t bandOffset = this->m_scaleSize.at(1)*2+this->m_scaleSize.at(2);
     // subbandoffset
     size_t subBandOffset = this->m_scaleSize.at(1);
-    return this->m_ptcoeff->data()+bandOffset*bandIdx+
+    return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+
       subBandOffset*subBandIdx;
   }
 
@@ -311,14 +338,16 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
    * X filtering: Worker has to write lowpass at OutLowTmpBuffer and Highpass
    * to wavelt tree, while reading both slot1 and slot2 fron tmp
    * For backward transform:
-   * 
+   * We have two independant X filtering to invert:
+   * LowYLowX and LowYHighX goes into first slot
+   * HighYLowX and HighYHighX goes into second slot
+   * then reconstruction can go into the third LowTmpBuff, or image level>=1 
    */
   virtual T* GetOutLowTmpBuffPtr(size_t bandIdx=0) {
     // Layout is  2*scaleSize[1]+scaleSize[2]
-    size_t bandOffset = this->m_scaleSize.at(1)*2+this->m_scaleSize.at(2);
     // lowPassoffset
-    size_t lowPassOffset = 2*this->m_scaleSize.at(1);
-    return this->m_ptcoeff->data()+bandOffset*bandIdx+lowPassOffset;
+    size_t lowPassOffset = 2*m_tmpSingleBuffSize;
+    return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+lowPassOffset;
   }
 
   /// Return a pointer to a temporary buffer
@@ -330,13 +359,13 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
  protected:
   // Allocate temporary buffer
   virtual void AllocateTmpBuffer() override {
-    if (this->m_level>1) {
-      this->m_ptcoeff=std::make_unique<SubContainerT>(
-        this->m_nbBand*(2*this->m_scaleSize.at(1)+this->m_scaleSize.at(2)));
-    }
+    this->m_ptcoeff=std::make_unique<SubContainerT>(
+      this->m_nbBand*m_tmpBuffBandOffset);
   }
 
  protected:
+  size_t m_tmpSingleBuffSize;
+  size_t m_tmpBuffBandOffset;
   static const size_t m_dimensions=2;
 };
 

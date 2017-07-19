@@ -138,7 +138,9 @@ class Accumulator {
  public:
   Accumulator(T* srcPtr, V* dstPtr, I srcStride=1, I dstStride=1):
     m_acc(0), m_srcPtr(srcPtr), m_dstPtr(dstPtr),
-    m_srcStride(srcStride), m_dstStride(dstStride)  {}
+    m_srcStride(srcStride), m_dstStride(dstStride)  {
+    mem=srcPtr;//TODO delete
+  }
 
   void accumulate(I srcIdx, U filt) {
     m_acc+=m_srcPtr[srcIdx*m_srcStride]*filt;
@@ -153,12 +155,15 @@ class Accumulator {
   void incrementSrcDstPtr(I srcInc, I dstInc) {
     m_srcPtr+=srcInc;
     m_dstPtr+=dstInc;
+    std::cout<<"Increment is"<<srcInc<<" Total displacement since beggining is"<<std::distance(mem,
+      m_srcPtr)<<std::endl; //TODO delete
   }
   void incrementSrcDstPtrStrided(I srcInc, I dstInc) {
     m_srcPtr+=srcInc*m_srcStride;
     m_dstPtr+=dstInc*m_dstStride;
   }
  protected:
+  T* mem;//TODO delete
   T* m_srcPtr;
   U m_acc;
   V* m_dstPtr;

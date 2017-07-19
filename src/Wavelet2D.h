@@ -29,9 +29,8 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   Wavelet2D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
       WaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
-    size_t size = Nc*Nr*Ns;
     this->m_coeff=std::make_unique<CoeffContainerT>(
-      std::vector<size_t>{size}, level);
+      std::vector<size_t>({Nc,Nr}), level);
   }
   /// Default destructor
   virtual ~Wavelet2D()=default;
@@ -45,8 +44,8 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
      * data size grows along filtering steps
      */
     T* inlow = this->m_image;
-    T* outlow = this->m_coeff->GetHalfTmpBuffPtr(0);
-    T* outhigh = this->m_coeff->GetHalfTmpBuffPtr(1);
+    T* outlowY = this->m_coeff->GetHalfTmpBuffPtr(0);
+    T* outhighY = this->m_coeff->GetHalfTmpBuffPtr(1);
     for (int l=0; l<this->m_level; l++) {
       //Y filtering
       SeparableSubsampledConvolutionEngine2D<T,
@@ -55,20 +54,21 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           >::PerformSubsampledFilteringYRef(
         this->m_coeff->GetScaleShape(l).at(0),
         this->m_coeff->GetScaleShape(l).at(1),
-        Accumulator<T,T,T,int>(inlow, outlow,
+        Accumulator<T,T,T,int>(inlow, outlowY,
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l+1).at(0)),
-        Accumulator<T,T,T,int>(inlow, outhigh,
+        Accumulator<T,T,T,int>(inlow, outhighY,
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l+1).at(0)));
 
-      T* inlowY = outlow;
-      T* inhighY = outhigh;
+      T* inlowY = outlowY;
+      T* inhighY = outhighY;
+      T* outlowYlowX;
 
-      if (this->m_level==1) {
-        outlow=this->m_coeff->GetLowSubspacePtr(l);
+      if (l+1==this->m_level) {
+        outlowYlowX=this->m_coeff->GetLowSubspacePtr(l);
       } else {
-        outlow=this->m_coeff->GetOutLowTmpBuffPtr();
+        outlowYlowX=this->m_coeff->GetOutLowTmpBuffPtr();
       }
 
       //Now perform X filtering on lowpass Y
@@ -78,7 +78,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           >::PerformSubsampledFilteringXRef(
         this->m_coeff->GetScaleShape(l).at(0),
         this->m_coeff->GetScaleShape(l+1).at(1),
-        Accumulator<T,T,T,int>(inlowY, outlow),
+        Accumulator<T,T,T,int>(inlowY, outlowYlowX),
         Accumulator<T,T,T,int>(inlowY,
           this->m_coeff->GetHighSubspacePtr(l,1)));
       //Now perform X filtering on highpass Y
@@ -94,7 +94,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetHighSubspacePtr(l,3)));
 
       //Update lowpass input and output, order is important here
-      inlow=outlow;
+      inlow=outlowYlowX;
     }
     return 1;
   }
