@@ -100,7 +100,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
-    std::cout<<"Lowpass is: "<<std::endl;
+    /*std::cout<<"Lowpass is: "<<std::endl;
     T* ptr=this->m_coeff->GetHalfTmpBuffPtr(0);
     for(int j=0; j<4; j++) {
       for(int i=0; i<8; i++) {
@@ -118,7 +118,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
         std::cout<<ptr[j*8+i]<<", ";
       }
       std::cout<<std::endl;
-    }
+    }*/
 
 
 

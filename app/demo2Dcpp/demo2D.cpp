@@ -37,8 +37,8 @@ int main(int argc, char **argv) {
   print(in.data());
 
   // Define wavelet tranform
-  Dummy2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
-  //Daub2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
+  //Dummy2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
+  Daub2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
   //Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),in.size(),1,1,false,"QSHIFT6",1);
    

@@ -513,58 +513,28 @@ class SeparableUpsampledConvolutionEngine2D {
     return 1;
   }
   /// The main method : perform Subsampled convolution on all rows
-//  template<typename In, typename... InN>
-  template<typename In, typename InN>
+  template<typename... InN>
   static int PerformUpsampledFilteringYRef( int NxIn, int NxOut,
-    int NyIn, int NyOut, T* out, In in, InN inn) {//...
+    int NyIn, int NyOut, T* out, InN... inn) {
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then
     // can be properly parallelized through openMP for instance
-//    auto tuple = std::make_tuple(in, inn...);
-    auto tuple = std::make_tuple(in, inn);
-
-    std::cout<<"Lowpass is: "<<std::endl;
-    for(int j=0; j<4; j++) {
-      for(int i=0; i<8; i++) {
-        in[j*8+i]=j;
-        std::cout<<in[j*8+i]<<" "; 
-      }
-      std::cout<<std::endl;
-    }
-    std::cout<<"Highpass is: "<<std::endl;
-    for(int j=0; j<4; j++) {
-      for(int i=0; i<8; i++) {
-        inn[j*8+i]=0;
-        std::cout<<inn[j*8+i]<<" "; 
-      }
-      std::cout<<std::endl;
-    }
-    std::cout<<"Weird test "<<std::endl;
-    for(int j=0; j<4; j++) {
-        std::cout<<in[j*8]<<std::endl;
-      }
+    auto tuple = std::make_tuple(inn...);
 
     // Loop over output image along X direction, only Y direction will expand
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (int ox=0; ox<NxOut; ox++) {
       // First make a local iteration copy of the accumulator
-//      std::tie(in,inn...) = tuple;
-      //std::tie(in,inn) = tuple;
+      std::tie(inn...) = tuple;
       // Second, update the address of buffer
-//      SimpleUpdater<In,InN...>::Increment(ox, in, inn...);
-      //SimpleUpdater<In,InN>::Increment(ox, in, inn);
-    std::cout<<"column : "<<ox<<" is "<<std::endl;
-    for(int j=0; j<4; j++) {
-        std::cout<<in[j*8]<<std::endl;
-      }
-      std::cout<<std::endl;
+      SimpleUpdater<InN...>::Increment(ox, inn...);
       //Now, you can launch the X convolution
       SeparableUpsampledConvolutionEngine<T,Filtn...
           >::PerformUpsampledFilteringXRef(
         NyIn,
         NyOut,
         SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
-        in,inn);//...
+        inn...);
     }
     return 1;
   }};
