@@ -94,6 +94,8 @@ struct EvenSubsampledAccumulator<T,I,J,Filt> {
  template<class In>
  static constexpr T acc(I filtIdx, J inIdx, In in) {
     if ((filtIdx>=-Filt::TapHalfSizeLeft)&&(filtIdx<=Filt::TapHalfSizeRight)) {
+      //std::cout<<" , "<<2*(filtIdx+Filt::TapHalfSizeLeft)+
+      //  Filt::EvenSubSampOffset<<")="<<inIdx;
 	  return Filt::Buff[2*(filtIdx+Filt::TapHalfSizeLeft)+
         Filt::EvenSubSampOffset]*in[inIdx];
     } else {
@@ -121,6 +123,8 @@ struct OddSubsampledAccumulator<T,I,J,Filt> {
  static constexpr T acc(I filtIdx, J inIdx, In in) {
     if ((filtIdx>=-Filt::TapHalfFloorSizeLeft)&&
         (filtIdx<=Filt::TapHalfCeilSizeRight)) {
+      //std::cout<<2*(filtIdx+Filt::TapHalfFloorSizeLeft)+
+      //  Filt::OddSubSampOffset<<")="<<inIdx;
 	  return Filt::Buff[2*(filtIdx+Filt::TapHalfFloorSizeLeft)+
         Filt::OddSubSampOffset]*in[inIdx];
     } else {
@@ -179,14 +183,14 @@ class SubsampledAccumulator {
     m_dstStride(dstStride)  {}
 
   template<class... InN>
-  void EvenSubsampledAccumulate(I filtIdx, J inIdx, const InN... inn) {
+  void EvenSubsampledAccumulate(I filtIdx, J inIdx, InN&&... inn) {
     m_acc+=EvenSubsampledAccumulator<T,I,J,Filtn...>::acc(
-      filtIdx, inIdx*m_srcStride, inn...);
+      filtIdx, inIdx*m_srcStride, std::forward<InN>(inn)...);
   }
   template<class... InN>
-  void OddSubsampledAccumulate(I filtIdx, J inIdx, const InN... inn) {
+  void OddSubsampledAccumulate(I filtIdx, J inIdx, InN&&... inn) {
     m_acc+=OddSubsampledAccumulator<T,I,J,Filtn...>::acc(
-      filtIdx, inIdx*m_srcStride, inn...);
+      filtIdx, inIdx*m_srcStride, std::forward<InN>(inn)...);
   }
   void write(I dstIdx) {
     m_dstPtr[dstIdx*m_dstStride]=m_acc;
@@ -201,7 +205,7 @@ class SubsampledAccumulator {
     m_dstPtr+=dstInc*m_dstStride;
   }
  
- protected:
+// protected://TODO TN changer
   T* m_dstPtr;
   U m_acc;
   I m_srcStride;
@@ -273,9 +277,9 @@ struct SrcDstPtrUpdater<void> {
 
 template<typename In=void, typename... InN>
 struct SimpleUpdater {
-  static void Increment(size_t inc, In&& in, InN&&... inn) {
+  static void Increment(size_t inc, In& in, InN&... inn) {
     in += inc;
-    SimpleUpdater<InN...>::Increment(inc, std::forward<InN>(inn)...);
+    SimpleUpdater<InN...>::Increment(inc, inn...);
   }
 };
 template<>
@@ -293,8 +297,6 @@ struct SimpleUpdater<void> {
  *
  * \author Thibault Notargiacomo
  */
-//TODO TN: replace second line by first one
-//template<typename T, class Filt, class... Filtn>
 template<typename T, class... Filtn>
 class SeparableSubsampledConvolutionEngine {
  public:
@@ -367,6 +369,7 @@ class SeparableUpsampledConvolutionEngine {
       int ixCentral = lox/2;
       acc.reset();
 
+      //std::cout<<"Lox="<<lox<<" : ";
       if ((lox%2)==0) {
 	    //TODO TN Filter loop, can be turned into an explicit compile time loop
 		for (int fx=-MaxTapHalfSizeLeft<Filtn...>::value;
@@ -378,6 +381,7 @@ class SeparableUpsampledConvolutionEngine {
 		  if (idx_x>max_x) {
 			idx_x -= NxIn;
 		  }
+          //std::cout<<"("<<idx_x;
           acc.EvenSubsampledAccumulate(fx, idx_x, inn...);
 		}
       } else {
@@ -391,10 +395,11 @@ class SeparableUpsampledConvolutionEngine {
 		  if (idx_x>max_x) {
 			idx_x -= NxIn;
 		  }
+          //std::cout<<"("<<idx_x<<" , ";
 	      acc.OddSubsampledAccumulate(fx, idx_x, inn...);
 		}
-
       }
+      //std::cout<<std::endl;
       // Update each buffer with its respective filter
       acc.write(lox);
     }
@@ -421,7 +426,7 @@ class SeparableSubsampledConvolutionEngine2D {
 
   /// The main method : perform Subsampled convolution on all columns
   template<typename... AccN>
-  static int PerformSubsampledFilteringYRef(int Nx, int Ny,
+  static int PerformSubsampledFilteringYRef(int NxIn, int NyIn,
       AccN&&... accn) {
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then
@@ -430,7 +435,7 @@ class SeparableSubsampledConvolutionEngine2D {
 
     // Loop over output image along y direction
     #pragma omp parallel for
-    for (int ox=0; ox<Nx; ox++) {
+    for (int ox=0; ox<NxIn; ox++) {
       // First make a local iteration copy of the accumulator
       std::tie(accn...) = tuple;
       // Second, update the address of buffer
@@ -438,7 +443,7 @@ class SeparableSubsampledConvolutionEngine2D {
         std::forward<AccN>(accn)...);
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
-        >::PerformSubsampledFilteringXRef(Ny, std::forward<AccN>(accn)...);
+        >::PerformSubsampledFilteringXRef(NyIn, std::forward<AccN>(accn)...);
     }
     return 1;
   }
@@ -508,28 +513,58 @@ class SeparableUpsampledConvolutionEngine2D {
     return 1;
   }
   /// The main method : perform Subsampled convolution on all rows
-  template<typename... InN>
+//  template<typename In, typename... InN>
+  template<typename In, typename InN>
   static int PerformUpsampledFilteringYRef( int NxIn, int NxOut,
-    int NyIn, int NyOut, T* out, InN&&... inn) {
+    int NyIn, int NyOut, T* out, In in, InN inn) {//...
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then
     // can be properly parallelized through openMP for instance
-    auto tuple = std::make_tuple(inn...);
+//    auto tuple = std::make_tuple(in, inn...);
+    auto tuple = std::make_tuple(in, inn);
+
+    std::cout<<"Lowpass is: "<<std::endl;
+    for(int j=0; j<4; j++) {
+      for(int i=0; i<8; i++) {
+        in[j*8+i]=j;
+        std::cout<<in[j*8+i]<<" "; 
+      }
+      std::cout<<std::endl;
+    }
+    std::cout<<"Highpass is: "<<std::endl;
+    for(int j=0; j<4; j++) {
+      for(int i=0; i<8; i++) {
+        inn[j*8+i]=0;
+        std::cout<<inn[j*8+i]<<" "; 
+      }
+      std::cout<<std::endl;
+    }
+    std::cout<<"Weird test "<<std::endl;
+    for(int j=0; j<4; j++) {
+        std::cout<<in[j*8]<<std::endl;
+      }
 
     // Loop over output image along X direction, only Y direction will expand
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int ox=0; ox<NxOut; ox++) {
       // First make a local iteration copy of the accumulator
-      std::tie(inn...) = tuple;
+//      std::tie(in,inn...) = tuple;
+      //std::tie(in,inn) = tuple;
       // Second, update the address of buffer
-      SimpleUpdater<InN...>::Increment(ox, std::forward<InN>(inn)...);
+//      SimpleUpdater<In,InN...>::Increment(ox, in, inn...);
+      //SimpleUpdater<In,InN>::Increment(ox, in, inn);
+    std::cout<<"column : "<<ox<<" is "<<std::endl;
+    for(int j=0; j<4; j++) {
+        std::cout<<in[j*8]<<std::endl;
+      }
+      std::cout<<std::endl;
       //Now, you can launch the X convolution
       SeparableUpsampledConvolutionEngine<T,Filtn...
           >::PerformUpsampledFilteringXRef(
         NyIn,
         NyOut,
-        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxIn,NxOut),
-        inn...);
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
+        in,inn);//...
     }
     return 1;
   }};

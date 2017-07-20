@@ -322,9 +322,9 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
 
   /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
   virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
-    // Layout is  2*scaleSize[1]+scaleSize[2]
+    // Layout is  described in constructor
     // subbandoffset
-    size_t subBandOffset = this->m_scaleSize.at(1);
+    size_t subBandOffset = m_tmpSingleBuffSize;
     return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+
       subBandOffset*subBandIdx;
   }

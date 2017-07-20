@@ -141,6 +141,8 @@ using QSHIFT6_Orth_1D = Wavelet1D<T,PackedContainer1D<T>,QSHIFT6_Orth<T>>;
 template<typename T>
 using REVERSE_QSHIFT6_Orth_1D = 
   Wavelet1D<T,PackedContainer1D<T>,REVERSE_QSHIFT6_Orth<T>>;
+template<typename T>
+using Dummy2_1D = Wavelet1D<T,PackedContainer1D<T>,Dummy2<T>>;
 
 
 /** \class DTWavelet1D

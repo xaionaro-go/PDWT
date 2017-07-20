@@ -203,7 +203,11 @@ enum class filterDB {
   REVERSE_QSHIFT6_L,
   REVERSE_QSHIFT6_H,
   REVERSE_QSHIFT6_I_L,
-  REVERSE_QSHIFT6_I_H
+  REVERSE_QSHIFT6_I_H,
+  DM2_L,
+  DM2_H,
+  DM2_I_L,
+  DM2_I_H
 };
 
 //Semi specialization, type agnostic
@@ -707,6 +711,46 @@ using dtwAnto97QSHIFT6 = dtwFilter<
          Anto97_BiOrth<T>,
          QSHIFT6_Orth<T>,
          REVERSE_QSHIFT6_Orth<T>>;
+
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,1,2,filterDB,filterDB::DM2_L> : public
+    GenericFilter<T,1,2> {
+  static constexpr const std::array<T,4> Buff = {1,2,3,4};
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,1,2,filterDB,filterDB::DM2_H> : public
+    GenericFilter<T,1,2> {
+  static constexpr const std::array<T,4> Buff = {1,2,3,4};
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,1,filterDB,filterDB::DM2_I_L> : public
+    GenericFilter<T,2,1> {
+  static constexpr const std::array<T,4> Buff = {1,2,3,4};
+};
+//Semi specialization, type agnostic
+template<typename T>
+struct Filter<T,2,1,filterDB,filterDB::DM2_I_H> : public
+    GenericFilter<T,2,1> {
+  static constexpr const std::array<T,4> Buff = {1,2,3,4};
+};
+/// The Daubechies2 wavelet system, type agnostic
+template<typename T>
+using Dummy2 = wFilter<
+    Filter<T,1,2,filterDB,filterDB::DM2_L>,
+    Filter<T,1,2,filterDB,filterDB::DM2_H>,
+    Filter<T,2,1,filterDB,filterDB::DM2_I_L>,
+    Filter<T,2,1,filterDB,filterDB::DM2_I_H>>;
+template <typename T>
+const std::array<T,4> Filter<T,1,2,filterDB,filterDB::DM2_L>::Buff;
+template <typename T>
+const std::array<T,4> Filter<T,1,2,filterDB,filterDB::DM2_H>::Buff;
+template <typename T>
+const std::array<T,4> Filter<T,2,1,filterDB,filterDB::DM2_I_L>::Buff;
+template <typename T>
+const std::array<T,4> Filter<T,2,1,filterDB,filterDB::DM2_I_H>::Buff;
 
 
 #endif

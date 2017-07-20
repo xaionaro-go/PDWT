@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   auto print = [sizeX,sizeY](auto* ptr) {
     for(int j=0; j<sizeY; j++) {
       for(int i=0; i<sizeX; i++) {
+        //ptr[j*sizeX+i]=j;
         std::cout<<ptr[j*sizeX+i]<<", ";
       }
       std::cout<<std::endl;
@@ -29,14 +30,15 @@ int main(int argc, char **argv) {
 
   // Define input/output
   std::vector<T> in(sizeX*sizeY);
-  std::iota(in.begin(), in.end(),0);
-  //std::fill(in.begin(), in.end(), 2);
+  //std::iota(in.begin(), in.end(),0);
+  std::fill(in.begin(), in.end(), 2);
 
   std::cout<<"Input is: ";
   print(in.data());
 
   // Define wavelet tranform
-  Daub2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
+  Dummy2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
+  //Daub2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
   //Anto97_BiOrth_1D<T> w(in.data(),in.size(),1,1,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),in.size(),1,1,false,"QSHIFT6",1);
    
