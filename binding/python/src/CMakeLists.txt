@@ -36,5 +36,7 @@ include_directories("${PRJ_ROOT_DIR}/src")
 #  Equivalent of add_library  #
 ###############################
 pybind11_add_module(${OUTPUT_NAME} ${sources})
+#target_link_libraries(${OUTPUT_NAME}
+#  ${openmp_deps})
 install(TARGETS ${OUTPUT_NAME}
   LIBRARY DESTINATION ${RUNTIME_OUTPUT_DIRECTORY})

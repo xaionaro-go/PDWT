@@ -31,7 +31,8 @@ class Wavelet2DWrapper {
 
     if (m_name=="Daub2") {
       m_pWavelet = std::make_unique<Daub2_2D<T>>(
-        ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
+        ptr,buffer.shape[0],buffer.shape[1],1,
+        m_doCycleSpinning,m_name,m_nbLevel);
     } /* else if (m_name=="dtwAnto97QSHIFT6") {
        m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_2D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);

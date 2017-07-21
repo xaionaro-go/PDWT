@@ -364,6 +364,48 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
   static const size_t m_dimensions=2;
 };
 
+/** \class DTCoeffContainer2D
+ * \brief Implementation of the CoeffContainer interface for the two
+ * dimensional case, compatible with the dual tree scheme
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class SubContainerT>
+class DTCoeffContainer2D : public CoeffContainer2D<T,SubContainerT> {
+ public:
+  /// Defaulted Constructor
+  DTCoeffContainer2D()=default;
+
+  /// Allocating constructor
+  DTCoeffContainer2D(std::vector<size_t> size, int nlevel) {
+    this->InitializeSizes(size, nlevel);
+    // Allocate memory
+    this->AllocateMainBuffer();
+    // Allocate temporary buffer
+    this->AllocateTmpBuffer();
+  }
+
+  /// Defaulted Destructor
+  virtual ~DTCoeffContainer2D()=default;
+
+  /// Return wether we are using the dual tree scheme or not
+  virtual bool DoUseDualTreeBand() const override { return true; };
+
+  /// Make the magical mixture of negative frequency cancelling signals
+  int WaveletToCpx() {
+    std::transform(this->m_coeff.begin(),this->m_coeff.end(),
+      this->m_coeff.begin(),
+      [](auto in) { return in*m_normalizationRatio; });
+    return 1;
+  }
+
+  /// Should be the exact inverse mapping of WaveletToCpx
+  int CpxToWavelet() { return WaveletToCpx(); };
+
+ protected:
+  static constexpr const T m_normalizationRatio = 1.0/(2.0*std::sqrt(2));
+};
+
 /** \class CoeffContainer3D
  * \brief Implementation of the CoeffContainer interface for the three
  * dimensional case
@@ -395,6 +437,48 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
 
  protected:
   static const size_t m_dimensions=3;
+};
+
+/** \class DTCoeffContainer3D
+ * \brief Implementation of the CoeffContainer interface for the three
+ * dimensional case, compatible with the dual tree scheme
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class SubContainerT>
+class DTCoeffContainer3D : public CoeffContainer3D<T,SubContainerT> {
+ public:
+  /// Defaulted Constructor
+  DTCoeffContainer3D()=default;
+
+  /// Allocating constructor
+  DTCoeffContainer3D(std::vector<size_t> size, int nlevel) {
+    this->InitializeSizes(size, nlevel);
+    // Allocate memory
+    this->AllocateMainBuffer();
+    // Allocate temporary buffer
+    this->AllocateTmpBuffer();
+  }
+
+  /// Defaulted Destructor
+  virtual ~DTCoeffContainer3D()=default;
+
+  /// Return wether we are using the dual tree scheme or not
+  virtual bool DoUseDualTreeBand() const override { return true; };
+
+  /// Make the magical mixture of negative frequency cancelling signals
+  int WaveletToCpx() {
+    std::transform(this->m_coeff.begin(),this->m_coeff.end(),
+      this->m_coeff.begin(),
+      [](auto in) { return in*m_normalizationRatio; });
+    return 1;
+  }
+
+  /// Should be the exact inverse mapping of WaveletToCpx
+  int CpxToWavelet() { return 1; };
+
+ protected:
+  static constexpr const T m_normalizationRatio = 1.0/(4.0*std::sqrt(2));
 };
 
 /** \class CoeffContainerCpx

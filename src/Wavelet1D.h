@@ -160,7 +160,7 @@ class DTWavelet1D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
   DTWavelet1D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
       DTWaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
-    size_t size = Nc*Nr*Ns;
+    size_t size = Nc;
     this->m_coeff=std::make_unique<CoeffContainerT>(
       std::vector<size_t>{size}, level);
   }
