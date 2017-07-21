@@ -142,9 +142,7 @@ class Accumulator {
  public:
   Accumulator(T* srcPtr, V* dstPtr, I srcStride=1, I dstStride=1):
     m_acc(0), m_srcPtr(srcPtr), m_dstPtr(dstPtr),
-    m_srcStride(srcStride), m_dstStride(dstStride)  {
-    mem=srcPtr;//TODO delete
-  }
+    m_srcStride(srcStride), m_dstStride(dstStride)  {}
 
   void accumulate(I srcIdx, U filt) {
     m_acc+=m_srcPtr[srcIdx*m_srcStride]*filt;
@@ -159,15 +157,12 @@ class Accumulator {
   void incrementSrcDstPtr(I srcInc, I dstInc) {
     m_srcPtr+=srcInc;
     m_dstPtr+=dstInc;
-    std::cout<<"Increment is"<<srcInc<<" Total displacement since beggining is"<<std::distance(mem,
-      m_srcPtr)<<std::endl; //TODO delete
   }
   void incrementSrcDstPtrStrided(I srcInc, I dstInc) {
     m_srcPtr+=srcInc*m_srcStride;
     m_dstPtr+=dstInc*m_dstStride;
   }
  protected:
-  T* mem;//TODO delete
   T* m_srcPtr;
   U m_acc;
   V* m_dstPtr;
@@ -233,6 +228,7 @@ struct Updater<Filt> {
   template<typename I, class Acc>
   static void accumulate(I filtIdx, I srcIdx, Acc&& acc) {
     if((filtIdx>=-Filt::TapSizeLeft) && (filtIdx<=Filt::TapSizeRight)) {
+//TODO TN      std::cout<<"Filter is "<<Filt::Buff[Filt::TapSizeLeft+filtIdx]<<std::endl;
       acc.accumulate(srcIdx,Filt::Buff[Filt::TapSizeLeft+filtIdx]);
     }
   }
@@ -450,7 +446,7 @@ class SeparableSubsampledConvolutionEngine2D {
 
   /// The main method : perform Subsampled convolution on all rows
   template<typename... AccN>
-  static int PerformSubsampledFilteringXRef( int Nx, int Ny,
+  static int PerformSubsampledFilteringXRef( int NxIn, int NxOut, int Ny,
       AccN&&... accn) {
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then
@@ -463,11 +459,11 @@ class SeparableSubsampledConvolutionEngine2D {
       // First make a local iteration copy of the accumulator
       std::tie(accn...) = tuple;
       // Second, update the address of buffer
-      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtrStrided(oy, oy,
+      SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtr(oy*NxIn, oy*NxOut,
         std::forward<AccN>(accn)...);
       //Now, you can launch the X convolution
       SeparableSubsampledConvolutionEngine<T, Filtn...
-        >::PerformSubsampledFilteringXRef(Nx, std::forward<AccN>(accn)...);
+        >::PerformSubsampledFilteringXRef(NxIn, std::forward<AccN>(accn)...);
     }
     return 1;
   }

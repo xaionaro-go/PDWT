@@ -72,26 +72,28 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       }
 
       //Now perform X filtering on lowpass Y
-/*      SeparableSubsampledConvolutionEngine2D<T,
+      SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
           >::PerformSubsampledFilteringXRef(
         this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(0),
         this->m_coeff->GetScaleShape(l+1).at(1),
         Accumulator<T,T,T,int>(inlowY, outlowYlowX),
         Accumulator<T,T,T,int>(inlowY,
-          this->m_coeff->GetHighSubspacePtr(l,1)));
+          this->m_coeff->GetHighSubspacePtr(l,0)));
       //Now perform X filtering on highpass Y
       SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
           >::PerformSubsampledFilteringXRef(
         this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(0),
         this->m_coeff->GetScaleShape(l+1).at(1),
         Accumulator<T,T,T,int>(inhighY,
-          this->m_coeff->GetHighSubspacePtr(l,2)),
+          this->m_coeff->GetHighSubspacePtr(l,1)),
         Accumulator<T,T,T,int>(inhighY,
-          this->m_coeff->GetHighSubspacePtr(l,3)));*/
+          this->m_coeff->GetHighSubspacePtr(l,2)));
 
       //Update lowpass input and output, order is important here
       inlow=outlowYlowX;
@@ -100,31 +102,43 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
-    /*std::cout<<"Lowpass is: "<<std::endl;
-    T* ptr=this->m_coeff->GetHalfTmpBuffPtr(0);
+/*    int l=this->m_level;
+    std::cout<<"lowylox is: "<<std::endl;
+    T* ptr=this->m_coeff->GetLowSubspacePtr(l-1);
     for(int j=0; j<4; j++) {
-      for(int i=0; i<8; i++) {
-        ptr[j*8+i]=j;
-        std::cout<<ptr[j*8+i]<<", ";
+      for(int i=0; i<4; i++) {
+        std::cout<<ptr[j*4+i]<<", ";
         
       }
       std::cout<<std::endl;
     }
-    std::cout<<"Highpass is: "<<std::endl;
-    ptr=this->m_coeff->GetHalfTmpBuffPtr(1);
+    std::cout<<"lowyhighx is: "<<std::endl;
+    ptr=this->m_coeff->GetHighSubspacePtr(l-1,0);
     for(int j=0; j<4; j++) {
-      for(int i=0; i<8; i++) {
-        ptr[j*8+i]=0;
-        std::cout<<ptr[j*8+i]<<", ";
+      for(int i=0; i<4; i++) {
+        std::cout<<ptr[j*4+i]<<", ";
+      }
+      std::cout<<std::endl;
+    }
+    std::cout<<"highylowx is: "<<std::endl;
+    ptr=this->m_coeff->GetHighSubspacePtr(l-1,1);
+    for(int j=0; j<4; j++) {
+      for(int i=0; i<4; i++) {
+        std::cout<<ptr[j*4+i]<<", ";
+      }
+      std::cout<<std::endl;
+    }    std::cout<<"highyhighx is: "<<std::endl;
+    ptr=this->m_coeff->GetHighSubspacePtr(l-1,2);
+    for(int j=0; j<4; j++) {
+      for(int i=0; i<4; i++) {
+        std::cout<<ptr[j*4+i]<<", ";
       }
       std::cout<<std::endl;
     }*/
 
-
-
     for (int l=this->m_level; l>0; l--) {
       // Invert X lowpass/highpass filtering for lowpass Y
-      /*SeparableUpsampledConvolutionEngine2D<T,
+      SeparableUpsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringXRef(
@@ -134,7 +148,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l-1).at(1),
           this->m_coeff->GetHalfTmpBuffPtr(0),
           this->m_coeff->GetLowSubspacePtr(l-1),
-          this->m_coeff->GetHighSubspacePtr(l-1,1));
+          this->m_coeff->GetHighSubspacePtr(l-1,0));
 
       // Invert X lowpass/highpass filtering for highpass Y
       SeparableUpsampledConvolutionEngine2D<T,
@@ -146,9 +160,9 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l).at(1),
           this->m_coeff->GetScaleShape(l-1).at(1),
           this->m_coeff->GetHalfTmpBuffPtr(1),
-          this->m_coeff->GetHighSubspacePtr(l-1,2),
-          this->m_coeff->GetHighSubspacePtr(l-1,3));
-*/
+          this->m_coeff->GetHighSubspacePtr(l-1,1),
+          this->m_coeff->GetHighSubspacePtr(l-1,2));
+
       //Update output buffer destination
       T* outlow;
       if (l<=1) {

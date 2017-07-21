@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
       std::cout<<std::endl;
     }
   };
+  auto print2 = [](auto& in){ std::cout<<in<<", "; };
 
 
   // Define input/output
@@ -43,7 +44,7 @@ int main(int argc, char **argv) {
   //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),in.size(),1,1,false,"QSHIFT6",1);
    
   // print coeffs when initialized
-  std::cout<<"Coefficient after initialization (should be 0)"<<std::endl;
+  //std::cout<<"Coefficient after initialization (should be 0)"<<std::endl;
   //std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
   //std::cout<<std::endl;
 
@@ -53,8 +54,8 @@ int main(int argc, char **argv) {
   std::fill(in.begin(),in.end(),0);
 
   // print coeffs
-  std::cout<<"Coefficient after initialization (should be 0)"<<std::endl;
-  //std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print);
+  //std::cout<<"Coefficient after forward tranform"<<std::endl;
+  //std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print2);
   //std::cout<<std::endl;
 
   // perform inverse transform
