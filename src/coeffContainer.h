@@ -53,9 +53,6 @@ class CoeffContainer {
       assert(levelSize>0);
       m_scaleSize.emplace_back(levelSize);
       m_scaleShape.emplace_back(curShape);
-      for(auto a : curShape) {
-        std::cout<<"At scale "<<i<<" shape is "<<a<<std::endl;
-      }
       std::transform(sb,se,sb,divider);
     }
     /** Compute total size in the coeff space.
@@ -302,7 +299,6 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
     auto divider = [](size_t in) {return (in+(in&1))/2;};
     m_tmpSingleBuffSize=this->m_scaleShape.at(0).at(0)*
       divider(this->m_scaleShape.at(0).at(1));
-    std::cout<<"tmpsingle buffer size is "<<m_tmpSingleBuffSize<<std::endl;
     if (this->m_level>1) {
       m_tmpBuffBandOffset=m_tmpSingleBuffSize*2+this->m_scaleSize.at(2);
     } else {

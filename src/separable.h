@@ -489,7 +489,7 @@ class SeparableUpsampledConvolutionEngine2D {
   /// The main method : perform Subsampled convolution on all rows
   template<typename... InN>
   static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
-    int NyIn, int NyOut, T* out, InN&&... inn) {
+    int NyIn, int NyOut, T* out, InN... inn) {
     // We decided to use the tuple trick
     // so that each loop index has its own copy of the accumulator and then
     // can be properly parallelized through openMP for instance
@@ -501,7 +501,7 @@ class SeparableUpsampledConvolutionEngine2D {
       // First make a local iteration copy of the accumulator
       std::tie(inn...) = tuple;
       // Second, update the address of buffer
-      SimpleUpdater<InN...>::Increment(oy*NxIn, std::forward<InN>(inn)...);
+      SimpleUpdater<InN...>::Increment(oy*NxIn, inn...);
       //Now, you can launch the X convolution
       SeparableUpsampledConvolutionEngine<T,Filtn...
           >::PerformUpsampledFilteringXRef(

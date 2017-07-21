@@ -72,7 +72,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       }
 
       //Now perform X filtering on lowpass Y
-      /*SeparableSubsampledConvolutionEngine2D<T,
+/*      SeparableSubsampledConvolutionEngine2D<T,
           typename WaveletSchemeT::f_l,
           typename WaveletSchemeT::f_h
           >::PerformSubsampledFilteringXRef(
@@ -148,7 +148,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetHalfTmpBuffPtr(1),
           this->m_coeff->GetHighSubspacePtr(l-1,2),
           this->m_coeff->GetHighSubspacePtr(l-1,3));
-      */
+*/
       //Update output buffer destination
       T* outlow;
       if (l<=1) {
