@@ -200,7 +200,7 @@ class SubsampledAccumulator {
     m_dstPtr+=dstInc*m_dstStride;
   }
  
-// protected://TODO TN changer
+ protected:
   T* m_dstPtr;
   U m_acc;
   I m_srcStride;

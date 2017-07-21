@@ -300,7 +300,7 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
     m_tmpSingleBuffSize=this->m_scaleShape.at(0).at(0)*
       divider(this->m_scaleShape.at(0).at(1));
     if (this->m_level>1) {
-      m_tmpBuffBandOffset=m_tmpSingleBuffSize*2+this->m_scaleSize.at(2);
+      m_tmpBuffBandOffset=m_tmpSingleBuffSize*2+this->m_scaleSize.at(1);
     } else {
       m_tmpBuffBandOffset=m_tmpSingleBuffSize*2;
     }
@@ -340,8 +340,7 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
    * then reconstruction can go into the third LowTmpBuff, or image level>=1 
    */
   virtual T* GetOutLowTmpBuffPtr(size_t bandIdx=0) {
-    // Layout is  2*scaleSize[1]+scaleSize[2]
-    // lowPassoffset
+    // Layout is defined in constructor
     size_t lowPassOffset = 2*m_tmpSingleBuffSize;
     return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+lowPassOffset;
   }

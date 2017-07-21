@@ -102,39 +102,6 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
-/*    int l=this->m_level;
-    std::cout<<"lowylox is: "<<std::endl;
-    T* ptr=this->m_coeff->GetLowSubspacePtr(l-1);
-    for(int j=0; j<4; j++) {
-      for(int i=0; i<4; i++) {
-        std::cout<<ptr[j*4+i]<<", ";
-        
-      }
-      std::cout<<std::endl;
-    }
-    std::cout<<"lowyhighx is: "<<std::endl;
-    ptr=this->m_coeff->GetHighSubspacePtr(l-1,0);
-    for(int j=0; j<4; j++) {
-      for(int i=0; i<4; i++) {
-        std::cout<<ptr[j*4+i]<<", ";
-      }
-      std::cout<<std::endl;
-    }
-    std::cout<<"highylowx is: "<<std::endl;
-    ptr=this->m_coeff->GetHighSubspacePtr(l-1,1);
-    for(int j=0; j<4; j++) {
-      for(int i=0; i<4; i++) {
-        std::cout<<ptr[j*4+i]<<", ";
-      }
-      std::cout<<std::endl;
-    }    std::cout<<"highyhighx is: "<<std::endl;
-    ptr=this->m_coeff->GetHighSubspacePtr(l-1,2);
-    for(int j=0; j<4; j++) {
-      for(int i=0; i<4; i++) {
-        std::cout<<ptr[j*4+i]<<", ";
-      }
-      std::cout<<std::endl;
-    }*/
 
     for (int l=this->m_level; l>0; l--) {
       // Invert X lowpass/highpass filtering for lowpass Y
@@ -168,7 +135,7 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       if (l<=1) {
         outlow=this->m_image;
       } else {
-        outlow=this->m_coeff->GetLowSubspacePtr(l);
+        outlow=this->m_coeff->GetLowSubspacePtr(l-2);
       }
 
       // Invert Y lowpass/highpass filtering
