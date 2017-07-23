@@ -364,10 +364,105 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
 
+    int l = this->m_level;
+	T* lowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l,0);
+	T* lowYReallowXImag=this->m_coeff->GetLowSubspacePtr(l,1);
+	T* lowYImaglowXReal=this->m_coeff->GetLowSubspacePtr(l,2);
+	T* lowYImaglowXImag=this->m_coeff->GetLowSubspacePtr(l,3);
+
     for (int l=this->m_level; l>1; l--) {
+
+	  //lowYReallowXReal=this->m_coeff->GetOutLowTmpBuffPtr(0);
+	  //lowYReallowXImag=this->m_coeff->GetOutLowTmpBuffPtr(1);
+	  //lowYImaglowXReal=this->m_coeff->GetOutLowTmpBuffPtr(2);
+	  //lowYImaglowXImag=this->m_coeff->GetOutLowTmpBuffPtr(3);
 
     }
 
+    l=1;
+    if (this->m_level>=1) {
+
+	  // Merge Band 0 and 1 in the X direction for lowYReal
+	  SeparableUpsampledConvolutionEngine<T,
+		  typename DTWaveletSchemeT::i_l0r,
+		  typename DTWaveletSchemeT::i_l0i,
+		  typename DTWaveletSchemeT::i_h0r,
+		  typename DTWaveletSchemeT::i_h0i
+		  >::PerformUpsampledFilteringXRef(
+		this->m_coeff->GetScaleShape(l).at(0),
+		this->m_coeff->GetScaleShape(l-1).at(0),
+		  SubsampledAccumulator<T,T,int,int,
+			typename DTWaveletSchemeT::i_l0r,
+			typename DTWaveletSchemeT::i_l0i,
+			typename DTWaveletSchemeT::i_h0r,
+			typename DTWaveletSchemeT::i_h0i>(
+		  this->m_coeff->GetHalfTmpBuffPtr(0,0)),//LowYReal
+		lowYReallowXReal,//in: LowRealYLowRealX
+		lowYReallowXImag,//in: LowRealYLowImagX
+		this->m_coeff->GetHighSubspacePtr(l-1,0,0),//in: LowRealYHighRealX
+		this->m_coeff->GetHighSubspacePtr(l-1,0,1));//in: LowRealYHighImagX
+
+      // Merge Band 0 and 1 in the X direction for highYReal
+	  SeparableUpsampledConvolutionEngine<T,
+		  typename DTWaveletSchemeT::i_l0r,
+		  typename DTWaveletSchemeT::i_l0i,
+		  typename DTWaveletSchemeT::i_h0r,
+		  typename DTWaveletSchemeT::i_h0i
+		  >::PerformUpsampledFilteringXRef(
+		this->m_coeff->GetScaleShape(l).at(0),
+		this->m_coeff->GetScaleShape(l-1).at(0),
+		  SubsampledAccumulator<T,T,int,int,
+			typename DTWaveletSchemeT::i_l0r,
+			typename DTWaveletSchemeT::i_l0i,
+			typename DTWaveletSchemeT::i_h0r,
+			typename DTWaveletSchemeT::i_h0i>(
+		  this->m_coeff->GetHalfTmpBuffPtr(1,0)),//HighYReal
+		this->m_coeff->GetHighSubspacePtr(l-1,1,0),//in: HighRealYLowRealX
+		this->m_coeff->GetHighSubspacePtr(l-1,1,1),//in: HighRealYLowImagX
+		this->m_coeff->GetHighSubspacePtr(l-1,2,0),//in: HighRealYHighRealX
+		this->m_coeff->GetHighSubspacePtr(l-1,2,1));//in: HighRealYHighImagX
+
+	  // Merge Band 2 and 3 in the X direction for lowYImag
+	  SeparableUpsampledConvolutionEngine<T,
+		  typename DTWaveletSchemeT::i_l0r,
+		  typename DTWaveletSchemeT::i_l0i,
+		  typename DTWaveletSchemeT::i_h0r,
+		  typename DTWaveletSchemeT::i_h0i
+		>::PerformUpsampledFilteringXRef(
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l-1).at(0),
+			SubsampledAccumulator<T,T,int,int,
+			  typename DTWaveletSchemeT::i_l0r,
+			  typename DTWaveletSchemeT::i_l0i,
+			  typename DTWaveletSchemeT::i_h0r,
+			  typename DTWaveletSchemeT::i_h0i>(
+			this->m_coeff->GetHalfTmpBuffPtr(0,1)),//LowYImag
+		  lowYImaglowXReal,//in: LowImagYLowRealX
+		  lowYImaglowXImag,//in: LowImagYLowImagX
+		  this->m_coeff->GetHighSubspacePtr(l-1,0,2),//in: LowImagYHighRealX
+		  this->m_coeff->GetHighSubspacePtr(l-1,0,3));//in: LowImagYHighImagX
+
+	  // Merge Band 2 and 3 in the X direction for highYImag
+	  SeparableUpsampledConvolutionEngine<T,
+		  typename DTWaveletSchemeT::i_l0r,
+		  typename DTWaveletSchemeT::i_l0i,
+		  typename DTWaveletSchemeT::i_h0r,
+		  typename DTWaveletSchemeT::i_h0i
+		>::PerformUpsampledFilteringXRef(
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l-1).at(0),
+			SubsampledAccumulator<T,T,int,int,
+			  typename DTWaveletSchemeT::i_l0r,
+			  typename DTWaveletSchemeT::i_l0i,
+			  typename DTWaveletSchemeT::i_h0r,
+			  typename DTWaveletSchemeT::i_h0i>(
+			this->m_coeff->GetHalfTmpBuffPtr(1,1)),//HighYImag
+		  this->m_coeff->GetHighSubspacePtr(l-1,1,2),//in: HighImagYLowRealX
+		  this->m_coeff->GetHighSubspacePtr(l-1,1,3),//in: HighImagYLowImagX
+		  this->m_coeff->GetHighSubspacePtr(l-1,2,2),//in: HighImagYHighRealX
+		  this->m_coeff->GetHighSubspacePtr(l-1,2,3));//in: HighImagYHighImagX
+	  T* outlow = this->m_image;
+	  }
 	// Invert X lowpass/highpass filtering for lowpass Y
 	/*SeparableUpsampledConvolutionEngine2D<T,
         typename DTWaveletSchemeT::i_l0r,
