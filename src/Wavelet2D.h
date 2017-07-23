@@ -209,79 +209,162 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
     /**
      * At first step, input is simply input image
      * We chose to filter the most memory friendly direction at the end in
-     * order to mimic what may be done in overcomplete wavelet systems, where
-     * data size grows along filtering steps
+     * order to maximize performances as data size grows along filtering steps
      */
     T* inlow = this->m_image;
-    T* outlowY = this->m_coeff->GetHalfTmpBuffPtr(0);
-    T* outhighY = this->m_coeff->GetHalfTmpBuffPtr(1);
+	T* outlowYReallowXReal;
+	T* outlowYReallowXImag;
+	T* outlowYImaglowXReal;
+	T* outlowYImaglowXImag;
     int l = 0;
 
-	//Y filtering
-	/*SeparableSubsampledConvolutionEngine2D<T,
-		typename WaveletSchemeT::f_l0r,
-		typename WaveletSchemeT::f_h0i,
-		typename WaveletSchemeT::f_h0r,
-		typename WaveletSchemeT::f_h0i
-		:PerformSubsampledFilteringYRef(
-	  this->m_coeff->GetScaleShape(l).at(0),
-	  this->m_coeff->GetScaleShape(l).at(1),
-	  Accumulator<T,T,T,int>(inlow, outlowY,
+    //Building the quad tree
+    if (this->m_level>=1) {
+      // Divide the tree in two branch along the Y direction: Real and Imag
+	  SeparableSubsampledConvolutionEngine2D<T,
+		  typename DTWaveletSchemeT::f_l0r,
+		  typename DTWaveletSchemeT::f_l0i,
+		  typename DTWaveletSchemeT::f_h0r,
+		  typename DTWaveletSchemeT::f_h0i
+		  >::PerformSubsampledFilteringYRef(
 		this->m_coeff->GetScaleShape(l).at(0),
-		this->m_coeff->GetScaleShape(l).at(0)),
-	  Accumulator<T,T,T,int>(inlow, outhighY,
+		this->m_coeff->GetScaleShape(l).at(1),
+		Accumulator<T,T,T,int>(inlow,
+          this->m_coeff->GetHalfTmpBuffPtr(0,0),//LowYReal
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l).at(0)),
+		Accumulator<T,T,T,int>(inlow,
+          this->m_coeff->GetHalfTmpBuffPtr(0,1),//LowYImag
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l).at(0)),
+		Accumulator<T,T,T,int>(inlow,
+          this->m_coeff->GetHalfTmpBuffPtr(1,0),//HighYReal
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l).at(0)),
+		Accumulator<T,T,T,int>(inlow,
+          this->m_coeff->GetHalfTmpBuffPtr(1,1),//HighYImag
+		  this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l).at(0)));
+
+	  if (l+1==this->m_level) {
+		outlowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l,0);
+		outlowYReallowXImag=this->m_coeff->GetLowSubspacePtr(l,1);
+		outlowYImaglowXReal=this->m_coeff->GetLowSubspacePtr(l,2);
+		outlowYImaglowXImag=this->m_coeff->GetLowSubspacePtr(l,3);
+	  } else {
+		outlowYReallowXReal=this->m_coeff->GetOutLowTmpBuffPtr(0);
+		outlowYReallowXImag=this->m_coeff->GetOutLowTmpBuffPtr(1);
+		outlowYImaglowXReal=this->m_coeff->GetOutLowTmpBuffPtr(2);
+		outlowYImaglowXImag=this->m_coeff->GetOutLowTmpBuffPtr(3);
+	  }
+
+	  //Now divide the tree in two branch along the X direction: Real in
+      //First branch, first job: lowPassYReal -> YReal and YImag
+	  SeparableSubsampledConvolutionEngine2D<T,
+		  typename DTWaveletSchemeT::f_l0r,
+		  typename DTWaveletSchemeT::f_l0i,
+		  typename DTWaveletSchemeT::f_h0r,
+		  typename DTWaveletSchemeT::f_h0i
+		  >::PerformSubsampledFilteringXRef(
 		this->m_coeff->GetScaleShape(l).at(0),
-		this->m_coeff->GetScaleShape(l).at(0)));*/
+		this->m_coeff->GetScaleShape(l+1).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(1),
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,0),//in: LowYReal
+          outlowYReallowXReal),//out: LowYRealLowXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,0),//in: LowYReal
+		  outlowYReallowXImag),//out: LowYRealLowXImag
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,0),//in: LowYReal
+          this->m_coeff->GetHighSubspacePtr(l,0,0)),//out: LowYRealHighXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,0),//in: LowYReal
+		  this->m_coeff->GetHighSubspacePtr(l,0,1)));//out: LowYRealHighXImag
 
-	T* inlowY = outlowY;
-	T* inhighY = outhighY;
-	T* outlowYlowX;
+      //First branch, second job: highPassYReal -> YReal and YImag
+	  SeparableSubsampledConvolutionEngine2D<T,
+		  typename DTWaveletSchemeT::f_l0r,
+		  typename DTWaveletSchemeT::f_l0i,
+		  typename DTWaveletSchemeT::f_h0r,
+		  typename DTWaveletSchemeT::f_h0i
+		  >::PerformSubsampledFilteringXRef(
+		this->m_coeff->GetScaleShape(l).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(1),
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,0),//in: HighYReal
+          this->m_coeff->GetHighSubspacePtr(l,1,0)),//out: HighYRealLowXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,0),//in: HighYReal
+		  this->m_coeff->GetHighSubspacePtr(l,1,1)),//out: HighYRealLowXImag
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,0),//in: HighYReal
+          this->m_coeff->GetHighSubspacePtr(l,2,0)),//out: HighYRealHighXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,0),//in: HighYReal
+		  this->m_coeff->GetHighSubspacePtr(l,2,1)));//out: HighYRealHighXImag
 
-	if (l+1==this->m_level) {
-	  outlowYlowX=this->m_coeff->GetLowSubspacePtr(l);
-	} else {
-	  outlowYlowX=this->m_coeff->GetOutLowTmpBuffPtr();
-	}
+	  //Now divide the tree in two branch along the X direction: Imag in
+      //Second branch, first job: lowPassYImag -> YReal and YImag
+	  SeparableSubsampledConvolutionEngine2D<T,
+		  typename DTWaveletSchemeT::f_l0r,
+		  typename DTWaveletSchemeT::f_l0i,
+		  typename DTWaveletSchemeT::f_h0r,
+		  typename DTWaveletSchemeT::f_h0i
+		  >::PerformSubsampledFilteringXRef(
+		this->m_coeff->GetScaleShape(l).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(1),
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,1),//in: LowYImag
+          outlowYImaglowXReal),//out: LowYImagLowXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,1),//in: LowYImag
+		  outlowYImaglowXImag),//out: LowYImagLowXImag
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,1),//in: LowYImag
+          this->m_coeff->GetHighSubspacePtr(l,0,2)),//out: LowYRealHighXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(0,1),//in: LowYImag
+		  this->m_coeff->GetHighSubspacePtr(l,0,3)));//out: LowYRealHighXImag
 
-	//Now perform X filtering on lowpass Y
-	/*SeparableSubsampledConvolutionEngine2D<T,
-		typename WaveletSchemeT::f_l0r,
-		typename WaveletSchemeT::f_h0i,
-		typename WaveletSchemeT::f_h0r,
-		typename WaveletSchemeT::f_h0i
-		>::PerformSubsampledFilteringXRef(
-	  this->m_coeff->GetScaleShape(l).at(0),
-	  this->m_coeff->GetScaleShape(l+1).at(0),
-	  this->m_coeff->GetScaleShape(l+1).at(1),
-	  Accumulator<T,T,T,int>(inlowY, outlowYlowX),
-	  Accumulator<T,T,T,int>(inlowY,
-		this->m_coeff->GetHighSubspacePtr(l,0)));
-	//Now perform X filtering on highpass Y
-	SeparableSubsampledConvolutionEngine2D<T,
-		typename WaveletSchemeT::f_l0r,
-		typename WaveletSchemeT::f_h0i,
-		typename WaveletSchemeT::f_h0r,
-		typename WaveletSchemeT::f_h0i
-		>::PerformSubsampledFilteringXRef(
-	  this->m_coeff->GetScaleShape(l).at(0),
-	  this->m_coeff->GetScaleShape(l+1).at(0),
-	  this->m_coeff->GetScaleShape(l+1).at(1),
-	  Accumulator<T,T,T,int>(inhighY,
-		this->m_coeff->GetHighSubspacePtr(l,1)),
-	  Accumulator<T,T,T,int>(inhighY,
-		this->m_coeff->GetHighSubspacePtr(l,2)));*/
+      //Second branch, second job: highPassYImag -> YReal and YImag
+	  SeparableSubsampledConvolutionEngine2D<T,
+		  typename DTWaveletSchemeT::f_l0r,
+		  typename DTWaveletSchemeT::f_l0i,
+		  typename DTWaveletSchemeT::f_h0r,
+		  typename DTWaveletSchemeT::f_h0i
+		  >::PerformSubsampledFilteringXRef(
+		this->m_coeff->GetScaleShape(l).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(0),
+		this->m_coeff->GetScaleShape(l+1).at(1),
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,1),//in: HighYImag
+          this->m_coeff->GetHighSubspacePtr(l,1,2)),//out: HighYRealLowXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,1),//in: HighYImag
+		  this->m_coeff->GetHighSubspacePtr(l,1,3)),//out: HighYRealLowXImag
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,1),//in: HighYImag
+          this->m_coeff->GetHighSubspacePtr(l,2,2)),//out: HighYRealHighXReal
+		Accumulator<T,T,T,int>(
+          this->m_coeff->GetHalfTmpBuffPtr(1,1),//in: HighYImag
+		  this->m_coeff->GetHighSubspacePtr(l,2,3)));//out: HighYRealHighXImag
 
-    for (int l=0; l<this->m_level; l++) {
+     }
+
+    for (int l=1; l<this->m_level; l++) {
 
 	//Update lowpass input and output, order is important here
-	inlow=outlowYlowX;
+	//inlow=outlowYlowX;
     }
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
 
-    for (int l=this->m_level; l>0; l--) {
+    for (int l=this->m_level; l>1; l--) {
 
     }
 
