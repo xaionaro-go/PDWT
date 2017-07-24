@@ -361,15 +361,16 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 
 
     // map the set of filtered signals to the real DTCWT mixture
-    //this->m_coeff->WaveletToCpx();
+    this->m_coeff->WaveletToCpx();
 
     return 1;
   }
+
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
 
     // map the set of DTCWT coefficients to a simple set of filtered signals
-    //this->m_coeff->CpxToWavelet();
+    this->m_coeff->CpxToWavelet();
 
     int l = this->m_level;
 	T* lowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l-1,0);

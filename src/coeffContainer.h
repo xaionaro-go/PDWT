@@ -11,6 +11,9 @@
 #include <numeric>
 #include <vector>
 
+// Boost
+#include <boost/iterator/zip_iterator.hpp>
+
 // Local
 #include "dualTreeLinearOp.h"
 
@@ -112,6 +115,24 @@ class CoeffContainer {
     //std::cout<<"scaleOffset is "<<scaleOffset<<std::endl;
     //std::cout<<"subband offset is "<<subbandOffset<<std::endl;
 	return  m_coeff.data()+bandOffset+scaleOffset+subbandOffset;
+  }
+
+  /// Apply functor to all complex coefficients (as a tuple)
+  template<class Func>
+  void ApplyCpxFunctor(Func cpxFunctor) {
+    auto dtBegin = m_coeff.begin();
+
+    for(size_t bandIdx=0; bandIdx<m_nbBand; bandIdx++) {
+
+      auto bandBegin = dtBegin+2*bandIdx*m_bandSize;
+      //Build a real/imag pair-iterator using zip
+      auto cpxBegin(boost::make_zip_iterator(boost::make_tuple(
+        bandBegin, bandBegin+m_bandSize)));
+      auto cpxEnd(boost::make_zip_iterator(boost::make_tuple(
+        bandBegin+m_bandSize, bandBegin+2*m_bandSize)));
+
+      std::for_each(cpxBegin, cpxEnd, cpxFunctor);
+    }
   }
 
   /// Return a pointer to a temporary buffer
@@ -391,11 +412,30 @@ class DTCoeffContainer2D : public CoeffContainer2D<T,SubContainerT> {
   /// Return wether we are using the dual tree scheme or not
   virtual bool DoUseDualTreeBand() const override { return true; };
 
+  /// Apply functor to all complex coefficients (as a tuple)
+  template<class Func>
+  void ApplyBandFunctor(const Func& bFunctor) {
+    auto dtBegin = this->m_coeff.begin();
+    size_t bSize = this->m_bandSize;
+
+    //Build a band 0/1/2/3 4-uplet iterator using zip
+    auto bBegin = boost::make_zip_iterator(boost::make_tuple(
+      dtBegin,
+      dtBegin+bSize,
+      dtBegin+2*bSize,
+      dtBegin+3*bSize));
+    auto bEnd = boost::make_zip_iterator(boost::make_tuple(
+      dtBegin+bSize,
+      dtBegin+2*bSize,
+      dtBegin+3*bSize,
+      dtBegin+4*bSize));
+
+    std::for_each(bBegin, bEnd, bFunctor);
+  }
+
   /// Make the magical mixture of negative frequency cancelling signals
   int WaveletToCpx() {
-    std::transform(this->m_coeff.begin(),this->m_coeff.end(),
-      this->m_coeff.begin(),
-      [](auto in) { return in*m_normalizationRatio; });
+    ApplyBandFunctor(WaveletToCpx2D<T>(m_normalizationRatio));
     return 1;
   }
 

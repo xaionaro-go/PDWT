@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   auto modify = [sizeX,sizeY](auto* ptr) {
     for(int j=0; j<sizeY; j++) {
       for(int i=0; i<sizeX; i++) {
-        ptr[j*sizeX+i]=i;
+        ptr[j*sizeX+i]=i+8*j;
       }
       std::cout<<std::endl;
     }
@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
   // Define input/output
   std::vector<T> in(sizeX*sizeY);
   //std::iota(in.begin(), in.end(),0);
-  std::fill(in.begin(), in.end(), 2);
-  //modify(in.data());
+  //std::fill(in.begin(), in.end(), 2);
+  modify(in.data());
 
   std::cout<<"Input is: ";
   print(in.data());
@@ -64,9 +64,9 @@ int main(int argc, char **argv) {
   std::fill(in.begin(),in.end(),0);
 
   // print coeffs
-  std::cout<<"Coefficient after forward tranform"<<std::endl;
-  std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print2);
-  std::cout<<std::endl;
+  //std::cout<<"Coefficient after forward tranform"<<std::endl;
+  //std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print2);
+  //std::cout<<std::endl;
 
   // perform inverse transform
   w.backward(); 

@@ -19,18 +19,18 @@
  	 	 	 	 	 	 1 & 0 & 0 & -1 \end{pmatrix} \f$
  *
  * \author Thibault Notargiacomo
- *
+ */
 template<typename T>
 struct WaveletToCpx2D {
   WaveletToCpx2D( T ratio ) : m_ratio( ratio ) {}
   template <class Tuple>
   void operator()(Tuple in) const {
-    T tmp = ( boost::get<0>(in) + thrust::get<3>(in) ) * m_ratio;
-    boost::get<3>(in) 	= ( thrust::get<0>(in) - thrust::get<3>(in) ) * m_ratio;
-    boost::get<0>(in) 	= tmp;
-    tmp 				= ( boost::get<1>(in) + thrust::get<2>(in) ) * m_ratio;
-    boost::get<2>(in) 	= ( thrust::get<1>(in) - thrust::get<2>(in) ) * m_ratio;
-    boost::get<1>(in) 	= tmp;
+    T tmp = (boost::get<0>(in)+boost::get<3>(in)) * m_ratio;
+    boost::get<3>(in) = (boost::get<0>(in)-boost::get<3>(in))*m_ratio;
+    boost::get<0>(in) = tmp;
+    tmp               = (boost::get<1>(in)+boost::get<2>(in))*m_ratio;
+    boost::get<2>(in) = (boost::get<1>(in)-boost::get<2>(in))*m_ratio;
+    boost::get<1>(in) = tmp;
   }
   const T m_ratio;
 };
