@@ -351,24 +351,31 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		Accumulator<T,T,T,int>(
           this->m_coeff->GetHalfTmpBuffPtr(1,1),//in: HighYImag
 		  this->m_coeff->GetHighSubspacePtr(l,2,3)));//out: HighYRealHighXImag
-
      }
 
     for (int l=1; l<this->m_level; l++) {
 
-	//Update lowpass input and output, order is important here
-	//inlow=outlowYlowX;
+	  //Update lowpass input and output, order is important here
+	  //inlow=outlowYlowX;
     }
+
+
+    // map the set of filtered signals to the real DTCWT mixture
+    //this->m_coeff->WaveletToCpx();
+
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transform
   virtual int backward() {
 
+    // map the set of DTCWT coefficients to a simple set of filtered signals
+    //this->m_coeff->CpxToWavelet();
+
     int l = this->m_level;
-	T* lowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l,0);
-	T* lowYReallowXImag=this->m_coeff->GetLowSubspacePtr(l,1);
-	T* lowYImaglowXReal=this->m_coeff->GetLowSubspacePtr(l,2);
-	T* lowYImaglowXImag=this->m_coeff->GetLowSubspacePtr(l,3);
+	T* lowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l-1,0);
+	T* lowYReallowXImag=this->m_coeff->GetLowSubspacePtr(l-1,1);
+	T* lowYImaglowXReal=this->m_coeff->GetLowSubspacePtr(l-1,2);
+	T* lowYImaglowXImag=this->m_coeff->GetLowSubspacePtr(l-1,3);
 
     for (int l=this->m_level; l>1; l--) {
 
@@ -383,7 +390,7 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
     if (this->m_level>=1) {
 
 	  // Merge Band 0 and 1 in the X direction for lowYReal
-	  SeparableUpsampledConvolutionEngine<T,
+	  SeparableUpsampledConvolutionEngine2D<T,
 		  typename DTWaveletSchemeT::i_l0r,
 		  typename DTWaveletSchemeT::i_l0i,
 		  typename DTWaveletSchemeT::i_h0r,
@@ -391,19 +398,16 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  >::PerformUpsampledFilteringXRef(
 		this->m_coeff->GetScaleShape(l).at(0),
 		this->m_coeff->GetScaleShape(l-1).at(0),
-		  SubsampledAccumulator<T,T,int,int,
-			typename DTWaveletSchemeT::i_l0r,
-			typename DTWaveletSchemeT::i_l0i,
-			typename DTWaveletSchemeT::i_h0r,
-			typename DTWaveletSchemeT::i_h0i>(
-		  this->m_coeff->GetHalfTmpBuffPtr(0,0)),//LowYReal
+		this->m_coeff->GetScaleShape(l).at(1),
+		this->m_coeff->GetScaleShape(l-1).at(1),
+		this->m_coeff->GetHalfTmpBuffPtr(0,0),//LowYReal
 		lowYReallowXReal,//in: LowRealYLowRealX
 		lowYReallowXImag,//in: LowRealYLowImagX
 		this->m_coeff->GetHighSubspacePtr(l-1,0,0),//in: LowRealYHighRealX
 		this->m_coeff->GetHighSubspacePtr(l-1,0,1));//in: LowRealYHighImagX
 
       // Merge Band 0 and 1 in the X direction for highYReal
-	  SeparableUpsampledConvolutionEngine<T,
+	  SeparableUpsampledConvolutionEngine2D<T,
 		  typename DTWaveletSchemeT::i_l0r,
 		  typename DTWaveletSchemeT::i_l0i,
 		  typename DTWaveletSchemeT::i_h0r,
@@ -411,19 +415,16 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  >::PerformUpsampledFilteringXRef(
 		this->m_coeff->GetScaleShape(l).at(0),
 		this->m_coeff->GetScaleShape(l-1).at(0),
-		  SubsampledAccumulator<T,T,int,int,
-			typename DTWaveletSchemeT::i_l0r,
-			typename DTWaveletSchemeT::i_l0i,
-			typename DTWaveletSchemeT::i_h0r,
-			typename DTWaveletSchemeT::i_h0i>(
-		  this->m_coeff->GetHalfTmpBuffPtr(1,0)),//HighYReal
+		this->m_coeff->GetScaleShape(l).at(1),
+		this->m_coeff->GetScaleShape(l-1).at(1),
+		this->m_coeff->GetHalfTmpBuffPtr(1,0),//HighYReal
 		this->m_coeff->GetHighSubspacePtr(l-1,1,0),//in: HighRealYLowRealX
 		this->m_coeff->GetHighSubspacePtr(l-1,1,1),//in: HighRealYLowImagX
 		this->m_coeff->GetHighSubspacePtr(l-1,2,0),//in: HighRealYHighRealX
 		this->m_coeff->GetHighSubspacePtr(l-1,2,1));//in: HighRealYHighImagX
 
 	  // Merge Band 2 and 3 in the X direction for lowYImag
-	  SeparableUpsampledConvolutionEngine<T,
+	  SeparableUpsampledConvolutionEngine2D<T,
 		  typename DTWaveletSchemeT::i_l0r,
 		  typename DTWaveletSchemeT::i_l0i,
 		  typename DTWaveletSchemeT::i_h0r,
@@ -431,19 +432,16 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		>::PerformUpsampledFilteringXRef(
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
-			SubsampledAccumulator<T,T,int,int,
-			  typename DTWaveletSchemeT::i_l0r,
-			  typename DTWaveletSchemeT::i_l0i,
-			  typename DTWaveletSchemeT::i_h0r,
-			  typename DTWaveletSchemeT::i_h0i>(
-			this->m_coeff->GetHalfTmpBuffPtr(0,1)),//LowYImag
+		  this->m_coeff->GetScaleShape(l).at(1),
+		  this->m_coeff->GetScaleShape(l-1).at(1),
+          this->m_coeff->GetHalfTmpBuffPtr(0,1),//LowYImag
 		  lowYImaglowXReal,//in: LowImagYLowRealX
 		  lowYImaglowXImag,//in: LowImagYLowImagX
 		  this->m_coeff->GetHighSubspacePtr(l-1,0,2),//in: LowImagYHighRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,0,3));//in: LowImagYHighImagX
 
 	  // Merge Band 2 and 3 in the X direction for highYImag
-	  SeparableUpsampledConvolutionEngine<T,
+	  SeparableUpsampledConvolutionEngine2D<T,
 		  typename DTWaveletSchemeT::i_l0r,
 		  typename DTWaveletSchemeT::i_l0i,
 		  typename DTWaveletSchemeT::i_h0r,
@@ -451,12 +449,9 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		>::PerformUpsampledFilteringXRef(
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
-			SubsampledAccumulator<T,T,int,int,
-			  typename DTWaveletSchemeT::i_l0r,
-			  typename DTWaveletSchemeT::i_l0i,
-			  typename DTWaveletSchemeT::i_h0r,
-			  typename DTWaveletSchemeT::i_h0i>(
-			this->m_coeff->GetHalfTmpBuffPtr(1,1)),//HighYImag
+          this->m_coeff->GetScaleShape(l).at(1),
+		  this->m_coeff->GetScaleShape(l-1).at(1),
+	      this->m_coeff->GetHalfTmpBuffPtr(1,1),//HighYImag
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,2),//in: HighImagYLowRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,3),//in: HighImagYLowImagX
 		  this->m_coeff->GetHighSubspacePtr(l-1,2,2),//in: HighImagYHighRealX
@@ -474,7 +469,7 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  typename DTWaveletSchemeT::i_h0r,
 		  typename DTWaveletSchemeT::i_h0i
 		>::PerformUpsampledFilteringYRef(
-		this->m_coeff->GetScaleShape(l).at(0),
+		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
 		  this->m_coeff->GetScaleShape(l-1).at(1),
@@ -492,10 +487,15 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
   }
 };
 
+/// Convenient type alias
+template<typename T>
+using PackedDTContainer2D =
+  DTCoeffContainer2D<T,std::vector<T>>;
+
 // Aliasing ugly types into more simple ones
-//template<typename T>
-//using dtwAnto97QSHIFT6_2D = 
-//  DTWavelet2D<T,PackedDTContainer2D<T>,dtwAnto97QSHIFT6<T>>;
+template<typename T>
+using dtwAnto97QSHIFT6_2D = 
+  DTWavelet2D<T,PackedDTContainer2D<T>,dtwAnto97QSHIFT6<T>>;
 
 /** \struct DB2DWt
  * \brief Utility struct that allow to instanciate all 2D wavelets at once
@@ -511,7 +511,7 @@ struct DB2DWt {
  Anto97_BiOrth_2D<T> anto97_BiOrth_2D;
  QSHIFT6_Orth_2D<T> QShift6_Orth_2D;
  REVERSE_QSHIFT6_Orth_2D<T> Reverse_Qshift6_Orth_2D;
-// dtwAnto97QSHIFT6_2D<T> dtwAnto97QShift6_2D; 
+ dtwAnto97QSHIFT6_2D<T> dtwAnto97QShift6_2D; 
 };
 
 #endif //WAVELET2D_H

@@ -290,15 +290,22 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
 
   /// Allocating constructor
   CoeffContainer2D(std::vector<size_t> size, int nlevel) {
+    Initialize2DContainer(size, nlevel);
+  }
+
+  /// Defaulted Destructor
+  virtual ~CoeffContainer2D()=default;
+
+  /// Initializes both sizes and buffers
+  void Initialize2DContainer(std::vector<size_t>& size, int nlevel) {
     this->InitializeSizes(size, nlevel);
     /**
      * tmp buffer should be able to store output of single Y filtering,
      * size is initiale size where only second dimension has been divided
      * by 2
      */
-    auto divider = [](size_t in) {return (in+(in&1))/2;};
     m_tmpSingleBuffSize=this->m_scaleShape.at(0).at(0)*
-      divider(this->m_scaleShape.at(0).at(1));
+      this->m_scaleShape.at(1).at(1);
     if (this->m_level>1) {
       m_tmpBuffBandOffset=m_tmpSingleBuffSize*2+this->m_scaleSize.at(1);
     } else {
@@ -309,9 +316,6 @@ class CoeffContainer2D : public CoeffContainer<T,SubContainerT> {
     // Allocate temporary buffer
     this->AllocateTmpBuffer();
   }
-
-  /// Defaulted Destructor
-  virtual ~CoeffContainer2D()=default;
 
   /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const override { return m_dimensions; };
@@ -378,11 +382,7 @@ class DTCoeffContainer2D : public CoeffContainer2D<T,SubContainerT> {
 
   /// Allocating constructor
   DTCoeffContainer2D(std::vector<size_t> size, int nlevel) {
-    this->InitializeSizes(size, nlevel);
-    // Allocate memory
-    this->AllocateMainBuffer();
-    // Allocate temporary buffer
-    this->AllocateTmpBuffer();
+    this->Initialize2DContainer(size, nlevel);
   }
 
   /// Defaulted Destructor
