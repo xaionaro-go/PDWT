@@ -461,59 +461,29 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,3),//in: HighImagYLowImagX
 		  this->m_coeff->GetHighSubspacePtr(l-1,2,2),//in: HighImagYHighRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,2,3));//in: HighImagYHighImagX
-	  T* outlow = this->m_image;
-	  }
-	// Invert X lowpass/highpass filtering for lowpass Y
-	/*SeparableUpsampledConvolutionEngine2D<T,
-        typename DTWaveletSchemeT::i_l0r,
-        typename DTWaveletSchemeT::i_l0i,
-        typename DTWaveletSchemeT::i_h0r,
-        typename DTWaveletSchemeT::i_h0i
-	  >::PerformUpsampledFilteringXRef(
+
+      /****************************
+       * Second Part: Y filtering
+       ****************************/
+      T* outlow = this->m_image;
+	  
+      // Now invert Y filtering, and merge everything
+	  SeparableUpsampledConvolutionEngine2D<T,
+		  typename DTWaveletSchemeT::i_l0r,
+		  typename DTWaveletSchemeT::i_l0i,
+		  typename DTWaveletSchemeT::i_h0r,
+		  typename DTWaveletSchemeT::i_h0i
+		>::PerformUpsampledFilteringYRef(
 		this->m_coeff->GetScaleShape(l).at(0),
-		this->m_coeff->GetScaleShape(l-1).at(0),
-		this->m_coeff->GetScaleShape(l).at(1),
-		this->m_coeff->GetScaleShape(l-1).at(1),
-		this->m_coeff->GetHalfTmpBuffPtr(0),
-		this->m_coeff->GetLowSubspacePtr(l-1),
-		this->m_coeff->GetHighSubspacePtr(l-1,0));
-
-	// Invert X lowpass/highpass filtering for highpass Y
-	SeparableUpsampledConvolutionEngine2D<T,
-		typename WaveletSchemeT::i_l,
-		typename WaveletSchemeT::i_h
-	  >::PerformUpsampledFilteringXRef(
-		this->m_coeff->GetScaleShape(l).at(0),
-		this->m_coeff->GetScaleShape(l-1).at(0),
-		this->m_coeff->GetScaleShape(l).at(1),
-		this->m_coeff->GetScaleShape(l-1).at(1),
-		this->m_coeff->GetHalfTmpBuffPtr(1),
-		this->m_coeff->GetHighSubspacePtr(l-1,1),
-		this->m_coeff->GetHighSubspacePtr(l-1,2));
-
-	//Update output buffer destination
-	T* outlow;
-	if (l<=1) {
-	  outlow=this->m_image;
-	} else {
-	  outlow=this->m_coeff->GetLowSubspacePtr(l-2);
-	}
-
-	// Invert Y lowpass/highpass filtering
-	SeparableUpsampledConvolutionEngine2D<T,
-        typename DTWaveletSchemeT::i_l0r,
-        typename DTWaveletSchemeT::i_l0i,
-        typename DTWaveletSchemeT::i_h0r,
-        typename DTWaveletSchemeT::i_h0i
-	  >::PerformUpsampledFilteringYRef(
-		this->m_coeff->GetScaleShape(l).at(0),
-		this->m_coeff->GetScaleShape(l-1).at(0),
-		this->m_coeff->GetScaleShape(l).at(1),
-		this->m_coeff->GetScaleShape(l-1).at(1),
-		outlow,
-		this->m_coeff->GetHalfTmpBuffPtr(0),
-		this->m_coeff->GetHalfTmpBuffPtr(1));*/
-
+		  this->m_coeff->GetScaleShape(l-1).at(0),
+		  this->m_coeff->GetScaleShape(l).at(1),
+		  this->m_coeff->GetScaleShape(l-1).at(1),
+		  outlow,
+		  this->m_coeff->GetHalfTmpBuffPtr(0,0),//LowYReal
+		  this->m_coeff->GetHalfTmpBuffPtr(0,1),//LowYImag
+		  this->m_coeff->GetHalfTmpBuffPtr(1,0),//HighYReal
+		  this->m_coeff->GetHalfTmpBuffPtr(1,1));//HighYImag
+    }
     return 1;
   }
   /// Inverse of the wavelet tranform
