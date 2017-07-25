@@ -508,8 +508,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
     // map the set of DTCWT coefficients to a simple set of filtered signals
     this->m_coeff->CpxToWavelet();
 
-    int l = this->m_level;
-
     for (int l=this->m_level; l>1; l--) {
       for (int bIdx : {0,2} ) {
 		// Perform X filtering on band bIdx, low Y
@@ -592,11 +590,12 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
       }
     }
 
+    int l=1;
 	T* lowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l-1,0);
 	T* lowYReallowXImag=this->m_coeff->GetLowSubspacePtr(l-1,1);
 	T* lowYImaglowXReal=this->m_coeff->GetLowSubspacePtr(l-1,2);
 	T* lowYImaglowXImag=this->m_coeff->GetLowSubspacePtr(l-1,3);
-    l=1;
+    
     if (this->m_level>=1) {
 
 	  // Merge Band 0 and 1 in the X direction for lowYReal

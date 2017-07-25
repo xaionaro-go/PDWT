@@ -14,15 +14,15 @@ using T = float;
 int main(int argc, char **argv) {
 
 
-  int sizeX=8;
-  int sizeY=8;
+  int sizeX=16;
+  int sizeY=16;
 
   auto modify = [sizeX,sizeY](auto* ptr) {
     for(int j=0; j<sizeY; j++) {
       for(int i=0; i<sizeX; i++) {
+        //ptr[j*sizeX+i]=j;
         ptr[j*sizeX+i]=i+8*j;
       }
-      std::cout<<std::endl;
     }
   };
   auto print = [sizeX,sizeY](auto* ptr) {
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
   //Daub2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",2);
   //Anto97_BiOrth_1D<T> w(in.data(),sizeX,sizeY,1,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),sizeX,sizeY,false,"QSHIFT6",1);
-  dtwAnto97QSHIFT6_2D<T> w(in.data(),sizeX,sizeY,1,false,"DTCWT",1);  
+  dtwAnto97QSHIFT6_2D<T> w(in.data(),sizeX,sizeY,1,false,"DTCWT",3); 
     
 
   // print coeffs when initialized
