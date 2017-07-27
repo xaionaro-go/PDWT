@@ -401,7 +401,7 @@ class DTCoeffContainer2D : public CoeffContainer2D<T,SubContainerT> {
   /// Defaulted Constructor
   DTCoeffContainer2D()=default;
 
-  /// Allocating constructor
+  /// True constructor
   DTCoeffContainer2D(std::vector<size_t> size, int nlevel) {
     this->Initialize2DContainer(size, nlevel);
   }
@@ -458,24 +458,89 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   /// Defaulted Constructor
   CoeffContainer3D()=default;
 
+  // True constructor
+  CoeffContainer3D(std::vector<size_t>& size, int nlevel) {
+    Initialize3DContainer(size, nlevel);
+  }
+
   /// Defaulted Destructor
   virtual ~CoeffContainer3D()=default;
  
-  /// Return the dimensionality of the container 
+  /// Initializes both sizes and buffers
+  void Initialize3DContainer(std::vector<size_t>& size, int nlevel) {
+    this->InitializeSizes(size, nlevel);
+    /**
+     * in 3D wavelet transform, memory consumption is critical, this is why
+     * we will perform all steps sequentially.
+     *
+     * Step 1:
+     * tmp buffer should be able to store output of one single Z filtering,
+     * which is initial size where only third dimension has been divided
+     * by 2
+     * Step 2:
+     * We then need to perform Y filtering, and store one single output of
+     * size initial size with dimension 2 and 3 divided by 2
+     * Step 3
+     * For Z filtering, data can be written directly to coefficient storage
+     * but we also need space for the lowpass output for next transform if
+     * there is more than one level
+     */
+    m_tmpZOutSingleSize=this->m_scaleShape.at(0).at(0)*
+      this->m_scaleShape.at(0).at(1)*
+      this->m_scaleShape.at(1).at(2);
+    m_tmpYOutSingleSize=this->m_scaleShape.at(0).at(0)*
+      this->m_scaleShape.at(1).at(1)*
+      this->m_scaleShape.at(1).at(2);
+    if (this->m_level>1) {
+      m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize+
+        this->m_scaleSize.at(1);
+    } else {
+      m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize;
+    }
+    // Allocate memory
+    this->AllocateMainBuffer();
+    // Allocate temporary buffer
+    this->AllocateTmpBuffer();
+  }
+
+  /// Return the dimensionality of the container
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
+  /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
+  virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
+    // Layout is  described in constructor
+    // subbandoffset
+    size_t subBandOffset = m_tmpZOutSingleSize;
+    return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+
+      subBandOffset*subBandIdx;
+  }
+
+  /**
+   * Return a pointer to a temporary buffer, for lowpass tmp storage
+   */
+  virtual T* GetOutLowTmpBuffPtr(size_t bandIdx=0) {
+    // Layout is defined in constructor
+    size_t lowPassOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize;
+    return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+lowPassOffset;
+  }
+
   /// Return a pointer to a temporary buffer
-  virtual T* GetTmpBuffPtr(size_t level, size_t index) override {
-    assert(false);
+  //TODO TN: a refaire
+  virtual T* GetTmpBuffPtr(size_t level, size_t index) {
     return nullptr;
   }
 
  protected:
   // Allocate temporary buffer
   virtual void AllocateTmpBuffer() override {
+    this->m_ptcoeff=std::make_unique<SubContainerT>(
+      this->m_nbBand*m_tmpBuffBandOffset);
   }
 
  protected:
+  size_t m_tmpBuffBandOffset;
+  size_t m_tmpZOutSingleSize;
+  size_t m_tmpYOutSingleSize;
   static const size_t m_dimensions=3;
 };
 

@@ -29,13 +29,75 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   Wavelet3D(T* img, int Nc, int Nr, int Ns, bool doCycleSpinning,
       const std::string& wname, int level) : Wavelet<T,CoeffContainerT,
       WaveletSchemeT>(img, Nc, Nr, Ns, doCycleSpinning, wname, level) {
-
+    this->m_coeff=std::make_unique<CoeffContainerT>(
+      std::vector<size_t>({Nc,Nr,Ns}), level);
   }
   /// Default destructor
   virtual ~Wavelet3D()=default;
 
   /// Forward wavelet tranform
   virtual int forward() {
+    /**
+     * At first step, input is simply input image
+     * We chose to filter the most memory friendly direction at the end in
+     * order to mimic what may be done in overcomplete wavelet systems, where
+     * data size grows along filtering steps
+     */
+    T* inlow = this->m_image;
+    T* outlowY = this->m_coeff->GetHalfTmpBuffPtr(0);
+    T* outhighY = this->m_coeff->GetHalfTmpBuffPtr(1);
+    for (int l=0; l<this->m_level; l++) {
+      //Y filtering
+      SeparableSubsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+          >::PerformSubsampledFilteringYRef(
+        this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l).at(1),
+        Accumulator<T,T,T,int>(inlow, outlowY,
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l).at(0)),
+        Accumulator<T,T,T,int>(inlow, outhighY,
+          this->m_coeff->GetScaleShape(l).at(0),
+          this->m_coeff->GetScaleShape(l).at(0)));
+
+      T* inlowY = outlowY;
+      T* inhighY = outhighY;
+      T* outlowYlowX;
+
+      if (l+1==this->m_level) {
+        outlowYlowX=this->m_coeff->GetLowSubspacePtr(l);
+      } else {
+        outlowYlowX=this->m_coeff->GetOutLowTmpBuffPtr();
+      }
+
+      //Now perform X filtering on lowpass Y
+      SeparableSubsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+          >::PerformSubsampledFilteringXRef(
+        this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(1),
+        Accumulator<T,T,T,int>(inlowY, outlowYlowX),
+        Accumulator<T,T,T,int>(inlowY,
+          this->m_coeff->GetHighSubspacePtr(l,0)));
+      //Now perform X filtering on highpass Y
+      SeparableSubsampledConvolutionEngine2D<T,
+          typename WaveletSchemeT::f_l,
+          typename WaveletSchemeT::f_h
+          >::PerformSubsampledFilteringXRef(
+        this->m_coeff->GetScaleShape(l).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(0),
+        this->m_coeff->GetScaleShape(l+1).at(1),
+        Accumulator<T,T,T,int>(inhighY,
+          this->m_coeff->GetHighSubspacePtr(l,1)),
+        Accumulator<T,T,T,int>(inhighY,
+          this->m_coeff->GetHighSubspacePtr(l,2)));
+
+      //Update lowpass input and output, order is important here
+      inlow=outlowYlowX;
+    }
     return 1;
   }
   /// Backward wavelet transform: transpose of the forward transpose
