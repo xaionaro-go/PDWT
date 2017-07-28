@@ -144,8 +144,108 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
     }
     return 1;
   }
+
+
   /// Backward wavelet transform: transpose of the forward transpose
   virtual int backward() {
+    for (int l=this->m_level; l>0; l--) {
+      //Z low and high can be inverted independantly, and then added afterward
+      for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
+        //Y low and high can be inverted sequentially, and then added
+		for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
+
+          auto sBandCalc = [=](auto xIdx){ return 
+            this->m_coeff->GetHighSubspacePtr(l-1,zFiltIdx*4+yFiltIdx*2+xIdx);
+          };
+          T* inlowX;
+          // If this is the low freq projection
+          if ((zFiltIdx==0)&&(yFiltIdx==0)) {
+		    inlowX=this->m_coeff->GetLowSubspacePtr(l-1);
+          } else {
+            inlowX=sBandCalc(0);
+          }
+
+          if (yFiltIdx==0) {
+            // Invert X lowpass/highpass filtering for lowpass Y
+			SeparableUpsampledConvolutionEngine3D<T,
+				typename WaveletSchemeT::i_l,
+				typename WaveletSchemeT::i_h
+			  >::PerformUpsampledFilteringXRef(
+				this->m_coeff->GetScaleShape(l).at(0),
+				this->m_coeff->GetScaleShape(l-1).at(0),
+				this->m_coeff->GetScaleShape(l).at(1),
+				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetHalfTmpBuffPtr(1),
+				inlowX,
+				sBandCalc(1));
+			// Invert Y lowpass filtering only
+			SeparableUpsampledConvolutionEngine3D<T,
+				typename WaveletSchemeT::i_l
+			  >::PerformUpsampledFilteringYRef(
+				this->m_coeff->GetScaleShape(l).at(0),
+				this->m_coeff->GetScaleShape(l-1).at(0),
+				this->m_coeff->GetScaleShape(l).at(1),
+				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetHalfTmpBuffPtr(0),
+				this->m_coeff->GetHalfTmpBuffPtr(1)); 
+          } else { //TODO TN: perfurm update instead of write
+			// Invert X lowpass/highpass filtering for highpass Y
+			SeparableUpsampledConvolutionEngine3D<T,
+				typename WaveletSchemeT::i_l,
+				typename WaveletSchemeT::i_h
+			  >::PerformUpsampledFilteringXRef(
+				this->m_coeff->GetScaleShape(l).at(0),
+				this->m_coeff->GetScaleShape(l-1).at(0),
+				this->m_coeff->GetScaleShape(l).at(1),
+				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetHalfTmpBuffPtr(1),
+				this->m_coeff->GetHighSubspacePtr(l-1,1));
+			// Invert Y highpass filtering only
+			SeparableUpsampledConvolutionEngine3D<T,
+				typename WaveletSchemeT::i_h
+			  >::PerformUpsampledFilteringYRef(
+				this->m_coeff->GetScaleShape(l).at(0),
+				this->m_coeff->GetScaleShape(l-1).at(0),
+				this->m_coeff->GetScaleShape(l).at(1),
+				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetHalfTmpBuffPtr(0),
+				this->m_coeff->GetHalfTmpBuffPtr(1));
+          }
+        }
+
+		//Update output buffer destination
+		T* outlow;
+		if (l<=1) {
+		  outlow=this->m_image;
+		} else {
+		  outlow=this->m_coeff->GetLowSubspacePtr(l-2);
+		}
+
+        if (zFiltIdx==0) {
+		  // Invert Z lowpass filtering
+		  SeparableUpsampledConvolutionEngine2D<T,
+			  typename WaveletSchemeT::i_l
+			>::PerformUpsampledFilteringYRef(
+			  this->m_coeff->GetScaleShape(l).at(0),
+			  this->m_coeff->GetScaleShape(l-1).at(0),
+			  this->m_coeff->GetScaleShape(l).at(1),
+			  this->m_coeff->GetScaleShape(l-1).at(1),
+			  outlow,
+			  this->m_coeff->GetHalfTmpBuffPtr(0));
+        } else { //TODO TN: perfurm update instead of write
+		  // Invert Z highpass filtering
+		  SeparableUpsampledConvolutionEngine2D<T,
+			  typename WaveletSchemeT::i_h
+			>::PerformUpsampledFilteringYRef(
+			  this->m_coeff->GetScaleShape(l).at(0),
+			  this->m_coeff->GetScaleShape(l-1).at(0),
+			  this->m_coeff->GetScaleShape(l).at(1),
+			  this->m_coeff->GetScaleShape(l-1).at(1),
+			  outlow,
+			  this->m_coeff->GetHalfTmpBuffPtr(0));
+        }
+	  }
+    }
     return 1;
   }
   /// Inverse of the wavelet tranform

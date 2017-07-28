@@ -596,4 +596,79 @@ class SeparableSubsampledConvolutionEngine3D {
         >::PerformSubsampledFilteringXRef(Nin, std::get<Is>(accn)...);
   }
 };
+
+/** \class SeparableUpsampledConvolutionEngine3D
+ * \brief Code for the separable upsampled convolution.
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class... Filtn>
+class SeparableUpsampledConvolutionEngine3D {
+ public:
+  /// Defaulted constructor
+  SeparableUpsampledConvolutionEngine3D()=default;
+  /// Default destructor
+  virtual ~SeparableUpsampledConvolutionEngine3D()=default;
+
+  /// The main method : perform Subsampled convolution on all rows
+  template<typename... InN>
+  static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
+      int NyIn, int NyOut, T* out, InN... inn) {
+    // Loop over output image along y direction, only X direction will expand
+    #pragma omp parallel for
+    for (int oy=0; oy<NyIn; oy++) {
+      //Now, you can launch the X convolution
+      callUpsampledConvWithTuple(
+        NxIn,
+        NxOut,
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+oy*NxOut),
+        std::make_tuple((inn+oy*NxIn)...),
+        std::index_sequence_for<InN...>());
+    }
+    return 1;
+  }
+  /// The main method : perform Subsampled convolution on all rows
+  template<typename... InN>
+  static int PerformUpsampledFilteringYRef( int NxIn, int NxOut,
+      int NyIn, int NyOut, T* out, InN... inn) {
+    #pragma omp parallel for
+    for (int ox=0; ox<NxOut; ox++) {
+      callUpsampledConvWithTuple(
+        NyIn,
+        NyOut,
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
+        std::make_tuple((inn+ox)...),
+        std::index_sequence_for<InN...>());
+    }
+    return 1;
+  }
+  /// Upsampled convolution for z direction
+  template<typename... InN>
+  static int PerformUpsampledFilteringZRef( int NxIn, int NxOut,
+      int NyIn, int NyOut, T* out, InN... inn) {
+    #pragma omp parallel for
+    for (int ox=0; ox<NxOut; ox++) {
+      callUpsampledConvWithTuple(
+        NyIn,
+        NyOut,
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
+        std::make_tuple((inn+ox)...),
+        std::index_sequence_for<InN...>());
+    }
+    return 1;
+  }
+
+ protected:
+  template<typename Acc, typename... Inputs, std::size_t... Is>
+  static void callUpsampledConvWithTuple(int Nin, int Nout, Acc&& acc,
+      std::tuple<Inputs...>&& inn, std::index_sequence<Is...>) {
+    SeparableUpsampledConvolutionEngine<T,Filtn...
+        >::PerformUpsampledFilteringXRef(
+      Nin,
+      Nout,
+      acc,
+      std::get<Is>(inn)...);
+  }
+};
+
 #endif //SEPARABLE_H
