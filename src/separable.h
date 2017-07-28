@@ -397,8 +397,6 @@ class SeparableUpsampledConvolutionEngine {
  *
  * \author Thibault Notargiacomo
  */
-//TODO TN: replace second line by first one
-//template<typename T, class Filt, class... Filtn>
 template<typename T, class... Filtn>
 class SeparableSubsampledConvolutionEngine2D {
  public:
@@ -508,6 +506,94 @@ class SeparableUpsampledConvolutionEngine2D {
       Nout,
       acc,
       std::get<Is>(inn)...);
+  }
+};
+
+/** \class SeparableSubsampledConvolutionEngine3D
+ * \brief Code for the separable subsampled convolution 3D. This class is a
+ * variadic template class, because it can handle multiple filtering for each
+ * main loop, assuming the filters have the same size
+ *
+ * \author Thibault Notargiacomo
+ */
+template<typename T, class... Filtn>
+class SeparableSubsampledConvolutionEngine3D {
+ public:
+  /// Defaulted constructor
+  SeparableSubsampledConvolutionEngine3D()=default;
+  /// Default destructor
+  virtual ~SeparableSubsampledConvolutionEngine3D()=default;
+
+  /// The main method : perform Subsampled convolution on all columns
+  template<typename... AccN>
+  static int PerformSubsampledFilteringZRef(int NxIn, int NyIn, int NzIn,
+      AccN&&... accn) {
+    size_t yStride=NxIn;
+    // Loop over both y and x to perform z filtering
+    for (int oy=0; oy<NyIn; oy++) {
+      #pragma omp parallel for
+      for (int ox=0; ox<NxIn; ox++) {
+        callSubsampledConvWithTuple(
+          NzIn,
+          oy*yStride+ox,
+          oy*yStride+ox,
+          std::make_tuple(accn...),
+          std::index_sequence_for<AccN...>());
+      }
+    }
+    return 1;
+  }
+
+  /// The main method : perform Subsampled convolution on all columns
+  template<typename... AccN>
+  static int PerformSubsampledFilteringYRef(int NxIn, int NyIn, int NzIn,
+      AccN&&... accn) {
+    size_t zStride=NxIn*NyIn;
+    // Loop over both z and x to perform y filtering
+    for (int oz=0; oz<NzIn; oz++) {
+      #pragma omp parallel for
+      for (int ox=0; ox<NxIn; ox++) {
+        callSubsampledConvWithTuple(
+          NyIn,
+          oz*zStride+ox,
+          oz*zStride+ox,
+          std::make_tuple(accn...),
+          std::index_sequence_for<AccN...>());
+      }
+    }
+    return 1;
+  }
+
+  /// The main method : perform Subsampled convolution on all rows
+  template<typename... AccN>
+  static int PerformSubsampledFilteringXRef( int NxIn, int NxOut,
+    int NyIn, int NzIn, AccN&&... accn) {
+    size_t zStrideIn=NxIn*NyIn;
+    size_t zStrideOut=NxOut*NyIn;
+    // Loop over both z and y to perform x filtering
+    for (int oz=0; oz<NzIn; oz++) {
+      #pragma omp parallel for
+      for (int oy=0; oy<NyIn; oy++) {
+        //Now, you can launch the X convolution
+        callSubsampledConvWithTuple(
+          NxIn,
+          oz*zStrideIn+oy*NxIn,
+          oz*zStrideOut+oy*NxOut,
+          std::make_tuple(accn...),
+          std::index_sequence_for<AccN...>());
+      }
+    }
+    return 1;
+  }
+ protected:
+  template<typename... AccN, std::size_t... Is>
+  static void callSubsampledConvWithTuple(
+      int Nin, int srcStride, int dstStride,
+      std::tuple<AccN...>&& accn, std::index_sequence<Is...>) {
+    SrcDstPtrUpdater<AccN...>::IncrementSrcDstPtr(
+      srcStride, dstStride, std::get<Is>(std::forward<std::tuple<AccN...>>(accn))...);
+    SeparableSubsampledConvolutionEngine<T, Filtn...
+        >::PerformSubsampledFilteringXRef(Nin, std::get<Is>(accn)...);
   }
 };
 #endif //SEPARABLE_H
