@@ -188,7 +188,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				this->m_coeff->GetScaleShape(l-1).at(1),
 				this->m_coeff->GetHalfTmpBuffPtr(0),
 				this->m_coeff->GetHalfTmpBuffPtr(1)); 
-          } else { //TODO TN: perfurm update instead of write
+          } else { //TODO TN: perform update instead of write
 			// Invert X lowpass/highpass filtering for highpass Y
 			SeparableUpsampledConvolutionEngine3D<T,
 				typename WaveletSchemeT::i_l,
