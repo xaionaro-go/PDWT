@@ -7,7 +7,7 @@
 
 // Lib
 #include "coeffContainer.h"
-#include "Wavelet2D.h"
+#include "Wavelet3D.h"
 
 using T = float;
 
@@ -53,11 +53,11 @@ int main(int argc, char **argv) {
   print(in.data());
 
   // Define wavelet tranform
-  //Dummy2_2D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
-  Daub2_2D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",1);
-  //Anto97_BiOrth_1D<T> w(in.data(),sizeX,sizeY,1,false,"Anto97",1);
-  //REVERSE_QSHIFT6_Orth_1D<T> w(in.data(),sizeX,sizeY,false,"QSHIFT6",1);
-  //dtwAnto97QSHIFT6_2D<T> w(in.data(),sizeX,sizeY,1,false,"DTCWT",3); 
+  //Dummy2_3D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
+  Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",1);
+  //Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,1,false,"Anto97",1);
+  //REVERSE_QSHIFT6_Orth_3D<T> w(in.data(),sizeX,sizeY,false,"QSHIFT6",1);
+  //dtwAnto97QSHIFT6_3D<T> w(in.data(),sizeX,sizeY,1,false,"DTCWT",3); 
     
 
   // print coeffs when initialized
@@ -71,9 +71,9 @@ int main(int argc, char **argv) {
   std::fill(in.begin(),in.end(),0);
 
   // print coeffs
-  //std::cout<<"Coefficient after forward tranform"<<std::endl;
-  //std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print2);
-  //std::cout<<std::endl;
+  std::cout<<"Coefficient after forward tranform"<<std::endl;
+  std::for_each(w.get_coeff().begin(),w.get_coeff().end(),print2);
+  std::cout<<std::endl;
 
   // perform inverse transform
   w.backward(); 

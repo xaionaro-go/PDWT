@@ -459,7 +459,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   CoeffContainer3D()=default;
 
   // True constructor
-  CoeffContainer3D(std::vector<size_t>& size, int nlevel) {
+  CoeffContainer3D(std::vector<size_t> size, int nlevel) {
     Initialize3DContainer(size, nlevel);
   }
 

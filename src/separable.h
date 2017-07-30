@@ -105,7 +105,7 @@ struct EvenSubsampledAccumulator<T,I,J,Filt> {
 };
 template<typename T, typename I, typename J>
 struct EvenSubsampledAccumulator<T,I,J,void> {
- static constexpr T acc(I index) { return (T)0; }
+ static constexpr T acc(I filtIdx, J inIdx) { return (T)0; }
 };
 
 template<typename T, typename I, typename J, class Filt, class... Filtn>
@@ -134,7 +134,7 @@ struct OddSubsampledAccumulator<T,I,J,Filt> {
 };
 template<typename T, typename I, typename J>
 struct OddSubsampledAccumulator<T,I,J,void> {
-  static constexpr T acc(I index) { return (T)0; }
+  static constexpr T acc(I filtIdx, J inIdx) { return (T)0; }
 };
 
 template<typename T, typename U, typename V, typename I>
@@ -208,7 +208,8 @@ class SubsampledAccumulator {
 };
 
 template<typename T, typename U, typename I, typename J, class... Filtn>
-class SubsampledAccumulatorUpdate : SubsampledAccumulator<T,U,I,J,Filtn...> {
+class SubsampledAccumulatorUpdate : 
+    public SubsampledAccumulator<T,U,I,J,Filtn...> {
  public:
   SubsampledAccumulatorUpdate(T* dstPtr, I srcStride=1, I dstStride=1):
     SubsampledAccumulator<T,U,I,J,Filtn...>(dstPtr , srcStride, dstStride)  {}
@@ -559,7 +560,7 @@ class SeparableSubsampledConvolutionEngine3D {
   template<typename... AccN>
   static int PerformSubsampledFilteringYRef(int NxIn, int NyIn, int NzIn,
       AccN&&... accn) {
-    size_t zStride=NxIn*NyIn;
+    size_t zStride=NyIn*NxIn;
     // Loop over both z and x to perform y filtering
     for (int oz=0; oz<NzIn; oz++) {
       #pragma omp parallel for
@@ -623,7 +624,7 @@ class SeparableUpsampledConvolutionEngine3D {
   /// Default destructor
   virtual ~SeparableUpsampledConvolutionEngine3D()=default;
 
-  /// The main method : perform Subsampled convolution on all rows
+  /// The main method : perform Upsampled convolution on all rows
   template<typename... InN>
   static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
       int Ny, int Nz, T* out, InN... inn) {
@@ -644,10 +645,10 @@ class SeparableUpsampledConvolutionEngine3D {
     }
     return 1;
   }
-  /// The main method : perform Subsampled convolution on all rows
+  /// The main method : perform Upsampled convolution on all rows
   template<typename... InN>
   static int PerformUpsampledFilteringYRef( int Nx, int NyIn, int NyOut,
-      int Nz, T* out, InN... inn) {a
+      int Nz, T* out, InN... inn) {
     size_t zStrideIn=NyIn*Nx;
     size_t zStrideOut=NyOut*Nx;
     for (int oz=0; oz<Nz; oz++) {
