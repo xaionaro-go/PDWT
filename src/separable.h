@@ -626,17 +626,17 @@ class SeparableUpsampledConvolutionEngine3D {
   /// The main method : perform Subsampled convolution on all rows
   template<typename... InN>
   static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
-      int NyIn, int NzIn, T* out, InN... inn) {
+      int Ny, int Nz, T* out, InN... inn) {
     // Loop over output image along y direction, only X direction will expand
-    for (int oz=0; oz<NzIn; oz++) {
+    for (int oz=0; oz<Nz; oz++) {
       #pragma omp parallel for
-      for (int oy=0; oy<NyIn; oy++) {
+      for (int oy=0; oy<Ny; oy++) {
         //Now, you can launch the X convolution
         callUpsampledConvWithTuple(
           NxIn,
           NxOut,
-          AccT<T,T,int,int,Filtn...>(out+oz*NyIn*NxOut+oy*NxOut),
-          std::make_tuple((inn+oz*NyIn*NxIn+oy*NxIn)...),
+          AccT<T,T,int,int,Filtn...>(out+oz*Ny*NxOut+oy*NxOut),
+          std::make_tuple((inn+oz*Ny*NxIn+oy*NxIn)...),
           std::index_sequence_for<InN...>());
       }
     }
@@ -644,16 +644,16 @@ class SeparableUpsampledConvolutionEngine3D {
   }
   /// The main method : perform Subsampled convolution on all rows
   template<typename... InN>
-  static int PerformUpsampledFilteringYRef( int NxIn, int NyIn, int NyOut,
-      int NzIn, T* out, InN... inn) {
-    for (int oz=0; oz<NzIn; oz++) {
+  static int PerformUpsampledFilteringYRef( int Nx, int NyIn, int NyOut,
+      int Nz, T* out, InN... inn) {
+    for (int oz=0; oz<Nz; oz++) {
       #pragma omp parallel for
-      for (int ox=0; ox<NxIn; ox++) {
+      for (int ox=0; ox<Nx; ox++) {
         callUpsampledConvWithTuple(
           NyIn,
           NyOut,
-          AccT<T,T,int,int,Filtn...>(out+oz*NyOut*NxIn+ox,NxOut,NxOut),
-          std::make_tuple((inn+oz*NyIn*NxIn+ox)...),
+          AccT<T,T,int,int,Filtn...>(out+oz*NyOut*Nx+ox,Nx,Nx),
+          std::make_tuple((inn+oz*NyIn*Nx+ox)...),
           std::index_sequence_for<InN...>());
       }
     }
@@ -661,16 +661,18 @@ class SeparableUpsampledConvolutionEngine3D {
   }
   /// Upsampled convolution for z direction
   template<typename... InN>
-  static int PerformUpsampledFilteringZRef( int NxIn, int NyIn,
+  static int PerformUpsampledFilteringZRef( int Nx, int Ny,
       int NzIn, int NzOut, T* out, InN... inn) {
-    #pragma omp parallel for
-    for (int ox=0; ox<NxOut; ox++) {
-      callUpsampledConvWithTuple(
-        NzIn,
-        NzOut,
-        AccT<T,T,int,int,Filtn...>(out+oz*NyIn*NxIn+ox,NxOut,NxOut),
-        std::make_tuple((inn+oz*NyIn*NxIn+ox)...),
-        std::index_sequence_for<InN...>());
+    for (int oy=0; oy<Ny; oy++) {
+      #pragma omp parallel for
+      for (int ox=0; ox<Nx; ox++) {
+        callUpsampledConvWithTuple(
+          NzIn,
+          NzOut,
+          AccT<T,T,int,int,Filtn...>(out+oy*Ny*Nx+ox,Nx,Nx),
+          std::make_tuple((inn+oy*Nx+ox)...),
+          std::index_sequence_for<InN...>());
+      }
     }
     return 1;
   }
