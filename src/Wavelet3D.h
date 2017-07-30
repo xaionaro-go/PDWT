@@ -109,7 +109,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           }
 
           auto sBandCalc = [=](auto xIdx){ return 
-            this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx);
+            this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
           };
           T* outlowX;
           // If this is the low freq projection
@@ -155,7 +155,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 		for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
 
           auto sBandCalc = [=](auto xIdx){ return 
-            this->m_coeff->GetHighSubspacePtr(l-1,zFiltIdx*4+yFiltIdx*2+xIdx);
+            this->m_coeff->GetHighSubspacePtr(l-1,zFiltIdx*4+yFiltIdx*2+xIdx-1);
           };
           T* inlowX;
           // If this is the low freq projection
