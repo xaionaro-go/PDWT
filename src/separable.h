@@ -207,6 +207,17 @@ class SubsampledAccumulator {
   I m_dstStride;
 };
 
+template<typename T, typename U, typename I, typename J, class... Filtn>
+class SubsampledAccumulatorUpdate : SubsampledAccumulator<T,U,I,J,Filtn...> {
+ public:
+  SubsampledAccumulatorUpdate(T* dstPtr, I srcStride=1, I dstStride=1):
+    SubsampledAccumulator<T,U,I,J,Filtn...>(dstPtr , srcStride, dstStride)  {}
+
+  void write(I dstIdx) {
+    this->m_dstPtr[dstIdx*this->m_dstStride]+=this->m_acc;
+  }
+};
+
 template<class Filt, class... Filtn>
 struct Updater {
   template<typename I, class Acc, class... AccN>
@@ -602,7 +613,9 @@ class SeparableSubsampledConvolutionEngine3D {
  *
  * \author Thibault Notargiacomo
  */
-template<typename T, class... Filtn>
+template<typename T,
+  template <typename,typename,typename,typename, class...> class AccT,
+  class... Filtn>
 class SeparableUpsampledConvolutionEngine3D {
  public:
   /// Defaulted constructor
@@ -611,9 +624,7 @@ class SeparableUpsampledConvolutionEngine3D {
   virtual ~SeparableUpsampledConvolutionEngine3D()=default;
 
   /// The main method : perform Subsampled convolution on all rows
-  template<
-      template <typename,typename,typename,typename, class...> class AccT,
-      typename... InN>
+  template<typename... InN>
   static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
       int NyIn, int NyOut, T* out, InN... inn) {
     // Loop over output image along y direction, only X direction will expand
@@ -638,7 +649,7 @@ class SeparableUpsampledConvolutionEngine3D {
       callUpsampledConvWithTuple(
         NyIn,
         NyOut,
-        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
+        AccT<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
         std::make_tuple((inn+ox)...),
         std::index_sequence_for<InN...>());
     }
@@ -653,7 +664,7 @@ class SeparableUpsampledConvolutionEngine3D {
       callUpsampledConvWithTuple(
         NyIn,
         NyOut,
-        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
+        AccT<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
         std::make_tuple((inn+ox)...),
         std::index_sequence_for<InN...>());
     }

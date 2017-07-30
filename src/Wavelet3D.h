@@ -168,9 +168,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           if (yFiltIdx==0) {
             // Invert X lowpass/highpass filtering for lowpass Y
 			SeparableUpsampledConvolutionEngine3D<T,
+                SubsampledAccumulator,
 				typename WaveletSchemeT::i_l,
 				typename WaveletSchemeT::i_h
-			  >::PerformUpsampledFilteringXRef<SubsampledAccumulator>(
+			  >::PerformUpsampledFilteringXRef(
 				this->m_coeff->GetScaleShape(l).at(0),
 				this->m_coeff->GetScaleShape(l-1).at(0),
 				this->m_coeff->GetScaleShape(l).at(1),
@@ -180,6 +181,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				sBandCalc(1));
 			// Invert Y lowpass filtering only
 			SeparableUpsampledConvolutionEngine3D<T,
+                SubsampledAccumulator,
 				typename WaveletSchemeT::i_l
 			  >::PerformUpsampledFilteringYRef(
 				this->m_coeff->GetScaleShape(l).at(0),
@@ -188,9 +190,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				this->m_coeff->GetScaleShape(l-1).at(1),
 				this->m_coeff->GetHalfTmpBuffPtr(0),
 				this->m_coeff->GetHalfTmpBuffPtr(1)); 
-          } else { //TODO TN: perform update instead of write
+          } else { //Perform update instead of write, see Accumulator type
 			// Invert X lowpass/highpass filtering for highpass Y
 			SeparableUpsampledConvolutionEngine3D<T,
+                SubsampledAccumulator,
 				typename WaveletSchemeT::i_l,
 				typename WaveletSchemeT::i_h
 			  >::PerformUpsampledFilteringXRef(
@@ -202,6 +205,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				this->m_coeff->GetHighSubspacePtr(l-1,1));
 			// Invert Y highpass filtering only
 			SeparableUpsampledConvolutionEngine3D<T,
+                SubsampledAccumulatorUpdate,
 				typename WaveletSchemeT::i_h
 			  >::PerformUpsampledFilteringYRef(
 				this->m_coeff->GetScaleShape(l).at(0),
@@ -223,7 +227,8 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 
         if (zFiltIdx==0) {
 		  // Invert Z lowpass filtering
-		  SeparableUpsampledConvolutionEngine2D<T,
+		  SeparableUpsampledConvolutionEngine3D<T,
+              SubsampledAccumulator,
 			  typename WaveletSchemeT::i_l
 			>::PerformUpsampledFilteringYRef(
 			  this->m_coeff->GetScaleShape(l).at(0),
@@ -232,9 +237,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 			  this->m_coeff->GetScaleShape(l-1).at(1),
 			  outlow,
 			  this->m_coeff->GetHalfTmpBuffPtr(0));
-        } else { //TODO TN: perfurm update instead of write
+        } else { //Perform update instead of write, see Accumulator tyoe
 		  // Invert Z highpass filtering
-		  SeparableUpsampledConvolutionEngine2D<T,
+		  SeparableUpsampledConvolutionEngine3D<T,
+              SubsampledAccumulatorUpdate,
 			  typename WaveletSchemeT::i_h
 			>::PerformUpsampledFilteringYRef(
 			  this->m_coeff->GetScaleShape(l).at(0),
