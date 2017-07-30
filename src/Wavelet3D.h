@@ -170,7 +170,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 			SeparableUpsampledConvolutionEngine3D<T,
 				typename WaveletSchemeT::i_l,
 				typename WaveletSchemeT::i_h
-			  >::PerformUpsampledFilteringXRef(
+			  >::PerformUpsampledFilteringXRef<SubsampledAccumulator>(
 				this->m_coeff->GetScaleShape(l).at(0),
 				this->m_coeff->GetScaleShape(l-1).at(0),
 				this->m_coeff->GetScaleShape(l).at(1),

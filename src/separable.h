@@ -611,7 +611,9 @@ class SeparableUpsampledConvolutionEngine3D {
   virtual ~SeparableUpsampledConvolutionEngine3D()=default;
 
   /// The main method : perform Subsampled convolution on all rows
-  template<typename... InN>
+  template<
+      template <typename,typename,typename,typename, class...> class AccT,
+      typename... InN>
   static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
       int NyIn, int NyOut, T* out, InN... inn) {
     // Loop over output image along y direction, only X direction will expand
@@ -621,7 +623,7 @@ class SeparableUpsampledConvolutionEngine3D {
       callUpsampledConvWithTuple(
         NxIn,
         NxOut,
-        SubsampledAccumulator<T,T,int,int,Filtn...>(out+oy*NxOut),
+        AccT<T,T,int,int,Filtn...>(out+oy*NxOut),
         std::make_tuple((inn+oy*NxIn)...),
         std::index_sequence_for<InN...>());
     }
