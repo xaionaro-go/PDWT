@@ -175,7 +175,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				this->m_coeff->GetScaleShape(l).at(0),
 				this->m_coeff->GetScaleShape(l-1).at(0),
 				this->m_coeff->GetScaleShape(l).at(1),
-				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetScaleShape(l).at(2),
 				this->m_coeff->GetHalfTmpBuffPtr(1),
 				inlowX,
 				sBandCalc(1));
@@ -184,10 +184,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
                 SubsampledAccumulator,
 				typename WaveletSchemeT::i_l
 			  >::PerformUpsampledFilteringYRef(
-				this->m_coeff->GetScaleShape(l).at(0),
 				this->m_coeff->GetScaleShape(l-1).at(0),
 				this->m_coeff->GetScaleShape(l).at(1),
 				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetScaleShape(l).at(2),
 				this->m_coeff->GetHalfTmpBuffPtr(0),
 				this->m_coeff->GetHalfTmpBuffPtr(1)); 
           } else { //Perform update instead of write, see Accumulator type
@@ -200,7 +200,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				this->m_coeff->GetScaleShape(l).at(0),
 				this->m_coeff->GetScaleShape(l-1).at(0),
 				this->m_coeff->GetScaleShape(l).at(1),
-				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetScaleShape(l).at(2),
 				this->m_coeff->GetHalfTmpBuffPtr(1),
 				this->m_coeff->GetHighSubspacePtr(l-1,1));
 			// Invert Y highpass filtering only
@@ -208,10 +208,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
                 SubsampledAccumulatorUpdate,
 				typename WaveletSchemeT::i_h
 			  >::PerformUpsampledFilteringYRef(
-				this->m_coeff->GetScaleShape(l).at(0),
 				this->m_coeff->GetScaleShape(l-1).at(0),
 				this->m_coeff->GetScaleShape(l).at(1),
 				this->m_coeff->GetScaleShape(l-1).at(1),
+				this->m_coeff->GetScaleShape(l).at(2),
 				this->m_coeff->GetHalfTmpBuffPtr(0),
 				this->m_coeff->GetHalfTmpBuffPtr(1));
           }
@@ -231,10 +231,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
               SubsampledAccumulator,
 			  typename WaveletSchemeT::i_l
 			>::PerformUpsampledFilteringYRef(
-			  this->m_coeff->GetScaleShape(l).at(0),
 			  this->m_coeff->GetScaleShape(l-1).at(0),
-			  this->m_coeff->GetScaleShape(l).at(1),
 			  this->m_coeff->GetScaleShape(l-1).at(1),
+			  this->m_coeff->GetScaleShape(l).at(2),
+			  this->m_coeff->GetScaleShape(l-1).at(2),
 			  outlow,
 			  this->m_coeff->GetHalfTmpBuffPtr(0));
         } else { //Perform update instead of write, see Accumulator tyoe
@@ -243,10 +243,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
               SubsampledAccumulatorUpdate,
 			  typename WaveletSchemeT::i_h
 			>::PerformUpsampledFilteringYRef(
-			  this->m_coeff->GetScaleShape(l).at(0),
 			  this->m_coeff->GetScaleShape(l-1).at(0),
-			  this->m_coeff->GetScaleShape(l).at(1),
 			  this->m_coeff->GetScaleShape(l-1).at(1),
+			  this->m_coeff->GetScaleShape(l).at(2),
+			  this->m_coeff->GetScaleShape(l-1).at(2),
 			  outlow,
 			  this->m_coeff->GetHalfTmpBuffPtr(0));
         }
