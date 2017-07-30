@@ -112,7 +112,6 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
-          this->m_coeff->GetScaleShape(l-1).at(1),
           this->m_coeff->GetHalfTmpBuffPtr(0),
           this->m_coeff->GetLowSubspacePtr(l-1),
           this->m_coeff->GetHighSubspacePtr(l-1,0));
@@ -125,7 +124,6 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
-          this->m_coeff->GetScaleShape(l-1).at(1),
           this->m_coeff->GetHalfTmpBuffPtr(1),
           this->m_coeff->GetHighSubspacePtr(l-1,1),
           this->m_coeff->GetHighSubspacePtr(l-1,2));
@@ -143,7 +141,6 @@ class Wavelet2D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           typename WaveletSchemeT::i_l,
           typename WaveletSchemeT::i_h
         >::PerformUpsampledFilteringYRef(
-          this->m_coeff->GetScaleShape(l).at(0),
           this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
           this->m_coeff->GetScaleShape(l-1).at(1),
@@ -518,7 +515,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
-		  this->m_coeff->GetScaleShape(l-1).at(1),
 		  this->m_coeff->GetHalfTmpBuffPtr(0,bIdx),//out: LowYReal
 		  this->m_coeff->GetLowSubspacePtr(l-1,bIdx),//in: LowRealYLowRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,0,bIdx));//in:LowRealYHighRealX
@@ -530,7 +526,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
-		  this->m_coeff->GetScaleShape(l-1).at(1),
 		  this->m_coeff->GetHalfTmpBuffPtr(1,bIdx),//out: HighYReal
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,bIdx),//in: HighRealYLowRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,2,bIdx));//in:HighRealYHighRealX
@@ -544,7 +539,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
-		  this->m_coeff->GetScaleShape(l-1).at(1),
 		  this->m_coeff->GetHalfTmpBuffPtr(0,bIdx),//out: LowYReal
 		  this->m_coeff->GetLowSubspacePtr(l-1,bIdx),//in: LowRealYLowRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,0,bIdx));//in:LowRealYHighRealX
@@ -556,7 +550,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
-		  this->m_coeff->GetScaleShape(l-1).at(1),
 		  this->m_coeff->GetHalfTmpBuffPtr(1,bIdx),//out: HighYReal
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,bIdx),//in: HighRealYLowRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,2,bIdx));//in:HighRealYHighRealX
@@ -567,7 +560,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		    typename DTWaveletSchemeT::i_lnr,
 			typename DTWaveletSchemeT::i_hnr
 			>::PerformUpsampledFilteringYRef(
-	    this->m_coeff->GetScaleShape(l).at(0),
 		this->m_coeff->GetScaleShape(l-1).at(0),
 		this->m_coeff->GetScaleShape(l).at(1),
 		this->m_coeff->GetScaleShape(l-1).at(1),
@@ -580,7 +572,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		    typename DTWaveletSchemeT::i_lni,
 			typename DTWaveletSchemeT::i_hni
 			>::PerformUpsampledFilteringYRef(
-	    this->m_coeff->GetScaleShape(l).at(0),
 		this->m_coeff->GetScaleShape(l-1).at(0),
 		this->m_coeff->GetScaleShape(l).at(1),
 		this->m_coeff->GetScaleShape(l-1).at(1),
@@ -608,7 +599,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		this->m_coeff->GetScaleShape(l).at(0),
 		this->m_coeff->GetScaleShape(l-1).at(0),
 		this->m_coeff->GetScaleShape(l).at(1),
-		this->m_coeff->GetScaleShape(l-1).at(1),
 		this->m_coeff->GetHalfTmpBuffPtr(0,0),//LowYReal
 		lowYReallowXReal,//in: LowRealYLowRealX
 		lowYReallowXImag,//in: LowRealYLowImagX
@@ -625,7 +615,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		this->m_coeff->GetScaleShape(l).at(0),
 		this->m_coeff->GetScaleShape(l-1).at(0),
 		this->m_coeff->GetScaleShape(l).at(1),
-		this->m_coeff->GetScaleShape(l-1).at(1),
 		this->m_coeff->GetHalfTmpBuffPtr(1,0),//HighYReal
 		this->m_coeff->GetHighSubspacePtr(l-1,1,0),//in: HighRealYLowRealX
 		this->m_coeff->GetHighSubspacePtr(l-1,1,1),//in: HighRealYLowImagX
@@ -642,7 +631,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
-		  this->m_coeff->GetScaleShape(l-1).at(1),
           this->m_coeff->GetHalfTmpBuffPtr(0,1),//LowYImag
 		  lowYImaglowXReal,//in: LowImagYLowRealX
 		  lowYImaglowXImag,//in: LowImagYLowImagX
@@ -659,7 +647,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
           this->m_coeff->GetScaleShape(l).at(1),
-		  this->m_coeff->GetScaleShape(l-1).at(1),
 	      this->m_coeff->GetHalfTmpBuffPtr(1,1),//HighYImag
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,2),//in: HighImagYLowRealX
 		  this->m_coeff->GetHighSubspacePtr(l-1,1,3),//in: HighImagYLowImagX
@@ -678,7 +665,6 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  typename DTWaveletSchemeT::i_h0r,
 		  typename DTWaveletSchemeT::i_h0i
 		>::PerformUpsampledFilteringYRef(
-		  this->m_coeff->GetScaleShape(l).at(0),
 		  this->m_coeff->GetScaleShape(l-1).at(0),
 		  this->m_coeff->GetScaleShape(l).at(1),
 		  this->m_coeff->GetScaleShape(l-1).at(1),

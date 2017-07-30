@@ -478,10 +478,10 @@ class SeparableUpsampledConvolutionEngine2D {
   /// The main method : perform Subsampled convolution on all rows
   template<typename... InN>
   static int PerformUpsampledFilteringXRef( int NxIn, int NxOut,
-      int NyIn, int NyOut, T* out, InN... inn) {
+      int Ny, T* out, InN... inn) {
     // Loop over output image along y direction, only X direction will expand
     #pragma omp parallel for
-    for (int oy=0; oy<NyIn; oy++) {
+    for (int oy=0; oy<Ny; oy++) {
       //Now, you can launch the X convolution
       callUpsampledConvWithTuple(
         NxIn,
@@ -494,14 +494,14 @@ class SeparableUpsampledConvolutionEngine2D {
   }
   /// The main method : perform Subsampled convolution on all rows
   template<typename... InN>
-  static int PerformUpsampledFilteringYRef( int NxIn, int NxOut,
-      int NyIn, int NyOut, T* out, InN... inn) {
+  static int PerformUpsampledFilteringYRef( int Nx, int NyIn, int NyOut,
+      T* out, InN... inn) {
     #pragma omp parallel for
-    for (int ox=0; ox<NxOut; ox++) {
+    for (int ox=0; ox<Nx; ox++) {
       callUpsampledConvWithTuple(
         NyIn,
         NyOut,
-        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,NxOut,NxOut),
+        SubsampledAccumulator<T,T,int,int,Filtn...>(out+ox,Nx,Nx),
         std::make_tuple((inn+ox)...),
         std::index_sequence_for<InN...>());
     }
