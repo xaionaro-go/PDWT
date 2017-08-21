@@ -48,6 +48,8 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 
     // For every level
     for (int l=0; l<this->m_level; l++) {
+      // Filter sequentially low and then high freq in z direction so that one
+      // can use only one temporary buffer for the Z filtering stage
       for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
 		if (zFiltIdx==0) {
 		  //Z filtering low
@@ -87,6 +89,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				>::PerformSubsampledFilteringYRef(
 			  this->m_coeff->GetScaleShape(l).at(0),
 			  this->m_coeff->GetScaleShape(l).at(1),
+              this->m_coeff->GetScaleShape(l+1).at(1),
 			  this->m_coeff->GetScaleShape(l+1).at(2),
 			  Accumulator<T,T,T,int>(
 			    this->m_coeff->GetHalfTmpBuffPtr(0),
@@ -100,6 +103,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 				>::PerformSubsampledFilteringYRef(
 			  this->m_coeff->GetScaleShape(l).at(0),
 			  this->m_coeff->GetScaleShape(l).at(1),
+              this->m_coeff->GetScaleShape(l+1).at(1),
 			  this->m_coeff->GetScaleShape(l+1).at(2),
 			  Accumulator<T,T,T,int>(
                 this->m_coeff->GetHalfTmpBuffPtr(0),

@@ -558,17 +558,18 @@ class SeparableSubsampledConvolutionEngine3D {
 
   /// The main method : perform Subsampled convolution on all columns
   template<typename... AccN>
-  static int PerformSubsampledFilteringYRef(int NxIn, int NyIn, int NzIn,
-      AccN&&... accn) {
-    size_t zStride=NyIn*NxIn;
+  static int PerformSubsampledFilteringYRef(int NxIn, int NyIn, int NyOut,
+    int NzIn, AccN&&... accn) {
+    size_t zStrideIn=NyIn*NxIn;
+    size_t zStrideOut=NyOut*NxIn;
     // Loop over both z and x to perform y filtering
     for (int oz=0; oz<NzIn; oz++) {
       #pragma omp parallel for
       for (int ox=0; ox<NxIn; ox++) {
         callSubsampledConvWithTuple(
           NyIn,
-          oz*zStride+ox,
-          oz*zStride+ox,
+          oz*zStrideIn+ox,
+          oz*zStrideOut+ox,
           std::make_tuple(accn...),
           std::index_sequence_for<AccN...>());
       }

@@ -510,9 +510,14 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
     // Layout is  described in constructor
     // subbandoffset
-    size_t subBandOffset = m_tmpZOutSingleSize;
+    size_t subBandOffset=0;
+    if (subBandIdx==1) {
+      subBandOffset = m_tmpZOutSingleSize;
+    } else if(subBandIdx==2) {
+      subBandOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize;
+    }
     return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+
-      subBandOffset*subBandIdx;
+      subBandOffset;
   }
 
   /**
@@ -520,8 +525,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
    */
   virtual T* GetOutLowTmpBuffPtr(size_t bandIdx=0) {
     // Layout is defined in constructor
-    size_t lowPassOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize;
-    return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+lowPassOffset;
+    return GetHalfTmpBuffPtr(2, bandIdx);
   }
 
   /// Return a pointer to a temporary buffer
