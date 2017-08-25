@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
   // Define wavelet tranform
   //Dummy2_3D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
-  Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",1);
+  Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",2);
   //Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,1,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_3D<T> w(in.data(),sizeX,sizeY,false,"QSHIFT6",1);
   //dtwAnto97QSHIFT6_3D<T> w(in.data(),sizeX,sizeY,1,false,"DTCWT",3); 
