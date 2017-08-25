@@ -16,8 +16,8 @@ template<
   template<typename> class C,
   typename T,//data type
   typename L,//nb of level
-  typename SX,//Size of output data
-  typename SY>//Size of input data
+  typename SX,//Size of input data X
+  typename SY>//Size of input data Y
 struct Wavelet2DTestFunctor {
   static bool test() {
 

@@ -266,6 +266,19 @@ using PackedContainer3D =
 // Aliasing ugly types into more simple ones
 template<typename T>
 using Daub2_3D = Wavelet3D<T,PackedContainer3D<T>,Daub2<T>>;
+template<typename T>
+using Daub3_3D = Wavelet3D<T,PackedContainer3D<T>,Daub3<T>>;
+template<typename T>
+using Daub4_3D = Wavelet3D<T,PackedContainer3D<T>,Daub4<T>>;
+template<typename T>
+using Daub5_3D = Wavelet3D<T,PackedContainer3D<T>,Daub5<T>>;
+template<typename T>
+using Anto97_BiOrth_3D = Wavelet3D<T,PackedContainer3D<T>,Anto97_BiOrth<T>>;
+template<typename T>
+using QSHIFT6_Orth_3D = Wavelet3D<T,PackedContainer3D<T>,QSHIFT6_Orth<T>>;
+template<typename T>
+using REVERSE_QSHIFT6_Orth_3D = 
+  Wavelet3D<T,PackedContainer3D<T>,REVERSE_QSHIFT6_Orth<T>>;
 
 /** \struct DB3DWt
  * \brief Utility struct that allow to instanciate all 3D wavelets at once
@@ -275,6 +288,13 @@ using Daub2_3D = Wavelet3D<T,PackedContainer3D<T>,Daub2<T>>;
 template<typename T>
 struct DB3DWt {
  Daub2_3D<T> daub2_3D;
+ Daub3_3D<T> daub3_3D;
+ Daub4_3D<T> daub4_3D;
+ Daub5_3D<T> daub5_3D;
+ Anto97_BiOrth_3D<T> anto97_BiOrth_3D;
+ QSHIFT6_Orth_3D<T> QShift6_Orth_3D;
+ REVERSE_QSHIFT6_Orth_3D<T> Reverse_Qshift6_Orth_3D;
+// dtwAnto97QSHIFT6_3D<T> dtwAnto97QShift6_3D; 
 };
 
 
