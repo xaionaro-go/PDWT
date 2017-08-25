@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     for(int k =0; k<sizeZ; k++) {
       for(int j=0; j<sizeY; j++) {
         for(int i=0; i<sizeX; i++) {
-          ptr[k*sizeX*sizeY+j*sizeX+i]=i;
+          ptr[k*sizeX*sizeY+j*sizeX+i]=k*sizeX*sizeY+j*sizeX+i;
         }
       }
     }

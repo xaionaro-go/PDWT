@@ -45,7 +45,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
      * data size grows along filtering steps
      */
     T* inlow = this->m_image;
-
+    T* outlowX;
     // For every level
     for (int l=0; l<this->m_level; l++) {
       // Filter sequentially low and then high freq in z direction so that one
@@ -115,7 +115,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           auto sBandCalc = [=](auto xIdx){ return 
             this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
           };
-          T* outlowX;
+          
           // If this is the low freq projection
           if ((zFiltIdx==0)&&(yFiltIdx==0)) {
 			if (l+1==this->m_level) {
@@ -141,10 +141,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 			Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
 			  sBandCalc(1)));
 
-          // Update address of low space projection
-          inlow = outlowX;
 		}
       }
+      // Update address of low space projection
+      inlow = outlowX;
     }
     return 1;
   }
