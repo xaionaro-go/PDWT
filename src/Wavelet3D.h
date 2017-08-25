@@ -121,7 +121,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 			if (l+1==this->m_level) {
 			  outlowX=this->m_coeff->GetLowSubspacePtr(l);
 			} else {
-			  outlowX=this->m_coeff->GetOutLowTmpBuffPtr();
+			  outlowX=this->m_coeff->GetHalfTmpBuffPtr(2);
 			}
           } else {
             outlowX=sBandCalc(0);
@@ -144,7 +144,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 		}
       }
       // Update address of low space projection
-      inlow = outlowX;
+      inlow = this->m_coeff->GetHalfTmpBuffPtr(2);
     }
     return 1;
   }
@@ -164,7 +164,11 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           T* inlowX;
           // If this is the low freq projection
           if ((zFiltIdx==0)&&(yFiltIdx==0)) {
-            inlowX=this->m_coeff->GetLowSubspacePtr(l-1);
+            if (l==this->m_level) {
+              inlowX=this->m_coeff->GetLowSubspacePtr(l-1);
+            } else {
+              inlowX=this->m_coeff->GetHalfTmpBuffPtr(2);
+            }
           } else {
             inlowX=sBandCalc(0);
           }
@@ -216,7 +220,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 		if (l<=1) {
 		  outlow=this->m_image;
 		} else {
-		  outlow=this->m_coeff->GetLowSubspacePtr(l-2);
+		  outlow=this->m_coeff->GetHalfTmpBuffPtr(2);
 		}
 
         if (zFiltIdx==0) {

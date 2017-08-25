@@ -473,17 +473,36 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      * in 3D wavelet transform, memory consumption is critical, this is why
      * we will perform all steps sequentially.
      *
+     * FORWARD
      * Step 1:
      * tmp buffer should be able to store output of one single Z filtering,
      * which is initial size where only third dimension has been divided
-     * by 2
+     * by 2: SizeX*SizeY*(SizeZ/2)
      * Step 2:
      * We then need to perform Y filtering, and store one single output of
-     * size initial size with dimension 2 and 3 divided by 2
+     * size initial size with dimension 2 and 3 divided by 2:
+     * SizeX*(SizeY/2)*(SizeZ/2)
      * Step 3
      * For Z filtering, data can be written directly to coefficient storage
      * but we also need space for the lowpass output for next transform if
-     * there is more than one level
+     * there is more than one level: worst case needed size is
+     * (SizeX/2)*(SizeY/2)*(SizeZ/2)
+     *
+     * BACKWARD
+     * Step 1, multiple sequential pass: foreach Ysubsp, foreach Z subsp:
+     * tmp buffer stores the output of a double (l/h) x filtering of size
+     * (worst case:) SizeX*(SizeY/2)*(SizeZ/2)
+     * Step 2:
+     * The xfiltered data is then filterd along Y, with a single filter, and
+     * written (or in an update manner if not first) to a second tmp buffer
+     * (worst case:) SizeX*SizeY*(SizeZ/2)
+     * Step 3:
+     * Either we are at the last reconstruction step, and one doesn't need
+     * any additional memory (writing in output directly) or the worst case
+     * then need to write the low pass approximation of size 
+     * (SizeX/2)*(SizeY/2)*(SizeZ/2) somewhere
+     * 
+     * One can conclude that Forward transform needs more tmp memory
      */
     m_tmpZOutSingleSize=this->m_scaleShape.at(0).at(0)*
       this->m_scaleShape.at(0).at(1)*
@@ -491,9 +510,11 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
     m_tmpYOutSingleSize=this->m_scaleShape.at(0).at(0)*
       this->m_scaleShape.at(1).at(1)*
       this->m_scaleShape.at(1).at(2);
+    m_tmpXOutSingleSize=this->m_scaleSize.at(1);
+
     if (this->m_level>1) {
       m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize+
-        this->m_scaleSize.at(1);
+        m_tmpXOutSingleSize;
     } else {
       m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize;
     }
@@ -545,6 +566,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   size_t m_tmpBuffBandOffset;
   size_t m_tmpZOutSingleSize;
   size_t m_tmpYOutSingleSize;
+  size_t m_tmpXOutSingleSize;
   static const size_t m_dimensions=3;
 };
 
