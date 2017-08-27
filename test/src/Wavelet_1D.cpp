@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <limits>
 #include <numeric>
+#include <random>
 #include <vector>
 
 // Lib
@@ -26,7 +27,13 @@ struct Wavelet1DTestFunctor {
 
     // Define input/output
     std::vector<T> in(size);
-    std::iota(in.begin(), in.end(),0);
+    // Seed with a real random value, if available
+    std::random_device re;
+    // Random numbers between -1. and 1.
+    std::default_random_engine rnd(re());
+    std::uniform_real_distribution<T> uni(-1., 1.);
+    auto rand = [&]() { return uni(rnd); };
+    std::generate(in.begin(), in.end(),rand);
     const std::vector<T> incopy(in.cbegin(),in.cend());
 
     // Define wavelet tranform
@@ -44,7 +51,7 @@ struct Wavelet1DTestFunctor {
         return acc0&&acc1;
       },
       [](T a, T b) {
-        return std::abs(a-b) < 1;
+        return std::abs(a-b) < 1e-4;
       });
   }
 };

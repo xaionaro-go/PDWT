@@ -45,7 +45,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
      * data size grows along filtering steps
      */
     T* inlow = this->m_image;
-    T* outlowX;
+    T* outlow = this->m_coeff->GetHalfTmpBuffPtr(2);
     // For every level
     for (int l=0; l<this->m_level; l++) {
       // Filter sequentially low and then high freq in z direction so that one
@@ -115,13 +115,13 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           auto sBandCalc = [=](auto xIdx){ return 
             this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
           };
-          
+          T* outlowX; 
           // If this is the low freq projection
           if ((zFiltIdx==0)&&(yFiltIdx==0)) {
 			if (l+1==this->m_level) {
 			  outlowX=this->m_coeff->GetLowSubspacePtr(l);
 			} else {
-			  outlowX=this->m_coeff->GetHalfTmpBuffPtr(2);
+			  outlowX=outlow;
 			}
           } else {
             outlowX=sBandCalc(0);
@@ -144,7 +144,12 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 		}
       }
       // Update address of low space projection
-      inlow = this->m_coeff->GetHalfTmpBuffPtr(2);
+      if (l==0) {
+        inlow = this->m_coeff->GetHalfTmpBuffPtr(2);
+        outlow = this->m_coeff->GetHalfTmpBuffPtr(3);
+      } else {
+        std::swap(inlow,outlow);
+      }
     }
     return 1;
   }
@@ -152,6 +157,10 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 
   /// Backward wavelet transform: transpose of the forward transpose
   virtual int backward() {
+    int inTmpBuffIdx = (this->m_level%2==0) ? 3 : 2;
+    int outTmpBuffIdx = (this->m_level%2==0) ? 2 : 3;
+    T* inlow = this->m_coeff->GetHalfTmpBuffPtr(inTmpBuffIdx);
+    T* outlow = this->m_coeff->GetHalfTmpBuffPtr(outTmpBuffIdx);
     for (int l=this->m_level; l>0; l--) {
       //Z low and high can be inverted independantly, and then added afterward
       for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
@@ -167,7 +176,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
             if (l==this->m_level) {
               inlowX=this->m_coeff->GetLowSubspacePtr(l-1);
             } else {
-              inlowX=this->m_coeff->GetHalfTmpBuffPtr(2);
+              inlowX=inlow;
             }
           } else {
             inlowX=sBandCalc(0);
@@ -214,13 +223,11 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           }
         }
 
-		//Update output buffer destination TODO TN URGENT:
-        //strategy does not work because one overwrites data for l>1
-		T* outlow;
+		T* outlowZ;
 		if (l<=1) {
-		  outlow=this->m_image;
+		  outlowZ=this->m_image;
 		} else {
-		  outlow=this->m_coeff->GetHalfTmpBuffPtr(2);
+		  outlowZ=outlow;
 		}
 
         if (zFiltIdx==0) {
@@ -233,7 +240,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 			  this->m_coeff->GetScaleShape(l-1).at(1),
 			  this->m_coeff->GetScaleShape(l).at(2),
 			  this->m_coeff->GetScaleShape(l-1).at(2),
-			  outlow,
+			  outlowZ,
 			  this->m_coeff->GetHalfTmpBuffPtr(0));
         } else { //Perform update instead of write, see Accumulator tyoe
 		  // Invert Z highpass filtering
@@ -245,10 +252,11 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
 			  this->m_coeff->GetScaleShape(l-1).at(1),
 			  this->m_coeff->GetScaleShape(l).at(2),
 			  this->m_coeff->GetScaleShape(l-1).at(2),
-			  outlow,
+			  outlowZ,
 			  this->m_coeff->GetHalfTmpBuffPtr(0));
         }
 	  }
+      std::swap(inlow, outlow);
     }
     return 1;
   }

@@ -485,8 +485,10 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      * Step 3
      * For Z filtering, data can be written directly to coefficient storage
      * but we also need space for the lowpass output for next transform if
-     * there is more than one level: worst case needed size is
-     * (SizeX/2)*(SizeY/2)*(SizeZ/2)
+     * there is more than one level. In addition input/output need to be non
+     * overlapping, so that adds an additional space for next output if needed
+     * worst case needed size is
+     * (SizeX/2)*(SizeY/2)*(SizeZ/2)+(SizeX/4)*(SizeY/4)*(SizeZ/4)
      *
      * BACKWARD
      * Step 1, multiple sequential pass: foreach Ysubsp, foreach Z subsp:
@@ -500,7 +502,8 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      * Either we are at the last reconstruction step, and one doesn't need
      * any additional memory (writing in output directly) or the worst case
      * then need to write the low pass approximation of size 
-     * (SizeX/2)*(SizeY/2)*(SizeZ/2) somewhere
+     * (SizeX/2)*(SizeY/2)*(SizeZ/2) somewhere, from another buffer of size
+     * (SizeX/4)*(SizeY/4)*(SizeZ/4)
      * 
      * One can conclude that Forward transform needs more tmp memory
      */
@@ -512,7 +515,10 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
       this->m_scaleShape.at(1).at(2);
     m_tmpXOutSingleSize=this->m_scaleSize.at(1);
 
-    if (this->m_level>1) {
+    if (this->m_level>2) {
+      m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize+
+        m_tmpXOutSingleSize+this->m_scaleSize.at(2);
+    } else if (this->m_level>1) {
       m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize+
         m_tmpXOutSingleSize;
     } else {
@@ -536,6 +542,9 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
       subBandOffset = m_tmpZOutSingleSize;
     } else if(subBandIdx==2) {
       subBandOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize;
+    } else if(subBandIdx==3) {
+      subBandOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize+
+        m_tmpXOutSingleSize;
     }
     return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+
       subBandOffset;

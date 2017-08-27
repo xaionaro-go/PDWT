@@ -14,9 +14,9 @@ using T = float;
 int main(int argc, char **argv) {
 
 
-  int sizeX=8;
-  int sizeY=8;
-  int sizeZ=8;
+  int sizeX=15;
+  int sizeY=15;
+  int sizeZ=15;
 
   auto modify = [sizeX,sizeY,sizeZ](auto* ptr) {
     for(int k =0; k<sizeZ; k++) {
@@ -54,8 +54,8 @@ int main(int argc, char **argv) {
 
   // Define wavelet tranform
   //Dummy2_3D<T> w(in.data(),sizeX,sizeY,1,false,"Daub2",1);
-  //Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",2);
-  Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Anto97",1);
+  Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",3);
+  //Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_3D<T> w(in.data(),sizeX,sizeY,false,"QSHIFT6",1);
   //dtwAnto97QSHIFT6_3D<T> w(in.data(),sizeX,sizeY,1,false,"DTCWT",3); 
     
