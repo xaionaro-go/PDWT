@@ -645,7 +645,10 @@ class DTCoeffContainer3D : public CoeffContainer3D<T,SubContainerT> {
   }
 
   /// Should be the exact inverse mapping of WaveletToCpx
-  int CpxToWavelet() { return 1; };
+  int CpxToWavelet() {
+    ApplyBandFunctor(CpxToWavelet3D<T>(m_normalizationRatio));
+    return 1;
+  }
 
  protected:
   static constexpr const T m_normalizationRatio = 1.0/(4.0*std::sqrt(2));
