@@ -189,15 +189,8 @@ struct WaveletToCpx3D {
 
 
 /** \struct CpxToWavelet3D
- * \brief Equivalent of a matrix multiplication for complex interpretation
+ * \brief Just the inverse of WaveletToCpx3D
  *
- * This functor helps to convert from the 8
- * complex vectors of coefficients in the dtcwt basis
- * to 8 vectors of coefficients that will be ready
- * for the synthesis operation.
- *
- * This operator is in fact equivalent to the following
- * scaled orthogonal matrix : <br>
  *
  *	\f$ \frac{1}{4\sqrt{2}} \times
     \begin{pmatrix}
@@ -211,7 +204,7 @@ struct WaveletToCpx3D {
       0 & -1 &  0 &  1 &  0 &  1 &  0 & -1 \end{pmatrix} \f$
  *
  * \author Thibault Notargiacomo
- *
+ */
 template<typename T>
 struct CpxToWavelet3D {
   CpxToWavelet3D( T ratio ) : m_ratio( ratio ) {}
@@ -239,4 +232,3 @@ struct CpxToWavelet3D {
   }
   const T m_ratio;
 };
-*/
