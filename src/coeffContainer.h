@@ -486,7 +486,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      * size initial size with dimension 2 and 3 divided by 2:
      * SizeX*(SizeY/2)*(SizeZ/2)
      * Step 3
-     * For Z filtering, data can be written directly to coefficient storage
+     * For X filtering, data can be written directly to coefficient storage
      * but we also need space for the lowpass output for next transform if
      * there is more than one level. In addition input/output need to be non
      * overlapping, so that adds an additional space for next output if needed
@@ -498,7 +498,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      * tmp buffer stores the output of a double (l/h) x filtering of size
      * (worst case:) SizeX*(SizeY/2)*(SizeZ/2)
      * Step 2:
-     * The xfiltered data is then filterd along Y, with a single filter, and
+     * The xfiltered data is then filtered along Y, with a single filter, and
      * written (or in an update manner if not first) to a second tmp buffer
      * (worst case:) SizeX*SizeY*(SizeZ/2)
      * Step 3:
@@ -654,35 +654,4 @@ class DTCoeffContainer3D : public CoeffContainer3D<T,SubContainerT> {
   static constexpr const T m_normalizationRatio = 1.0/(4.0*std::sqrt(2));
 };
 
-/** \class CoeffContainerCpx
- * \brief Implementation of the CoeffContainer interface for storing complex
- * wavelet transform, for the generic case (arbitrary dimension)
- *
- * \author Thibault Notargiacomo
- *
-template<typename T, class SubContainerT>
-class CoeffContainerCpx : public CoeffContainer<T,SubContainerT> {
- public:
-  /// Deleted Constructor
-  CoeffContainerCpx()=delete;
-
-  /// Defaulted Destructor
-  virtual ~CoeffContainerCpx()=default;
-};*/
-
-/*
-/// Make the magical mixture of negative frequency cancelling signals
-WaveletToCpx( T scaling ) {
-  // Set up zip iterator
-  auto begin = m_coeff.begin();
-  auto zippedBegin( boost::make_zip_iterator( boost::make_tuple(
-    begin,
-    begin + this->m_bandSize ) ) );
-  auto zippedEnd( boost::make_zip_iterator( boost::make_tuple(
-    begin + this->m_bandSize,
-    begin + 2*this->m_bandSize ) ) );
-  // Perform linear mapping
-  std::for_each( zippedBegin zippedEnd, WaveletToCpx1D<T>(
-    scaling/(2.0*std::sqrt(2.0) )) );
-*/
 #endif /* COEFFCONTAINER_H */
