@@ -51,97 +51,97 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       // Filter sequentially low and then high freq in z direction so that one
       // can use only one temporary buffer for the Z filtering stage
       for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
-				if (zFiltIdx==0) {
-					//Z filtering low
-					SeparableSubsampledConvolutionEngine3D<T,
-						typename WaveletSchemeT::f_l
-						>::PerformSubsampledFilteringZRef(
-					this->m_coeff->GetScaleShape(l).at(0),
-					this->m_coeff->GetScaleShape(l).at(1),
-					this->m_coeff->GetScaleShape(l).at(2),
-					Accumulator<T,T,T,int>(inlow,
-						this->m_coeff->GetHalfTmpBuffPtr(0),
-						this->m_coeff->GetScaleShape(l).at(0)*
-									this->m_coeff->GetScaleShape(l).at(1),
-						this->m_coeff->GetScaleShape(l).at(0)*
-									this->m_coeff->GetScaleShape(l).at(1)));
-				} else {
-					//Z filtering high
-					SeparableSubsampledConvolutionEngine3D<T,
-						typename WaveletSchemeT::f_h
-						>::PerformSubsampledFilteringZRef(
-					this->m_coeff->GetScaleShape(l).at(0),
-					this->m_coeff->GetScaleShape(l).at(1),
-					this->m_coeff->GetScaleShape(l).at(2),
-					Accumulator<T,T,T,int>(inlow,
-						this->m_coeff->GetHalfTmpBuffPtr(0),
-						this->m_coeff->GetScaleShape(l).at(0)*
-									this->m_coeff->GetScaleShape(l).at(1),
-						this->m_coeff->GetScaleShape(l).at(0)*
-									this->m_coeff->GetScaleShape(l).at(1)));
-						}
+  			if (zFiltIdx==0) {
+  				//Z filtering low
+  				SeparableSubsampledConvolutionEngine3D<T,
+  					typename WaveletSchemeT::f_l
+  					>::PerformSubsampledFilteringZRef(
+  				this->m_coeff->GetScaleShape(l).at(0),
+  				this->m_coeff->GetScaleShape(l).at(1),
+  				this->m_coeff->GetScaleShape(l).at(2),
+  				Accumulator<T,T,T,int>(inlow,
+  					this->m_coeff->GetHalfTmpBuffPtr(0),
+  					this->m_coeff->GetScaleShape(l).at(0)*
+  								this->m_coeff->GetScaleShape(l).at(1),
+  					this->m_coeff->GetScaleShape(l).at(0)*
+  								this->m_coeff->GetScaleShape(l).at(1)));
+  			} else {
+  				//Z filtering high
+  				SeparableSubsampledConvolutionEngine3D<T,
+  					typename WaveletSchemeT::f_h
+  					>::PerformSubsampledFilteringZRef(
+  				this->m_coeff->GetScaleShape(l).at(0),
+  				this->m_coeff->GetScaleShape(l).at(1),
+  				this->m_coeff->GetScaleShape(l).at(2),
+  				Accumulator<T,T,T,int>(inlow,
+  					this->m_coeff->GetHalfTmpBuffPtr(0),
+  					this->m_coeff->GetScaleShape(l).at(0)*
+  								this->m_coeff->GetScaleShape(l).at(1),
+  					this->m_coeff->GetScaleShape(l).at(0)*
+  								this->m_coeff->GetScaleShape(l).at(1)));
+  					}
 
-				for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
-					if (yFiltIdx==0) {
-					//Y filtering low
-					SeparableSubsampledConvolutionEngine3D<T,
-						typename WaveletSchemeT::f_l
-						>::PerformSubsampledFilteringYRef(
-						this->m_coeff->GetScaleShape(l).at(0),
-						this->m_coeff->GetScaleShape(l).at(1),
-									this->m_coeff->GetScaleShape(l+1).at(1),
-						this->m_coeff->GetScaleShape(l+1).at(2),
-						Accumulator<T,T,T,int>(
-							this->m_coeff->GetHalfTmpBuffPtr(0),
-										this->m_coeff->GetHalfTmpBuffPtr(1),
-						this->m_coeff->GetScaleShape(l).at(0),
-						this->m_coeff->GetScaleShape(l).at(0)));
-					} else {
-					//Y filtering high
-					SeparableSubsampledConvolutionEngine3D<T,
-						typename WaveletSchemeT::f_h
-						>::PerformSubsampledFilteringYRef(
-						this->m_coeff->GetScaleShape(l).at(0),
-						this->m_coeff->GetScaleShape(l).at(1),
-									this->m_coeff->GetScaleShape(l+1).at(1),
-						this->m_coeff->GetScaleShape(l+1).at(2),
-						Accumulator<T,T,T,int>(
-										this->m_coeff->GetHalfTmpBuffPtr(0),
-										this->m_coeff->GetHalfTmpBuffPtr(1),
-						this->m_coeff->GetScaleShape(l).at(0),
-						this->m_coeff->GetScaleShape(l).at(0)));
-							}
+  			for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
+  				if (yFiltIdx==0) {
+  				//Y filtering low
+  				SeparableSubsampledConvolutionEngine3D<T,
+  					typename WaveletSchemeT::f_l
+  					>::PerformSubsampledFilteringYRef(
+  					this->m_coeff->GetScaleShape(l).at(0),
+  					this->m_coeff->GetScaleShape(l).at(1),
+  								this->m_coeff->GetScaleShape(l+1).at(1),
+  					this->m_coeff->GetScaleShape(l+1).at(2),
+  					Accumulator<T,T,T,int>(
+  						this->m_coeff->GetHalfTmpBuffPtr(0),
+  									this->m_coeff->GetHalfTmpBuffPtr(1),
+  					this->m_coeff->GetScaleShape(l).at(0),
+  					this->m_coeff->GetScaleShape(l).at(0)));
+  				} else {
+  				//Y filtering high
+  				SeparableSubsampledConvolutionEngine3D<T,
+  					typename WaveletSchemeT::f_h
+  					>::PerformSubsampledFilteringYRef(
+  					this->m_coeff->GetScaleShape(l).at(0),
+  					this->m_coeff->GetScaleShape(l).at(1),
+  								this->m_coeff->GetScaleShape(l+1).at(1),
+  					this->m_coeff->GetScaleShape(l+1).at(2),
+  					Accumulator<T,T,T,int>(
+  									this->m_coeff->GetHalfTmpBuffPtr(0),
+  									this->m_coeff->GetHalfTmpBuffPtr(1),
+  					this->m_coeff->GetScaleShape(l).at(0),
+  					this->m_coeff->GetScaleShape(l).at(0)));
+  						}
 
-							auto sBandCalc = [=](auto xIdx){ return 
-								this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
-							};
-							T* outlowX; 
-							// If this is the low freq projection
-							if ((zFiltIdx==0)&&(yFiltIdx==0)) {
-					if (l+1==this->m_level) {
-						outlowX=this->m_coeff->GetLowSubspacePtr(l);
-					} else {
-						outlowX=outlow;
-					}
-							} else {
-								outlowX=sBandCalc(0);
-							}
+  						auto sBandCalc = [=](auto xIdx){ return 
+  							this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
+  						};
+  						T* outlowX; 
+  						// If this is the low freq projection
+  						if ((zFiltIdx==0)&&(yFiltIdx==0)) {
+  				if (l+1==this->m_level) {
+  					outlowX=this->m_coeff->GetLowSubspacePtr(l);
+  				} else {
+  					outlowX=outlow;
+  				}
+  						} else {
+  							outlowX=sBandCalc(0);
+  						}
 
-					//Now perform X filtering
-					SeparableSubsampledConvolutionEngine3D<T,
-						typename WaveletSchemeT::f_l,
-						typename WaveletSchemeT::f_h
-						>::PerformSubsampledFilteringXRef(
-					this->m_coeff->GetScaleShape(l).at(0),
-					this->m_coeff->GetScaleShape(l+1).at(0),
-					this->m_coeff->GetScaleShape(l+1).at(1),
-					this->m_coeff->GetScaleShape(l+1).at(2),
-					Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
-									outlowX),
-					Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
-						sBandCalc(1)));
+  				//Now perform X filtering
+  				SeparableSubsampledConvolutionEngine3D<T,
+  					typename WaveletSchemeT::f_l,
+  					typename WaveletSchemeT::f_h
+  					>::PerformSubsampledFilteringXRef(
+  				this->m_coeff->GetScaleShape(l).at(0),
+  				this->m_coeff->GetScaleShape(l+1).at(0),
+  				this->m_coeff->GetScaleShape(l+1).at(1),
+  				this->m_coeff->GetScaleShape(l+1).at(2),
+  				Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
+  								outlowX),
+  				Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
+  					sBandCalc(1)));
 
-				}
+  			}
       }
       // Update address of low space projection
       if (l==0) {
@@ -165,7 +165,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
       //Z low and high can be inverted independantly, and then added afterward
       for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
         //Y low and high can be inverted sequentially, and then added
-		for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
+  	for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
           // returns ptr to coefficients for the current (x,y,z) configuration
           auto sBandCalc = [=](auto xIdx){ return 
             this->m_coeff->GetHighSubspacePtr(l-1,zFiltIdx*4+yFiltIdx*2+xIdx-1);
@@ -183,79 +183,79 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
           }
 
           // Invert X lowpass/highpass filtering for any Y/Z combination
-	      SeparableUpsampledConvolutionEngine3D<T,
-			  SubsampledAccumulator,
-			  typename WaveletSchemeT::i_l,
-			  typename WaveletSchemeT::i_h
-		    >::PerformUpsampledFilteringXRef(
-	        this->m_coeff->GetScaleShape(l).at(0),
-			this->m_coeff->GetScaleShape(l-1).at(0),
-			this->m_coeff->GetScaleShape(l).at(1),
-			this->m_coeff->GetScaleShape(l).at(2),
-			this->m_coeff->GetHalfTmpBuffPtr(1),
-			inlowX,
-			sBandCalc(1));
+        SeparableUpsampledConvolutionEngine3D<T,
+  		  SubsampledAccumulator,
+  		  typename WaveletSchemeT::i_l,
+  		  typename WaveletSchemeT::i_h
+  	    >::PerformUpsampledFilteringXRef(
+          this->m_coeff->GetScaleShape(l).at(0),
+  		this->m_coeff->GetScaleShape(l-1).at(0),
+  		this->m_coeff->GetScaleShape(l).at(1),
+  		this->m_coeff->GetScaleShape(l).at(2),
+  		this->m_coeff->GetHalfTmpBuffPtr(1),
+  		inlowX,
+  		sBandCalc(1));
 
           if (yFiltIdx==0) {
-			// Invert Y lowpass filtering only
-			SeparableUpsampledConvolutionEngine3D<T,
+  		// Invert Y lowpass filtering only
+  		SeparableUpsampledConvolutionEngine3D<T,
                 SubsampledAccumulator,
-				typename WaveletSchemeT::i_l
-			  >::PerformUpsampledFilteringYRef(
-				this->m_coeff->GetScaleShape(l-1).at(0),
-				this->m_coeff->GetScaleShape(l).at(1),
-				this->m_coeff->GetScaleShape(l-1).at(1),
-				this->m_coeff->GetScaleShape(l).at(2),
-				this->m_coeff->GetHalfTmpBuffPtr(0),
-				this->m_coeff->GetHalfTmpBuffPtr(1)); 
+  			typename WaveletSchemeT::i_l
+  		  >::PerformUpsampledFilteringYRef(
+  			this->m_coeff->GetScaleShape(l-1).at(0),
+  			this->m_coeff->GetScaleShape(l).at(1),
+  			this->m_coeff->GetScaleShape(l-1).at(1),
+  			this->m_coeff->GetScaleShape(l).at(2),
+  			this->m_coeff->GetHalfTmpBuffPtr(0),
+  			this->m_coeff->GetHalfTmpBuffPtr(1)); 
           } else { //Perform update instead of write, see Accumulator type
-			// Invert Y highpass filtering only
-			SeparableUpsampledConvolutionEngine3D<T,
+  		// Invert Y highpass filtering only
+  		SeparableUpsampledConvolutionEngine3D<T,
                 SubsampledAccumulatorUpdate,
-				typename WaveletSchemeT::i_h
-			  >::PerformUpsampledFilteringYRef(
-				this->m_coeff->GetScaleShape(l-1).at(0),
-				this->m_coeff->GetScaleShape(l).at(1),
-				this->m_coeff->GetScaleShape(l-1).at(1),
-				this->m_coeff->GetScaleShape(l).at(2),
-				this->m_coeff->GetHalfTmpBuffPtr(0),
-				this->m_coeff->GetHalfTmpBuffPtr(1));
+  			typename WaveletSchemeT::i_h
+  		  >::PerformUpsampledFilteringYRef(
+  			this->m_coeff->GetScaleShape(l-1).at(0),
+  			this->m_coeff->GetScaleShape(l).at(1),
+  			this->m_coeff->GetScaleShape(l-1).at(1),
+  			this->m_coeff->GetScaleShape(l).at(2),
+  			this->m_coeff->GetHalfTmpBuffPtr(0),
+  			this->m_coeff->GetHalfTmpBuffPtr(1));
           }
         }
 
-		T* outlowZ;
-		if (l<=1) {
-		  outlowZ=this->m_image;
-		} else {
-		  outlowZ=outlow;
-		}
+  	T* outlowZ;
+  	if (l<=1) {
+  	  outlowZ=this->m_image;
+  	} else {
+  	  outlowZ=outlow;
+  	}
 
         if (zFiltIdx==0) {
-		  // Invert Z lowpass filtering
-		  SeparableUpsampledConvolutionEngine3D<T,
+  	  // Invert Z lowpass filtering
+  	  SeparableUpsampledConvolutionEngine3D<T,
               SubsampledAccumulator,
-			  typename WaveletSchemeT::i_l
-			>::PerformUpsampledFilteringZRef(
-			  this->m_coeff->GetScaleShape(l-1).at(0),
-			  this->m_coeff->GetScaleShape(l-1).at(1),
-			  this->m_coeff->GetScaleShape(l).at(2),
-			  this->m_coeff->GetScaleShape(l-1).at(2),
-			  outlowZ,
-			  this->m_coeff->GetHalfTmpBuffPtr(0));
+  		  typename WaveletSchemeT::i_l
+  		>::PerformUpsampledFilteringZRef(
+  		  this->m_coeff->GetScaleShape(l-1).at(0),
+  		  this->m_coeff->GetScaleShape(l-1).at(1),
+  		  this->m_coeff->GetScaleShape(l).at(2),
+  		  this->m_coeff->GetScaleShape(l-1).at(2),
+  		  outlowZ,
+  		  this->m_coeff->GetHalfTmpBuffPtr(0));
         } else { //Perform update instead of write, see Accumulator tyoe
-		  // Invert Z highpass filtering
-		  SeparableUpsampledConvolutionEngine3D<T,
+  	  // Invert Z highpass filtering
+  	  SeparableUpsampledConvolutionEngine3D<T,
               SubsampledAccumulatorUpdate,
-			  typename WaveletSchemeT::i_h
-			>::PerformUpsampledFilteringZRef(
-			  this->m_coeff->GetScaleShape(l-1).at(0),
-			  this->m_coeff->GetScaleShape(l-1).at(1),
-			  this->m_coeff->GetScaleShape(l).at(2),
-			  this->m_coeff->GetScaleShape(l-1).at(2),
-			  outlowZ,
-			  this->m_coeff->GetHalfTmpBuffPtr(0));
+  		  typename WaveletSchemeT::i_h
+  		>::PerformUpsampledFilteringZRef(
+  		  this->m_coeff->GetScaleShape(l-1).at(0),
+  		  this->m_coeff->GetScaleShape(l-1).at(1),
+  		  this->m_coeff->GetScaleShape(l).at(2),
+  		  this->m_coeff->GetScaleShape(l-1).at(2),
+  		  outlowZ,
+  		  this->m_coeff->GetHalfTmpBuffPtr(0));
         }
-	  }
+    }
       std::swap(inlow, outlow);
     }
     return 1;
@@ -332,45 +332,157 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
       /********************
        * Z Filtering step *
        ********************/
-
       //Filter with first zReal filter, and then zImag filter
       for (int zImagStatus : {0,1}) {
-				// Filter sequentially low and then high freq in z direction so that one
-				// can use only one temporary buffer for the Z filtering stage
-				for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
+        // Filter sequentially low and then high freq in z direction so that one
+        // can use only one temporary buffer for the Z filtering stage
+        for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
           if (zImagStatus==0) {
             //Z Real Filters
- 						if (zFiltIdx==0) {
+            if (zFiltIdx==0) {
               //Z Real Filters low
-
-						} else { 
+              SeparableSubsampledConvolutionEngine3D<T,
+                  typename DTWaveletSchemeT::f_l0r
+                  >::PerformSubsampledFilteringZRef(
+                this->m_coeff->GetScaleShape(l).at(0),
+                this->m_coeff->GetScaleShape(l).at(1),
+                this->m_coeff->GetScaleShape(l).at(2),
+                Accumulator<T,T,T,int>(inlow,
+                  this->m_coeff->GetHalfTmpBuffPtr(0),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1)));
+            } else {
               //Z Real Filters high
-						}
+              SeparableSubsampledConvolutionEngine3D<T,
+                  typename DTWaveletSchemeT::f_h0r
+                  >::PerformSubsampledFilteringZRef(
+                this->m_coeff->GetScaleShape(l).at(0),
+                this->m_coeff->GetScaleShape(l).at(1),
+                this->m_coeff->GetScaleShape(l).at(2),
+                Accumulator<T,T,T,int>(inlow,
+                  this->m_coeff->GetHalfTmpBuffPtr(0),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1)));
+  			}
           } else {
             //Z Imag Filters
-						if (zFiltIdx==0) {
+  		    if (zFiltIdx==0) {
               //Z Imag Filters low
-
-						} else {
+              SeparableSubsampledConvolutionEngine3D<T,
+                  typename DTWaveletSchemeT::f_l0i
+                  >::PerformSubsampledFilteringZRef(
+                this->m_coeff->GetScaleShape(l).at(0),
+                this->m_coeff->GetScaleShape(l).at(1),
+                this->m_coeff->GetScaleShape(l).at(2),
+                Accumulator<T,T,T,int>(inlow,
+                  this->m_coeff->GetHalfTmpBuffPtr(0),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1)));
+  			} else {
               //Z Imag Filters high
-
-						}
+              SeparableSubsampledConvolutionEngine3D<T,
+                  typename DTWaveletSchemeT::f_h0i
+                  >::PerformSubsampledFilteringZRef(
+                this->m_coeff->GetScaleShape(l).at(0),
+                this->m_coeff->GetScaleShape(l).at(1),
+                this->m_coeff->GetScaleShape(l).at(2),
+                Accumulator<T,T,T,int>(inlow,
+                  this->m_coeff->GetHalfTmpBuffPtr(0),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1),
+                  this->m_coeff->GetScaleShape(l).at(0)*
+                  this->m_coeff->GetScaleShape(l).at(1)));
+  			}
           }
-   
-					/********************
-					 * Y Filtering step *
-					 ********************/
-					//Filter with first yReal filter, and then yImag filter
-					for (int yImagStatus : {0,1}) {
-
-					}
+          /********************
+           * Y Filtering step *
+           ********************/
+		  //Filter with first yReal filter, and then yImag filter
+		  for (int yImagStatus : {0,1}) {
+		    // Filter sequentially low and then high freq in z direction so that one
+            // can use only one temporary buffer for the Z filtering stage
+            for (int yFiltIdx=0; yFiltIdx<2; yFiltIdx++) {
+			  if (yImagStatus==0) {
+			    //Y Real Filters
+				if (yFiltIdx==0) {
+				  //Y Real Filters low
+                  SeparableSubsampledConvolutionEngine3D<T,
+                      typename DTWaveletSchemeT::f_l0r
+                      >::PerformSubsampledFilteringYRef(
+                    this->m_coeff->GetScaleShape(l).at(0),
+                    this->m_coeff->GetScaleShape(l).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(2),
+                    Accumulator<T,T,T,int>(
+                      this->m_coeff->GetHalfTmpBuffPtr(0),
+                      this->m_coeff->GetHalfTmpBuffPtr(1),
+                      this->m_coeff->GetScaleShape(l).at(0),
+                      this->m_coeff->GetScaleShape(l).at(0)));
+				} else { 
+				  //Y Real Filters high
+                  SeparableSubsampledConvolutionEngine3D<T,
+                      typename DTWaveletSchemeT::f_h0r
+                      >::PerformSubsampledFilteringYRef(
+                    this->m_coeff->GetScaleShape(l).at(0),
+                    this->m_coeff->GetScaleShape(l).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(2),
+                    Accumulator<T,T,T,int>(
+                      this->m_coeff->GetHalfTmpBuffPtr(0),
+                      this->m_coeff->GetHalfTmpBuffPtr(1),
+                      this->m_coeff->GetScaleShape(l).at(0),
+                      this->m_coeff->GetScaleShape(l).at(0)));
+				}
+			  } else {
+                //Y Imag Filters
+				if (yFiltIdx==0) {
+				  //Y Imag Filters low
+                  SeparableSubsampledConvolutionEngine3D<T,
+                      typename DTWaveletSchemeT::f_l0i
+                      >::PerformSubsampledFilteringYRef(
+                    this->m_coeff->GetScaleShape(l).at(0),
+                    this->m_coeff->GetScaleShape(l).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(2),
+                    Accumulator<T,T,T,int>(
+                      this->m_coeff->GetHalfTmpBuffPtr(0),
+                      this->m_coeff->GetHalfTmpBuffPtr(1),
+                      this->m_coeff->GetScaleShape(l).at(0),
+                      this->m_coeff->GetScaleShape(l).at(0)));
+				} else {
+				  //Y Imag Filters high
+                  SeparableSubsampledConvolutionEngine3D<T,
+                      typename DTWaveletSchemeT::f_h0i
+                      >::PerformSubsampledFilteringYRef(
+                    this->m_coeff->GetScaleShape(l).at(0),
+                    this->m_coeff->GetScaleShape(l).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(1),
+                    this->m_coeff->GetScaleShape(l+1).at(2),
+                    Accumulator<T,T,T,int>(
+                      this->m_coeff->GetHalfTmpBuffPtr(0),
+                      this->m_coeff->GetHalfTmpBuffPtr(1),
+                      this->m_coeff->GetScaleShape(l).at(0),
+                      this->m_coeff->GetScaleShape(l).at(0)));
+				}
+			  }
+              /********************
+               * X Filtering step *
+               ********************/
+              //Perform full filtering in once
+            }
+          }
         }
-      } 
+      }
 
       // map the set of filtered signals to the real DTCWT mixture
       this->m_coeff->WaveletToCpx();
     }
-
     return 1;
   }
 
