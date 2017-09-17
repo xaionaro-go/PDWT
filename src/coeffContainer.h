@@ -509,6 +509,11 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      * (SizeX/4)*(SizeY/4)*(SizeZ/4)
      * 
      * One can conclude that Forward transform needs more tmp memory
+     *
+     * TODO TN: DT extension (very bad)
+     * Z filter and Y filter mandatory buff are always allocated in one single
+     * instance. However, Z tmp output and Z_2 tmp output are allocated
+     * in nbBand instances
      */
     m_tmpZOutSingleSize=this->m_scaleShape.at(0).at(0)*
       this->m_scaleShape.at(0).at(1)*
@@ -518,14 +523,13 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
       this->m_scaleShape.at(1).at(2);
     m_tmpXOutSingleSize=this->m_scaleSize.at(1);
 
+    m_tmpBuffBaseOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize;
     if (this->m_level>2) {
-      m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize+
-        m_tmpXOutSingleSize+this->m_scaleSize.at(2);
+      m_tmpBuffBandOffset=m_tmpXOutSingleSize+this->m_scaleSize.at(2);
     } else if (this->m_level>1) {
-      m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize+
-        m_tmpXOutSingleSize;
+      m_tmpBuffBandOffset=m_tmpXOutSingleSize;
     } else {
-      m_tmpBuffBandOffset=m_tmpZOutSingleSize+m_tmpYOutSingleSize;
+      m_tmpBuffBandOffset=0;
     }
     // Allocate memory
     this->AllocateMainBuffer();
@@ -537,20 +541,21 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
   /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
-  virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
+  virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx) {
     // Layout is  described in constructor
-    // subbandoffset
+    // TODO TN: for TN, layout is very bad, and should be designed properly
     size_t subBandOffset=0;
+    size_t fullBuffTmp=0;
     if (subBandIdx==1) {
       subBandOffset = m_tmpZOutSingleSize;
     } else if(subBandIdx==2) {
-      subBandOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize;
+      subBandOffset = m_tmpBuffBaseOffset;
     } else if(subBandIdx==3) {
-      subBandOffset = m_tmpZOutSingleSize+m_tmpYOutSingleSize+
-        m_tmpXOutSingleSize;
+      subBandOffset = m_tmpBuffBaseOffset;
+      fullBuffTmp = m_tmpXOutSingleSize;
     }
-    return this->m_ptcoeff->data()+m_tmpBuffBandOffset*bandIdx+
-      subBandOffset;
+    return this->m_ptcoeff->data()+subBandOffset+bandIdx*m_tmpBuffBandOffset+
+      fullBuffTmp;
   }
 
   /**
@@ -571,10 +576,11 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   // Allocate temporary buffer
   virtual void AllocateTmpBuffer() override {
     this->m_ptcoeff=std::make_unique<SubContainerT>(
-      this->m_nbBand*m_tmpBuffBandOffset);
+      m_tmpBuffBaseOffset+this->m_nbBand*m_tmpBuffBandOffset);
   }
 
  protected:
+  size_t m_tmpBuffBaseOffset;
   size_t m_tmpBuffBandOffset;
   size_t m_tmpZOutSingleSize;
   size_t m_tmpYOutSingleSize;

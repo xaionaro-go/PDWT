@@ -317,14 +317,6 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
      * order to maximize performances as data size grows along filtering steps
      */
     T* inlow = this->m_image;
-    T* outlowZReallowYReallowXReal;
-    T* outlowZReallowYReallowXImag;
-    T* outlowZReallowYImaglowXReal;
-    T* outlowZReallowYImaglowXImag;
-    T* outlowZImaglowYReallowXReal;
-    T* outlowZImaglowYReallowXImag;
-    T* outlowZImaglowYImaglowXReal;
-    T* outlowZImaglowYImaglowXImag;
     int l = 0;
 
     //First build the octree, then perform regular CWT on each tree
@@ -474,7 +466,44 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
               /********************
                * X Filtering step *
                ********************/
+              T* outlowXReal=nullptr, outlowXImag=nullptr;
+              int bandIdxReal=4*zImagStatus+2*yImagStatus;
+              int bandIdxImag=bandIdxReal+1;
+              auto sBandCalc = [=](auto xIdx, auto bandIdx){
+                return this->m_coeff->GetHighSubspacePtr(
+                  l ,zFiltIdx*4+yFiltIdx*2+xIdx-1, bandIdx);
+              };
+              if ((zFiltIdx==0)&&(yFiltIdx==0)) {
+                if (l+1==this->m_level) {
+                  outlowXReal=this->m_coeff->GetLowSubspacePtr(l,bandIdxReal);
+                  outlowXImag=this->m_coeff->GetLowSubspacePtr(l,bandIdxImag);
+                } else {
+                  outlowXReal=this->m_coeff->GetOutLowTmpBuffPtr(bandIdxReal);
+                  outlowXImag=this->m_coeff->GetOutLowTmpBuffPtr(bandIdxImag);
+                }
+              } else {
+                outlowXReal=sBandCalc(0, bandIdxReal);
+                outlowXImag=sBandCalc(0, bandIdxImag);
+              }
               //Perform full filtering in once
+              SeparableSubsampledConvolutionEngine3D<T,
+                  typename DTWaveletSchemeT::f_l0r,
+                  typename DTWaveletSchemeT::f_h0r,
+                  typename DTWaveletSchemeT::f_l0i,
+                  typename DTWaveletSchemeT::f_h0i
+                  >::PerformSubsampledFilteringXRef(
+                this->m_coeff->GetScaleShape(l).at(0),
+                this->m_coeff->GetScaleShape(l+1).at(0),
+                this->m_coeff->GetScaleShape(l+1).at(1),
+                this->m_coeff->GetScaleShape(l+1).at(2),
+                Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
+                  outlowXReal),
+                Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
+                  sBandCalc(1, bandIdxReal)),
+                Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
+                  outlowXImag),
+                Accumulator<T,T,T,int>(this->m_coeff->GetHalfTmpBuffPtr(1),
+                  sBandCalc(1, bandIdxImag)));
             }
           }
         }
