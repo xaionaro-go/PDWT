@@ -350,7 +350,7 @@ class DTWavelet2D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		  this->m_coeff->GetHighSubspacePtr(l,2,3)));//out: HighYRealHighXImag
      }
 
-    // Now each subtree can be processed separately
+    // One can process every subtree at once
     for (int l=1; l<this->m_level; l++) {
 	  if (l+1==this->m_level) {
 		outlowYReallowXReal=this->m_coeff->GetLowSubspacePtr(l,0);

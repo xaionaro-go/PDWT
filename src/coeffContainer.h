@@ -541,7 +541,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
   virtual size_t GetNbDimension() const override { return m_dimensions; };
 
   /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
-  virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx) {
+  virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
     // Layout is  described in constructor
     // TODO TN: for TN, layout is very bad, and should be designed properly
     size_t subBandOffset=0;
