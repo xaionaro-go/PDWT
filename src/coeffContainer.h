@@ -602,11 +602,7 @@ class DTCoeffContainer3D : public CoeffContainer3D<T,SubContainerT> {
 
   /// Allocating constructor
   DTCoeffContainer3D(std::vector<size_t> size, int nlevel) {
-    this->InitializeSizes(size, nlevel);
-    // Allocate memory
-    this->AllocateMainBuffer();
-    // Allocate temporary buffer
-    this->AllocateTmpBuffer();
+    this->Initialize3DContainer(size, nlevel);
   }
 
   /// Defaulted Destructor
