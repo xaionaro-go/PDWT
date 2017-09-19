@@ -510,8 +510,7 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
       }
 
       // map the set of filtered signals to the real DTCWT mixture
-      //TODO TN comment
-      //this->m_coeff->WaveletToCpx();
+      this->m_coeff->WaveletToCpx();
     }
     return 1;
   }
@@ -520,8 +519,7 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
   virtual int backward() {
 
     // map the set of DTCWT coefficients to a simple set of filtered signals
-    //TODO TN: uncomment
-    //this->m_coeff->CpxToWavelet();
+    this->m_coeff->CpxToWavelet();
 
     //int inTmpBuffIdx = (this->m_level%2==0) ? 3 : 2;
     //int outTmpBuffIdx = (this->m_level%2==0) ? 2 : 3;
@@ -540,7 +538,7 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 	      /********************
 	       * X Filtering step *
 	       ********************/
-              // One filter 4 buffers at once
+              // Filtering 4 buffers at once
 	      int bandIdxReal = 4*zImagStatus+2*yImagStatus;
 	      int bandIdxImag = bandIdxReal+1;
               auto sBandCalc = [=](auto xIdx, auto bandIdx){
@@ -635,65 +633,65 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
 		    this->m_coeff->GetHalfTmpBuffPtr(1));
 		}
               }
-
-	      /********************
-	       * Z Filtering step *
-	       ********************/
-              if (zImagStatus==0) {
-		if (zHighStatus==0) {
-		  // Invert Y lowpass filtering only
-		  SeparableUpsampledConvolutionEngine3D<T,
-		      SubsampledAccumulator,
-		      typename DTWaveletSchemeT::i_l0r
-		    >::PerformUpsampledFilteringZRef(
-		    this->m_coeff->GetScaleShape(l-1).at(0),
-		    this->m_coeff->GetScaleShape(l-1).at(1),
-		    this->m_coeff->GetScaleShape(l).at(2),
-		    this->m_coeff->GetScaleShape(l-1).at(2),
-		    this->m_image,
-		    this->m_coeff->GetHalfTmpBuffPtr(0)); 
-		} else { //Perform update instead of write, see Accumulator type
-		  // Invert Y highpass filtering only
-		  SeparableUpsampledConvolutionEngine3D<T,
-		      SubsampledAccumulatorUpdate,
-		      typename DTWaveletSchemeT::i_h0r
-		    >::PerformUpsampledFilteringZRef(
-		    this->m_coeff->GetScaleShape(l-1).at(0),
-		    this->m_coeff->GetScaleShape(l-1).at(1),
-		    this->m_coeff->GetScaleShape(l).at(2),
-		    this->m_coeff->GetScaleShape(l-1).at(2),
-		    this->m_image,
-		    this->m_coeff->GetHalfTmpBuffPtr(0));
-		}
-              } else {
-		if (zHighStatus==0) {
-		  // Invert Y lowpass filtering only
-		  SeparableUpsampledConvolutionEngine3D<T,
-		      SubsampledAccumulatorUpdate,
-		      typename DTWaveletSchemeT::i_l0i
-		    >::PerformUpsampledFilteringZRef(
-		    this->m_coeff->GetScaleShape(l-1).at(0),
-		    this->m_coeff->GetScaleShape(l-1).at(1),
-		    this->m_coeff->GetScaleShape(l).at(2),
-		    this->m_coeff->GetScaleShape(l-1).at(2),
-		    this->m_image,
-		    this->m_coeff->GetHalfTmpBuffPtr(0)); 
-		} else { //Perform update instead of write, see Accumulator type
-		  // Invert Y highpass filtering only
-		  SeparableUpsampledConvolutionEngine3D<T,
-		      SubsampledAccumulatorUpdate,
-		      typename DTWaveletSchemeT::i_h0i
-		    >::PerformUpsampledFilteringZRef(
-		    this->m_coeff->GetScaleShape(l-1).at(0),
-		    this->m_coeff->GetScaleShape(l-1).at(1),
-		    this->m_coeff->GetScaleShape(l).at(2),
-		    this->m_coeff->GetScaleShape(l-1).at(2),
-		    this->m_image,
-		    this->m_coeff->GetHalfTmpBuffPtr(0));
-		}
-              }
             }
           }
+
+	  /********************
+	   * Z Filtering step *
+	   ********************/
+	  if (zImagStatus==0) {
+	    if (zHighStatus==0) {
+	      // Invert Y lowpass filtering only
+	      SeparableUpsampledConvolutionEngine3D<T,
+		  SubsampledAccumulator,
+		  typename DTWaveletSchemeT::i_l0r
+		>::PerformUpsampledFilteringZRef(
+		this->m_coeff->GetScaleShape(l-1).at(0),
+		this->m_coeff->GetScaleShape(l-1).at(1),
+		this->m_coeff->GetScaleShape(l).at(2),
+		this->m_coeff->GetScaleShape(l-1).at(2),
+		this->m_image,
+		this->m_coeff->GetHalfTmpBuffPtr(0)); 
+	    } else { //Perform update instead of write, see Accumulator type
+	      // Invert Y highpass filtering only
+	      SeparableUpsampledConvolutionEngine3D<T,
+		  SubsampledAccumulatorUpdate,
+		  typename DTWaveletSchemeT::i_h0r
+		>::PerformUpsampledFilteringZRef(
+		this->m_coeff->GetScaleShape(l-1).at(0),
+		this->m_coeff->GetScaleShape(l-1).at(1),
+		this->m_coeff->GetScaleShape(l).at(2),
+		this->m_coeff->GetScaleShape(l-1).at(2),
+		this->m_image,
+		this->m_coeff->GetHalfTmpBuffPtr(0));
+	    }
+	  } else {
+	    if (zHighStatus==0) {
+	      // Invert Y lowpass filtering only
+	      SeparableUpsampledConvolutionEngine3D<T,
+		  SubsampledAccumulatorUpdate,
+		  typename DTWaveletSchemeT::i_l0i
+		>::PerformUpsampledFilteringZRef(
+		this->m_coeff->GetScaleShape(l-1).at(0),
+		this->m_coeff->GetScaleShape(l-1).at(1),
+		this->m_coeff->GetScaleShape(l).at(2),
+		this->m_coeff->GetScaleShape(l-1).at(2),
+		this->m_image,
+		this->m_coeff->GetHalfTmpBuffPtr(0)); 
+	    } else { //Perform update instead of write, see Accumulator type
+	      // Invert Y highpass filtering only
+	      SeparableUpsampledConvolutionEngine3D<T,
+		  SubsampledAccumulatorUpdate,
+		  typename DTWaveletSchemeT::i_h0i
+		>::PerformUpsampledFilteringZRef(
+		this->m_coeff->GetScaleShape(l-1).at(0),
+		this->m_coeff->GetScaleShape(l-1).at(1),
+		this->m_coeff->GetScaleShape(l).at(2),
+		this->m_coeff->GetScaleShape(l-1).at(2),
+		this->m_image,
+		this->m_coeff->GetHalfTmpBuffPtr(0));
+	    }
+	  }
         }
       }
     }
