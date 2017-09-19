@@ -547,10 +547,13 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
     size_t subBandOffset=0;
     size_t fullBuffTmp=0;
     if (subBandIdx==1) {
+      //No band: space for Zout
       subBandOffset = m_tmpZOutSingleSize;
     } else if(subBandIdx==2) {
+      //No band: space for Zout+Yout
       subBandOffset = m_tmpBuffBaseOffset;
     } else if(subBandIdx==3) {
+      //space for Zout+Yout+ bandIdx*(scaleSize(1)+scaleSize(2))
       subBandOffset = m_tmpBuffBaseOffset;
       fullBuffTmp = m_tmpXOutSingleSize;
     }
