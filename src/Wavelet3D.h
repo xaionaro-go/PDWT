@@ -715,7 +715,7 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
         int outTmpBuffIdx = (this->m_level%2==0) ? 2 : 3;
         T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level,bandIdx);
         T* outlow = this->m_coeff->GetHalfTmpBuffPtr(outTmpBuffIdx, bandIdx);
-        for (int l=this->m_level; l>0; l--) {
+        for (int l=this->m_level; l>1; l--) {
           //Z low and high can be inverted independantly, and then added after
           for (int zFiltIdx=0; zFiltIdx<2; zFiltIdx++) {
             //Y low and high can be inverted sequentially, and then added
