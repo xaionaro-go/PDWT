@@ -78,9 +78,9 @@ using QSHIFT6_Orth_3DTestFctr = Wavelet3DTestFunctor<
 template<typename T, typename L, typename SX, typename SY, typename SZ>
 using REVERSE_QSHIFT6_Orth_3DTestFctr = 
   Wavelet3DTestFunctor<REVERSE_QSHIFT6_Orth_3D,T,L,SX,SY,SZ>;
-//template<typename T, typename L, typename SX, typename SY, typename SZ>
-//using dtwAnto97QSHIFT6_3DTestFctr =
-//  Wavelet3DTestFunctor<dtwAnto97QSHIFT6_3D,T,L,SX,SY,SZ>;  
+template<typename T, typename L, typename SX, typename SY, typename SZ>
+using dtwAnto97QSHIFT6_3DTestFctr =
+  Wavelet3DTestFunctor<dtwAnto97QSHIFT6_3D,T,L,SX,SY,SZ>;  
 
 
 int main(int argc, char* argv[])  {
@@ -100,8 +100,8 @@ int main(int argc, char* argv[])  {
     TestImp<Daub5_3DTestFctr>(T(), L(), S(), S(), S()) &&
     TestImp<Anto97_BiOrth_3DTestFctr>(T(), L(), S(), S(), S()) &&
     TestImp<QSHIFT6_Orth_3DTestFctr>(T(), L(), S(), S(), S()) &&
-    TestImp<REVERSE_QSHIFT6_Orth_3DTestFctr>(T(), L(), S(), S(), S())
-//    TestImp<dtwAnto97QSHIFT6_3DTestFctr>(T(), L(), S(), S(), S()) 
+    TestImp<REVERSE_QSHIFT6_Orth_3DTestFctr>(T(), L(), S(), S(), S()) &&
+    TestImp<dtwAnto97QSHIFT6_3DTestFctr>(T(), L(), S(), S(), S()) 
     ? EXIT_SUCCESS : EXIT_FAILURE;
     EXIT_SUCCESS;
 }
