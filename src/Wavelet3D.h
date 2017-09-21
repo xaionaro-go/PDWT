@@ -713,7 +713,7 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
       for (int bandIdx=0; bandIdx<8; bandIdx++) {
         int inTmpBuffIdx = (this->m_level%2==0) ? 3 : 2;
         int outTmpBuffIdx = (this->m_level%2==0) ? 2 : 3;
-        T* inlow = this->m_coeff->GetLowSubspacePtr(this->m_level,bandIdx);
+        T* inlow = this->m_coeff->GetHalfTmpBuffPtr(inTmpBuffIdx, bandIdx);
         T* outlow = this->m_coeff->GetHalfTmpBuffPtr(outTmpBuffIdx, bandIdx);
         for (int l=this->m_level; l>1; l--) {
           //Z low and high can be inverted independantly, and then added after
@@ -728,7 +728,12 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
               T* inlowX;
               // If this is the low freq projection
               if ((zFiltIdx==0)&&(yFiltIdx==0)) {
-                inlowX=inlow;
+                if (l==this->m_level) {
+                  inlowX=this->m_coeff->GetLowSubspacePtr(
+                    this->m_level,bandIdx);
+                } else {
+                  inlowX=inlow;
+                }
               } else {
                 inlowX=sBandCalc(0);
               }
@@ -870,11 +875,8 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
                   this->m_coeff->GetHalfTmpBuffPtr(0));
               }
             }
-            if (l==this->m_level) {
-              inlow=this->m_coeff->GetHalfTmpBuffPtr(inTmpBuffIdx, bandIdx);
-            }
-            std::swap(inlow,outlow);
           }
+          std::swap(inlow,outlow);
         }
       }
 
