@@ -32,12 +32,21 @@ class Wavelet1DWrapper {
     if (m_name=="Daub2") {
       m_pWavelet = std::make_unique<Daub2_1D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
+    } else if (m_name=="Daub3") {
+      m_pWavelet = std::make_unique<Daub3_1D<T>>(
+        ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
+    } else if (m_name=="Daub4") {
+      m_pWavelet = std::make_unique<Daub4_1D<T>>(
+        ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
+    } else if (m_name=="Daub5") {
+      m_pWavelet = std::make_unique<Daub5_1D<T>>(
+        ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
     } else if (m_name=="dtwAnto97QSHIFT6") {
       m_pWavelet = std::make_unique<dtwAnto97QSHIFT6_1D<T>>(
         ptr,size,1,1,m_doCycleSpinning,m_name,m_nbLevel);
     } else {
       throw std::runtime_error("Wavelet1DWrapper::Initialize : "
-        "Unsupported wavelet type");
+        "Unsupported wavelet type 2");
     }
   }
   void forward() {
