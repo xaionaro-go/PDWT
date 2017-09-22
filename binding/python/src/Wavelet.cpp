@@ -8,6 +8,7 @@
 // Local
 #include "WaveletBind1D.h"
 #include "WaveletBind2D.h"
+#include "WaveletBind3D.h"
 
 namespace py = pybind11;
 
@@ -33,5 +34,15 @@ PYBIND11_MODULE(pyPDWT, m) {
     .def("backward", &Wavelet2DWrapper<float>::backward)
     .def("inverse", &Wavelet2DWrapper<float>::inverse)
     .def("set_image", &Wavelet2DWrapper<float>::set_image);
+
+  py::class_<Wavelet3DWrapper<float>> Wavelet3D(m, "Wavelet3D",
+    py::dynamic_attr());
+  Wavelet3D
+    .def(py::init<int,bool,const std::string &>())
+    .def("Initialize", &Wavelet3DWrapper<float>::Initialize)
+    .def("forward", &Wavelet3DWrapper<float>::forward)
+    .def("backward", &Wavelet3DWrapper<float>::backward)
+    .def("inverse", &Wavelet3DWrapper<float>::inverse)
+    .def("set_image", &Wavelet3DWrapper<float>::set_image);
 }
 

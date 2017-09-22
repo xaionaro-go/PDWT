@@ -23,7 +23,7 @@ set(headers
 #  CoeffContainerBind1D.cpp
   WaveletBind1D.h
   WaveletBind2D.h
-#  WaveletBind3D.h
+  WaveletBind3D.h
 )
 
 ####################
