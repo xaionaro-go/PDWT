@@ -1,12 +1,12 @@
 
 // Local
-#include "coeffContainer.h"
+#include "CoeffContainer.h"
 
 // STL
 #include <vector>
 
 // Local
-#include "vectorization/vectorization.h"
+#include "vectorization/Vectorization.h"
 
 
 // Explicit instanciation

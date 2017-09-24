@@ -8,10 +8,10 @@
 #include <vector>
 
 // Local
-#include "coeffContainer.h"
-#include "filters.h"
-#include "separable.h"
-#include "vectorization/vectorization.h"
+#include "CoeffContainer.h"
+#include "Filters.h"
+#include "Separable.h"
+#include "vectorization/Vectorization.h"
 
 
 /** \class Wavelet2D

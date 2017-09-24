@@ -2,7 +2,7 @@
 #include "Wavelet1D.h"
 
 // Local
-#include "separable.h"
+#include "Separable.h"
 
 // Instanciating all 1d wavelet types at once
 template class DB1DWt<float>;

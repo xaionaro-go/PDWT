@@ -2,7 +2,7 @@
 /// Wavelets coefficients, extracted from http://wavelets.pybytes.com
 ///
 
-#include "filters.h"
+#include "Filters.h"
 
 /*
 

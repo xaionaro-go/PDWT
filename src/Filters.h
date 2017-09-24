@@ -5,29 +5,12 @@
 #ifndef FILTERS_H
 #define FILTERS_H
 
-/*
-TODO TN: a specialiser et supprimer
-#define DTYPE float
-#define cublas_asum cublasSasum
-#define cublas_nrm2 cublasSnrm2
-#define cublas_scal cublasSscal
-#define cublas_axpy cublasSaxpy
-#else
-//~ typedef double DTYPE;
-#define DTYPE double
-#define cublas_asum cublasDasum
-#define cublas_nrm2 cublasDnrm2
-#define cublas_scal cublasDscal
-#define cublas_axpy cublasDaxpy
-#endif*/
-
-
 // STL
 #include <array>
 #include <string>
 
 // Local
-#include "vectorization/vectorization.h"
+#include "vectorization/Vectorization.h"
 
 /** \struct GenericFilter
  * \brief Generic interface that should be implemented by filters. It has been

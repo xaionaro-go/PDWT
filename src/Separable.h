@@ -5,7 +5,7 @@
 #include<tuple>
 
 // Local
-#include "filters.h"
+#include "Filters.h"
 
 /**
 One has to keep in mind that forward transform in a convolution THEN subsampling

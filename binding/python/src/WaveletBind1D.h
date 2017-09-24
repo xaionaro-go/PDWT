@@ -2,7 +2,7 @@
 #include <cassert>
 
 // Local
-#include "filters.h"
+#include "Filters.h"
 #include "Wavelet1D.h"
 
 namespace py = pybind11;

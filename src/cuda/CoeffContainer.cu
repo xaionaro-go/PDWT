@@ -1,12 +1,12 @@
 
 // Local
-#include "coeffContainer.h"
+#include "CoeffContainer.h"
 
 // STL
 #include <vector>
 
 // Local
-#include "cuda/managedAllocator.cu.h"
+#include "cuda/ManagedAllocator.cu.h"
 
 
 // Explicit instanciation

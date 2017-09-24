@@ -12,11 +12,18 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ###############
 if (CUDA_FOUND AND USE_CUDA)
   set(sources_cuda
-    cuda/coeffContainer.cu
-    cuda/constant.cu
+    cuda/CoeffContainer.cu
+    cuda/Constant.cu
+
+    #utils
+    cuda/utils/DeviceManager.cu
   )
   set(headers_cuda
-    cuda/managedAllocator.cu.h
+    cuda/DeviceManager.cu.h
+    cuda/ManagedAllocator.cu.h
+
+    #utils
+    cuda/utils/DeviceManager.cu.h
   )
 endif ()
 ################
@@ -27,8 +34,8 @@ endif ()
 #  Src files  #
 ###############
 set(sources
-  filters.cpp
-  coeffContainer.cpp
+  Filters.cpp
+  CoeffContainer.cpp
   Wavelet.cpp
   Wavelet1D.cpp
   Wavelet2D.cpp
@@ -38,6 +45,7 @@ set(sources
 )
 
 set(headers
+  Filters.h
   Wavelet.h
   Wavelet1D.h
   Wavelet2D.h

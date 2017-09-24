@@ -6,7 +6,7 @@
 #include <vector>
 
 // Lib
-#include "coeffContainer.h"
+#include "CoeffContainer.h"
 #include "Wavelet1D.h"
 
 using T = float;

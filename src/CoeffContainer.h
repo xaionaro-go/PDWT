@@ -15,7 +15,7 @@
 #include <boost/iterator/zip_iterator.hpp>
 
 // Local
-#include "dualTreeLinearOp.h"
+#include "DualTreeLinearOp.h"
 
 /** \class CoeffContainer
  * \brief Generic interface that should be implemented by wavelet coefficient
