@@ -24,30 +24,6 @@ struct w_info {
   int Nz;
 };
 
-/**
- * Possible states of the Wavelet class.
- * It prevents, for example, W.inverse() from being run twice
- * (since W.d_coeffs[0] is modified)
- */
-enum class w_state {
-  /// The class has just been initialized (coeffs not computed)
-  W_INIT,
-  /// W.forward() has just been performed (coeffs computed)
-  W_FORWARD,
-  /// W.inverse() has just been performed (d_image modified, coeffs modified !)
-  W_INVERSE,
-  /// The coefficients have been modified
-  W_THRESHOLD,
-  /// Error when creating the Wavelet instance
-  W_CREATION_ERROR,
-  /// Error when computing the forward transform
-  W_FORWARD_ERROR,
-  /// Error when computing the inverse transform
-  W_INVERSE_ERROR,
-  /// Error when thresholding the coefficients
-  W_THRESHOLD_ERROR
-};
-
 /** \struct WaveletWrapper
  * \brief This class is only here to provide a non templated interface to
  * all possible types of wavelet defined in this software
@@ -76,7 +52,7 @@ class Wavelet :public WaveletWrapper<T> {
  public:
   /// Constructor with zero initialization
   Wavelet() : m_image{nullptr}, m_coeff{nullptr}, m_doCycleSpinning{false},
-    m_currentShift{}, m_name{}, m_info{0}, m_state{w_state::W_INIT} {}
+    m_currentShift{}, m_name{}, m_info{0} {}
 
   /// Constructor : Wavelet from image
   Wavelet(T* img, int Nx, int Ny, int Nz, bool doCycleSpinning,
@@ -172,8 +148,6 @@ class Wavelet :public WaveletWrapper<T> {
   std::string m_name;
   /// Informations about the wavelet tranform
   w_info m_info;
-  /// Current state of the wavelet tranform
-  w_state m_state;
   /// Number of level od dyadic decomposition
   int m_level;
 };
