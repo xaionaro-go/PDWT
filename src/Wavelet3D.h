@@ -112,20 +112,20 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
                 this->m_coeff->GetScaleShape(l).at(0)));
           }
 
-              auto sBandCalc = [=](auto xIdx){ return 
-                this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
-              };
-              T* outlowX; 
-              // If this is the low freq projection
-              if ((zFiltIdx==0)&&(yFiltIdx==0)) {
-          if (l+1==this->m_level) {
-            outlowX=this->m_coeff->GetLowSubspacePtr(l);
+          auto sBandCalc = [=](auto xIdx){ return 
+            this->m_coeff->GetHighSubspacePtr(l,zFiltIdx*4+yFiltIdx*2+xIdx-1);
+          };
+          T* outlowX; 
+          // If this is the low freq projection
+          if ((zFiltIdx==0)&&(yFiltIdx==0)) {
+            if (l+1==this->m_level) {
+              outlowX=this->m_coeff->GetLowSubspacePtr(l);
+            } else {
+              outlowX=outlow;
+            }
           } else {
-            outlowX=outlow;
+            outlowX=sBandCalc(0);
           }
-              } else {
-                outlowX=sBandCalc(0);
-              }
 
           //Now perform X filtering
           SeparableSubsampledConvolutionEngine3D<T,
@@ -155,7 +155,7 @@ class Wavelet3D : public Wavelet<T,CoeffContainerT, WaveletSchemeT> {
   }
 
 
-  /// Backward wavelet transform: transpose of the forward transpose
+  /// Backward wavelet transform: transpose of the forward pass
   virtual int backward() {
     int inTmpBuffIdx = (this->m_level%2==0) ? 3 : 2;
     int outTmpBuffIdx = (this->m_level%2==0) ? 2 : 3;
@@ -904,8 +904,8 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
                   lowReal = this->m_coeff->GetLowSubspacePtr(l-1,bandIdxReal);
                   lowImag = this->m_coeff->GetLowSubspacePtr(l-1,bandIdxImag);
                 } else {
-                  lowReal = this->m_coeff->GetHalfTmpBuffPtr(2);
-                  lowImag = this->m_coeff->GetHalfTmpBuffPtr(2);
+                  lowReal = this->m_coeff->GetHalfTmpBuffPtr(2,bandIdxReal);
+                  lowImag = this->m_coeff->GetHalfTmpBuffPtr(2,bandIdxImag);
                 }
               } else {
                 lowReal = sBandCalc(0, bandIdxReal);

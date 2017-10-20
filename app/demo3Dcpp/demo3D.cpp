@@ -14,9 +14,9 @@ using T = float;
 int main(int argc, char **argv) {
 
 
-  int sizeX=8;
-  int sizeY=8;
-  int sizeZ=8;
+  int sizeX=30;
+  int sizeY=30;
+  int sizeZ=30;
 
   auto modify = [sizeX,sizeY,sizeZ](auto* ptr) {
     for(int k =0; k<sizeZ; k++) {
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   //Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",3);
   //Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Anto97",1);
   //REVERSE_QSHIFT6_Orth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"QSHIFT6",1);
-  dtwAnto97QSHIFT6_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"DTCWT",2); 
+  dtwAnto97QSHIFT6_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"DTCWT",4); 
     
 
   // print coeffs when initialized
