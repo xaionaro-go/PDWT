@@ -14,9 +14,9 @@ using T = float;
 int main(int argc, char **argv) {
 
 
-  int sizeX=30;
-  int sizeY=30;
-  int sizeZ=30;
+  int sizeX=33;
+  int sizeY=33;
+  int sizeZ=33;
 
   auto modify = [sizeX,sizeY,sizeZ](auto* ptr) {
     for(int k =0; k<sizeZ; k++) {

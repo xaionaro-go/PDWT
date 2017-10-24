@@ -904,6 +904,7 @@ class DTWavelet3D : public Wavelet<T,CoeffContainerT, DTWaveletSchemeT> {
                   lowReal = this->m_coeff->GetLowSubspacePtr(l-1,bandIdxReal);
                   lowImag = this->m_coeff->GetLowSubspacePtr(l-1,bandIdxImag);
                 } else {
+                  //TODO TN: there may be a problem remaining here
                   lowReal = this->m_coeff->GetHalfTmpBuffPtr(2,bandIdxReal);
                   lowImag = this->m_coeff->GetHalfTmpBuffPtr(2,bandIdxImag);
                 }
