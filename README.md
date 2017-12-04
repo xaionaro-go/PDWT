@@ -71,7 +71,7 @@ If you want to enjoy cuda related features, you need the [NVIDIA CUDA Toolkit](h
 How to build ?
 cd PDWT
 mkdir build; cd build  
-cmake -DINSTALLDIR=/path-to-install-dir -DUSE_MPI=ON -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DPYBIND11_PYTHON_VERSION=3.6 -DTHRUST_BACKEND:STRING=CUDA ..  
+cmake -DINSTALLDIR=/path-to-install-dir -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DPYBIND11_PYTHON_VERSION=3.6 -DTESTING_ENABLED=ON ..  
 make -j8 install
 
 ## How to test
