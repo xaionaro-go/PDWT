@@ -7,7 +7,7 @@
 #include <vector>
 
 // Lib
-#include "coeffContainer.h"
+#include "CoeffContainer.h"
 #include "Wavelet3D.h"
 
 //Local

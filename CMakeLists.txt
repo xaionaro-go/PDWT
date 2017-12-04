@@ -54,19 +54,7 @@ find_package(CUDA 8.0)
 if (CUDA_FOUND AND USE_CUDA)
   add_definitions(-DUSE_CUDA)
   
-  if (THRUST_BACKEND STREQUAL "OMP") 
-    list(APPEND CUDA_NVCC_FLAGS
-      -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP
-      -Xcompiler -fopenmp)
-    list(APPEND cuda_deps gomp)
-  elseif (THRUST_BACKEND STREQUAL "TBB") 
-    
-  elseif (THRUST_BACKEND STREQUAL "CUDA")
-    list(APPEND CUDA_NVCC_FLAGS
-      -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA)
-  endif ()
-
-    #Eventually add some code instrumentation
+  #Eventually add some code instrumentation
   if (USE_NVTX)
     add_definitions(-DUSE_NVTX)
   endif ()
