@@ -9,20 +9,34 @@
 #include "CoeffContainer.h"
 #include "Wavelet3D.h"
 
-using T = float;
+using T = double;
 
 int main(int argc, char **argv) {
 
 
-  int sizeX=33;
-  int sizeY=33;
-  int sizeZ=33;
+  int sizeX=32;
+  int sizeY=32;
+  int sizeZ=32;
 
   auto modify = [sizeX,sizeY,sizeZ](auto* ptr) {
     for(int k =0; k<sizeZ; k++) {
       for(int j=0; j<sizeY; j++) {
         for(int i=0; i<sizeX; i++) {
           ptr[k*sizeX*sizeY+j*sizeX+i]=k*sizeX*sizeY+j*sizeX+i;
+        }
+      }
+    }
+  };
+
+  auto check = [sizeX,sizeY,sizeZ](auto* ptr) {
+    for(int k =0; k<sizeZ; k++) {
+      for(int j=0; j<sizeY; j++) {
+        for(int i=0; i<sizeX; i++) {
+	  uint64_t addr = k*sizeX*sizeY+j*sizeX+i;
+          if(std::abs(ptr[addr]-addr)>1) {
+            std::cout<<"Error, got "<<ptr[addr]<<" instead of "<<addr
+              <<std::endl;
+	  }
         }
       }
     }
@@ -49,13 +63,13 @@ int main(int argc, char **argv) {
   //std::fill(in.begin(), in.end(), 2);
   modify(in.data());
 
-  std::cout<<"Input is: ";
-  print(in.data());
+  //std::cout<<"Input is: ";
+  //print(in.data());
 
   // Define wavelet tranform
   //Daub2_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Daub2",3);
-  //Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Anto97",1);
-  //REVERSE_QSHIFT6_Orth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"QSHIFT6",1);
+  //Anto97_BiOrth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"Anto97",4);
+  //REVERSE_QSHIFT6_Orth_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"QSHIFT6",4);
   dtwAnto97QSHIFT6_3D<T> w(in.data(),sizeX,sizeY,sizeZ,false,"DTCWT",4); 
     
 
@@ -78,7 +92,8 @@ int main(int argc, char **argv) {
   w.backward(); 
   
   std::cout<<"Output is: ";
-  print(in.data());
+  //print(in.data());
+  check(in.data());
 
   return EXIT_SUCCESS;
 }
