@@ -35,7 +35,7 @@ All the transforms are computed with the **periodic boundary extension** (the di
 
 The header only pybind11 module is included as a submodule of this repository. This requires some attention when cloning this project. There are two options:
 
-*   The simplest option is:
+* The simplest option is:
 
     ```bash
     git clone --recursive https://github.com/gnthibault/PDWT.git
@@ -47,7 +47,7 @@ The header only pybind11 module is included as a submodule of this repository. T
     git submodule update --remote
     ```
 
-*   One could also directly download the submodule from the source:
+* One could also directly download the submodule from the source:
 
     ```bash
     git clone https://github.com/gnthibault/PDWT.git
@@ -59,59 +59,82 @@ The header only pybind11 module is included as a submodule of this repository. T
 ### Dependencies
 
 If you want to enjoy some developer features of this project, please consider installing the following packages (example for ubuntu):  
-sudo apt-get install doxygen graphviz cppcheck
+
+  ```bash
+  sudo apt-get install doxygen graphviz cppcheck
+  ```
 
 If you want to enjoy mpi related features, please consider installing the following packages (example for ubuntu):  
-sudo apt-get install libopenmpi-dev libopenmpi-dev
+
+  ```bash
+  sudo apt-get install libopenmpi-dev libopenmpi-dev
+  ```
 
 If you want to enjoy cuda related features, you need the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit), and of course a NVIDIA GPU.
 
 ### Compilation
 
-How to build ?
-cd PDWT
-mkdir build; cd build  
-cmake -DINSTALLDIR=/path-to-install-dir -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DPYBIND11_PYTHON_VERSION=3.6 -DTESTING_ENABLED=ON ..  
-make -j8 install
+* How to build ?
+
+  At the time this tutorial is written, (2018), current version of gcc shipped by default with ubuntu do not support the code.
+  You will need a newer version to compile the project:
+
+  ```bash
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt-get update
+  sudo apt-get install gcc-5 g++-5
+  ```
+
+  Now, you can initialize the build project and build:
+
+  ```bash
+  cd PDWT
+  mkdir build; cd build  
+  cmake -DINSTALLDIR=/path-to-install-dir -DUSE_CUDA=ON -DUSE_NVTX=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DPYBIND11_PYTHON_VERSION=3.6 -DCMAKE_C_COMPILER=$(which gcc-7) -DCMAKE_CXX_COMPILER=$(which g++-7) -DTESTING_ENABLED=ON ..  
+  make -j8 install
+  ``` 
+
+  If you are not interested in getting MPI/CUDA support, prefer those settings:
+
+  ```bash
+  cmake -DUSE_CUDA=OFF -DUSE_MPI=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DPYBIND11_PYTHON_VERSION=3.6 -DCMAKE_C_COMPILER=$(which gcc-7) -DCMAKE_CXX_COMPILER=$(which g++-7) -DTESTING_ENABLED=ON ..
+  ```
+
+  In case you are using a local anaconda python distribution, use the following line:
+
+  ```bash
+  cmake -DUSE_CUDA=OFF -DUSE_MPI=OFF -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=ON -DPYBIND11_PYTHON_VERSION=3.6 -DPYTHON_INCLUDE_DIR=~/anaconda3/include/python3.6m/ -DPYTHON_LIBRARY=~/anaconda3/lib/libpython3.6m.so -DCMAKE_C_COMPILER=$(which gcc-7) -DCMAKE_CXX_COMPILER=$(which g++-7) -DTESTING_ENABLED=ON ..
+  ```
 
 ## How to test
-In the build directory, do:  
-make test  
+In the build directory, do:
+
+  ```bash
+  bash
+  make test  
+  ```
 
 ## How to generate doxygen documentation
 In the build directory, do:  
-make doc  
+
+  ```bash
+  make doc  
+  ```
 The documentation should be build in the "doc" directory
 
 ## How to perform static code analysis with cppcheck
-In the build directory, do:  
-make cppcheck  
+In the build directory, do:
+
+  ```bash
+  make cppcheck  
+  ```
 The cppcheck report can be found in the directory cppcheckdir-report
 
 ## Getting started
 
 ### Running the example
 
-To run the test, you need a raw image in 32 bits floating point precision format.
-As PDWT was primarily written for data crunching, the I/O part is not addressed: the input and output of PDWT are float (or double, if compiled accordingly with `make libpdwtd.so`) arrays.
-
-If you have python and scipy installed, you can generate an image input file with
-
-```bash
-cd test
-python generate_image.py [Nr] [Nc]
-```
-where Nr, Nc are optional arguments which are the number of rows/columns of the generated image (default is 512).
-
-You can then run an example with
-
-```bash
-make demo
-./demo
-```
-
-and tune the wavelet, number of levels, etc. in the prompt.
-
+TBD
 
 ### Calling PDWT
 
@@ -141,5 +164,4 @@ printf("After threshold : L1 = %e\n", norm1);
 W.inverse();
 W.get_image(img);
 ```
-
 

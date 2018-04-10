@@ -108,12 +108,18 @@ endif ()
 ###############
 # Boost part  #
 ###############
-find_package(Boost COMPONENTS mpi serialization) 
+find_package(Boost) 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-  #runtime libs for boost
-  set(boost_deps boost_mpi boost_serialization)
+endif ()
+#Specific Boost-MPI stuff
+if (MPI_FOUND AND USE_MPI)
+  find_package(Boost COMPONENTS mpi serialization)
+  if (Boost_FOUND)
+    link_directories(${Boost_LIBRARY_DIRS})
+    #runtime libs for boost
+    set(boost_deps boost_mpi boost_serialization)
+  endif ()
 endif ()
 ################
 # /Boost part  #
