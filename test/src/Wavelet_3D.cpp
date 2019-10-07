@@ -32,12 +32,12 @@ struct Wavelet3DTestFunctor {
     // Define input/output
     std::vector<T> in(sizeX*sizeY*sizeZ);
     // Seed with a real random value, if available
-    std::random_device re;
+    std::random_device rd;
     // Random numbers between -1. and 1.
-    std::default_random_engine rnd(re());
+    std::default_random_engine re(rd());
     std::uniform_real_distribution<T> uni(-1., 1.);
-    auto rand = [&]() { return uni(rnd); };
-    std::generate(in.begin(), in.end(), rand);
+    auto randGen = [&]() { return uni(re); };
+    std::generate(in.begin(), in.end(), randGen);
     const std::vector<T> incopy(in.cbegin(),in.cend());
 
     // Define wavelet tranform

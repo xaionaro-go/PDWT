@@ -512,7 +512,7 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
      *
      * TODO TN: DT extension (very bad)
      * Z filter and Y filter mandatory buff are always allocated in one single
-     * instance. However, Z tmp output and Z_2 tmp output are allocated
+     * instance. However, X tmp output and X_2 tmp output are allocated
      * in nbBand instances
      */
     m_tmpZOutSingleSize=this->m_scaleShape.at(0).at(0)*
@@ -542,6 +542,20 @@ class CoeffContainer3D : public CoeffContainer<T,SubContainerT> {
 
   /// Return a pointer to a temporary buffer, idx stands for low(0) or high(1)
   virtual T* GetHalfTmpBuffPtr(size_t subBandIdx, size_t bandIdx=0) {
+    /**
+     * I must admit that subBandIdx and bandIdx are particularly misleading 
+     * names here.
+     * subBandIdx describes the current stage in the WAVELET tree. if we are
+     * seeking for the output for Z filtering, subBandIdx is 0
+     *                            Y filtering, subBandIdx is 1
+     *                            X filtering, subBandIdx is 2
+     * 
+     * If we are at X filtering, it means that we need to store the lowlowlow
+     *
+     *
+     */
+
+
     if (subBandIdx<2) {
       assert(bandIdx==0);
     }
