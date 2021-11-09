@@ -30,6 +30,9 @@
 *.i*86
 *.x86_64
 *.hex
+/demo
+/service
+/service_backend
 
 # Debug files
 *.dSYM/

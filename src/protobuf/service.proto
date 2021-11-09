@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+enum Wavelet {
+    undefined = 0;
+    DB2     = 1;
+    DB3     = 2;
+    DB4     = 3;
+    DB5     = 4;
+    DB6     = 5;
+    DB7     = 6;
+    DB8     = 7;
+    DB9     = 8;
+    DB10    = 9;
+    DB11    = 10;
+    DB12    = 12;
+    DB13    = 13;
+    DB14    = 14;
+    DB15    = 15;
+    DB16    = 16;
+    DB17    = 17;
+    DB18    = 18;
+    DB19    = 19;
+    DB20    = 20;
+    SYM2    = 21;
+    SYM3    = 22;
+    SYM4    = 23;
+    SYM5    = 24;
+    SYM6    = 25;
+    SYM7    = 26;
+    SYM8    = 27;
+    SYM9    = 28;
+    SYM10   = 29;
+    SYM11   = 30;
+    SYM12   = 31;
+    SYM13   = 32;
+    SYM14   = 33;
+    SYM15   = 34;
+    SYM16   = 35;
+    SYM17   = 36;
+    SYM18   = 37;
+    SYM19   = 38;
+    SYM20   = 39;
+    COIF1   = 40;
+    COIF2   = 41;
+    COIF3   = 42;
+    COIF4   = 43;
+    COIF5   = 44;
+    BIOR1_3 = 45;
+    BIOR1_5 = 46;
+    BIOR2_2 = 47;
+    BIOR2_4 = 48;
+    BIOR2_6 = 49;
+    BIOR2_8 = 50;
+    BIOR3_1 = 51;
+    BIOR3_3 = 52;
+    BIOR3_5 = 53;
+    BIOR3_7 = 54;
+    BIOR3_9 = 55;
+    BIOR4_4 = 56;
+    BIOR5_5 = 57;
+    BIOR6_8 = 58;
+    RBIO1_3 = 59;
+    RBIO1_5 = 60;
+    RBIO2_2 = 61;
+    RBIO2_4 = 62;
+    RBIO2_6 = 63;
+    RBIO2_8 = 64;
+    RBIO3_1 = 65;
+    RBIO3_3 = 66;
+    RBIO3_5 = 67;
+    RBIO3_7 = 68;
+    RBIO3_9 = 69;
+    RBIO4_4 = 70;
+    RBIO5_5 = 71;
+    RBIO6_8 = 72;
+    HAAR    = 73;
+}
+
+message WTForwardRequest {
+    Wavelet Wavelet = 1;
+    uint32 Levels = 2;
+    repeated float Values = 3;
+}
+
+message Level {
+    repeated float Value = 1 [packed=true];
+};
+
+message Coefficients {
+    repeated Level Levels = 1;
+}
+
+message WTForwardResponse {
+    Coefficients Coefficients = 1;
+}
+
+service WTService {
+    rpc Forward(WTForwardRequest) returns (WTForwardResponse);
+}
